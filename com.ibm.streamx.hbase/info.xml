@@ -1,9 +1,9 @@
-<!-- Copyright (C) 2010,2013-2014, International Business Machines Corporation -->
+<!-- Copyright (C) 2013-2014, International Business Machines Corporation -->
 <!-- All Rights Reserved                                                   -->
 <info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common"
  xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
  <info:identity>
-   <info:name>streamsx.bigdata.hbase</info:name>
+   <info:name>com.ibm.streamsx.hbase</info:name>
    <info:description>Provides operators for sending tuples into HBASE via put (including checkAndPut), retrieving tuples via a tablescan or via get, deleting entries via delete (including checkAndDelete), and incrementing values.</info:description>
    <info:version>1.0.0</info:version>
    <info:requiredProductVersion>3.2.0</info:requiredProductVersion>
