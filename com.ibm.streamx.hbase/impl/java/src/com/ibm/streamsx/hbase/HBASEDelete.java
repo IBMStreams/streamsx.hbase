@@ -5,7 +5,6 @@ package com.ibm.streamsx.hbase;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.log4j.Logger;
 import com.ibm.streams.operator.model.OutputPortSet;
@@ -25,31 +24,12 @@ import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 
 /**
- * Class for an operator that consumes tuples and does not produce an output
- * stream. This pattern supports a number of input streams and no output
- * streams.
+ * Accepts tuples on input stream and makes the corresponding delete in the 
+ * HBASE table.  .
  * <P>
- * The following event methods from the Operator interface can be called:
- * </p>
- * <ul>
- * <li><code>initialize()</code> to perform operator initialization</li>
- * <li>allPortsReady() notification indicates the operator's ports are ready to
- * process and submit tuples</li>
- * <li>process() handles a tuple arriving on an input port
- * <li>processPuncuation() handles a punctuation mark arriving on an input port
- * <li>shutdown() to shutdown the operator. A shutdown request may occur at any
- * time, such as a request to stop a PE or cancel a job. Thus the shutdown() may
- * occur while the operator is processing tuples, punctuation marks, or even
- * during port ready notification.</li>
- * </ul>
- * <p>
- * With the exception of operator initialization, all the other events may occur
- * concurrently with each other, which lead to these methods being called
- * concurrently by different threads.
- * </p>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "streamsx.bigdata.hbase", description = "Java Operator HBASEDelete")
-@InputPorts({ @InputPortSet(description = "Port that ingests tuples", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete tuples from HBASE, with optional checkAndDelete.  Can delete a row, a column family in a row, or a tuple in a row, column family, and column qualifier.")
+@InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Port that produces tuples", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 public class HBASEDelete extends HBASEPutDelete {
 
@@ -60,7 +40,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	DeleteMode deleteMode = null;
 
 	List<Delete> deleteList = null;
-
+	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
 	/**
 	 * Initialize this operator. Called once before any tuples are processed.
 	 * 
@@ -74,7 +54,7 @@ public class HBASEDelete extends HBASEPutDelete {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		Logger.getLogger(this.getClass()).trace(
+		logger.trace(
 				"Operator " + context.getName() + " initializing in PE: "
 						+ context.getPE().getPEId() + " in Job: "
 						+ context.getPE().getJobId());
@@ -152,7 +132,7 @@ public class HBASEDelete extends HBASEPutDelete {
 			success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
 					checkValue, myDelete);
 		} else if (batchSize == 0) {
-			System.out.println("Deleting " + myDelete);
+			logger.debug("Deleting " + myDelete);
 			myTable.delete(myDelete);
 		} else {
 			synchronized (listLock) {

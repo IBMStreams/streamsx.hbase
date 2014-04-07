@@ -37,28 +37,13 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 
 /**
  * Class for an operator that consumes tuples and does not produce an output stream. 
- * This pattern supports a number of input streams and no output streams. 
- * <P>
- * The following event methods from the Operator interface can be called:
- * </p>
- * <ul>
- * <li><code>initialize()</code> to perform operator initialization</li>
- * <li>allPortsReady() notification indicates the operator's ports are ready to process and submit tuples</li> 
- * <li>process() handles a tuple arriving on an input port 
- * <li>processPuncuation() handles a punctuation mark arriving on an input port 
- * <li>shutdown() to shutdown the operator. A shutdown request may occur at any time, 
- * such as a request to stop a PE or cancel a job. 
- * Thus the shutdown() may occur while the operator is processing tuples, punctuation marks, 
- * or even during port ready notification.</li>
- * </ul>
- * <p>With the exception of operator initialization, all the other events may occur concurrently with each other, 
- * which lead to these methods being called concurrently by different threads.</p> 
+ * 
  */
 
-@PrimitiveOperator(name="HBASEPut", namespace="streamsx.bigdata.hbase",
-description="Put tuples in HBASE")
-@InputPorts({@InputPortSet(description="Port that ingests tuples", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
-@OutputPorts({@OutputPortSet(description="Port that produces tuples", cardinality=1, optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
+@PrimitiveOperator(name="HBASEPut", namespace="com.ibm.streamsx.hbase",
+description="Put tuples in HBASE, with support for checkAndPut")
+@InputPorts({@InputPortSet(description="Tuple to put into HBASE", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
+@OutputPorts({@OutputPortSet(description="Optional port for success or failure information.", cardinality=1, optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
 
 public class HBASEPut extends HBASEPutDelete {
 
@@ -71,6 +56,8 @@ public class HBASEPut extends HBASEPutDelete {
 	public void setValueAttr(String val) {
 		valueAttr = val;
 	}
+	
+	Logger logger = Logger.getLogger(this.getClass());
 	
     /**
      * Initialize this operator. Called once before any tuples are processed.
@@ -126,9 +113,8 @@ public class HBASEPut extends HBASEPutDelete {
     		byte checkColF[] = getCheckColF(checkTuple);
     		byte checkColQ[] = getCheckColQ(checkTuple);
     		byte checkValue[] = getCheckValue(checkTuple);
-    	//	System.out.println("checking for "+checkRow+" "+checkColF+" "+checkColQ+" for put "+myPut);
     		success = myTable.checkAndPut(checkRow,checkColF,checkColQ,checkValue,myPut);
-    		System.out.println("Result is "+success);
+    		logger.debug("Result is "+success);
     	}
     	else if (batchSize == 0) {
     		myTable.put(myPut);

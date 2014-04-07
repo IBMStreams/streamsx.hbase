@@ -39,25 +39,19 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.types.RString;
 
 /**
- * Class for an operator that receives a tuple and then optionally submits a tuple. 
- * This pattern supports a number of input streams and a single output stream. 
+ * Gets a tuple or set of tuples from HBASE.
  * <P>
- * The following event methods from the Operator interface can be called:
- * </p>
+ * The input may be a
  * <ul>
- * <li><code>initialize()</code> to perform operator initialization</li>
- * <li>allPortsReady() notification indicates the operator's ports are ready to process and submit tuples</li> 
- * <li>process() handles a tuple arriving on an input port 
- * <li>processPuncuation() handles a punctuation mark arriving on an input port 
- * <li>shutdown() to shutdown the operator. A shutdown request may occur at any time, 
- * such as a request to stop a PE or cancel a job. 
- * Thus the shutdown() may occur while the operator is processing tuples, punctuation marks, 
- * or even during port ready notification.</li>
+ * <li> row id 
+ * <li> row id and column family
+ * <li> row id, column family, and column qualifier
  * </ul>
- * <p>With the exception of operator initialization, all the other events may occur concurrently with each other, 
- * which lead to these methods being called concurrently by different threads.</p> 
+ * 
+ * 
+ * In the first two cases, the output must be a map, in the third it is a value.  
  */
-@PrimitiveOperator(name="HBASEGet", namespace="streamsx.bigdata.hbase",
+@PrimitiveOperator(name="HBASEGet", namespace="com.ibm.streamsx.hbase",
 description="Java Operator HBASEGet")
 @InputPorts({@InputPortSet(description="Port that ingests tuples", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 @OutputPorts({@OutputPortSet(description="Port that produces tuples", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating), @OutputPortSet(optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
@@ -71,7 +65,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		FAMILY_TO_VALUE,
 		FAMILY_TO_LIST,
 	}
-	
+	Logger logger = Logger.getLogger(this.getClass());
 
 	
 	static final String OUT_PARAM_NAME ="outAttrName";
@@ -81,18 +75,18 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private String successAttr = null;
 	private OutputMapper primativeOutputMapper = null;
 	
-	@Parameter(name=SUCCESS_PARAM_NAME,optional=true)
+	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute in which to put whether the get is successful",optional=true)
 	public void setSuccessAttr(String name) {
 		successAttr = name;
 	}
-	@Parameter(name=OUT_PARAM_NAME,optional=false)
+	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute in which to put the result of the get.", optional=false)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}
 	
 	
     /**
-     * Initialize this operator. Called once before any tuples are processed.
+     * Initialize this operator. Establishes that the input tuple is valid.
      * @param context OperatorContext for this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
@@ -101,7 +95,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 			throws Exception {
     	// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
+        logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
         
         List<StreamingOutput<OutputTuple>> outputs = context.getStreamingOutputs();
         if (outputs.size() != 1) {
@@ -147,8 +141,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
         		outputMode == OutputMode.QUAL_TO_LIST) {
         	throw new Exception("Not supported output type.");
         }
-        System.out.println("outputMode="+outputMode);
-        System.out.println("Exit init get: StaticColFamily: "+staticColumnFamilyList.get(0));
+       	logger.info("outputMode="+outputMode);
+       	logger.info("Exit init get: StaticColFamily: "+staticColumnFamilyList.get(0));
 	}
 	
 	Map<RString,RString> makeStringMap(Map<byte[],byte[]> inMap) {
@@ -181,14 +175,12 @@ public class HBASEGet extends HBASEOperatorWithInput {
     	// Operators that process incoming tuples generally do not need this notification. 
         OperatorContext context = getOperatorContext();
         Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " all ports are ready in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        System.out.println("exit all ports ready, get: StaticColFamily: "+staticColumnFamilyList.get(0));
+        logger.info("exit all ports ready, get: StaticColFamily: "+staticColumnFamilyList.get(0));
     }
 
     /**
-     * Process an incoming tuple that arrived on the specified port.
+     * Get the specified tuple or tuples from HBASE.
      * <P>
-     * Copy the incoming tuple to a new output tuple and submit to the output port. 
-     * </P>
      * @param inputStream Port the tuple is arriving on.
      * @param tuple Object representing the incoming tuple.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
@@ -266,11 +258,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
     public synchronized void shutdown() throws Exception {
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        
-        // TODO: If needed, close connections or release resources related to any external system or data store.
-
         // Must call super.shutdown()
         super.shutdown();
     }

@@ -5,6 +5,7 @@ package com.ibm.streamsx.hbase;
 
 
 import org.apache.hadoop.hbase.client.Increment;
+
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.AbstractOperator;
@@ -27,26 +28,12 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.model.Parameter;
 /**
- * Class for an operator that receives a tuple and then optionally submits a tuple. 
- * This pattern supports a number of input streams and a single output stream. 
- * <P>
- * The following event methods from the Operator interface can be called:
- * </p>
- * <ul>
- * <li><code>initialize()</code> to perform operator initialization</li>
- * <li>allPortsReady() notification indicates the operator's ports are ready to process and submit tuples</li> 
- * <li>process() handles a tuple arriving on an input port 
- * <li>processPuncuation() handles a punctuation mark arriving on an input port 
- * <li>shutdown() to shutdown the operator. A shutdown request may occur at any time, 
- * such as a request to stop a PE or cancel a job. 
- * Thus the shutdown() may occur while the operator is processing tuples, punctuation marks, 
- * or even during port ready notification.</li>
- * </ul>
- * <p>With the exception of operator initialization, all the other events may occur concurrently with each other, 
- * which lead to these methods being called concurrently by different threads.</p> 
+ * Increment a particular HBASE entry.  The row, columnFamily, and columnQualifier must all
+ * be specified, either as parameters or they must come from the tuples.
  */
-@PrimitiveOperator(name="HBASEIncrement", namespace="streamsx.bigdata.hbase",
-description="Java Operator HBASEIncrement")
+
+@PrimitiveOperator(name="HBASEIncrement", namespace="com.ibm.streamsx.hbase",
+description="Increment the specified HBASE entry")
 @InputPorts({@InputPortSet(description="Port that ingests tuples", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 public class HBASEIncrement extends HBASEOperatorWithInput {
 	
@@ -111,10 +98,8 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
     }
 
     /**
-     * Process an incoming tuple that arrived on the specified port.
-     * <P>
-     * Copy the incoming tuple to a new output tuple and submit to the output port. 
-     * </P>
+     * Increment the HBASE entry.
+     * 
      * @param inputStream Port the tuple is arriving on.
      * @param tuple Object representing the incoming tuple.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
