@@ -4,18 +4,15 @@
 package com.ibm.streamsx.hbase;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
-import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
-import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
@@ -86,7 +83,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	
 	
     /**
-     * Initialize this operator. Establishes that the input tuple is valid.
+     * Initialize this operator. Establishes that the input tuple type is valid.
      * @param context OperatorContext for this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
@@ -164,19 +161,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		return toReturn;
 	}
 
-    /**
-     * Notification that initialization is complete and all input and output ports 
-     * are connected and ready to receive and submit tuples.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public synchronized void allPortsReady() throws Exception {
-    	// This method is commonly used by source operators. 
-    	// Operators that process incoming tuples generally do not need this notification. 
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " all ports are ready in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        logger.info("exit all ports ready, get: StaticColFamily: "+staticColumnFamilyList.get(0));
-    }
 
     /**
      * Get the specified tuple or tuples from HBASE.
@@ -239,26 +223,5 @@ public class HBASEGet extends HBASEOperatorWithInput {
         // Submit new tuple to output port 0
         outStream.submit(outTuple);
     }
-    
-    /**
-     * Process an incoming punctuation that arrived on the specified port.
-     * @param stream Port the punctuation is arriving on.
-     * @param mark The punctuation mark
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public void processPunctuation(StreamingInput<Tuple> stream,
-    		Punctuation mark) throws Exception {
-    	// For window markers, punctuate all output ports 
-    	super.processPunctuation(stream, mark);
-    }
 
-    /**
-     * Shutdown this operator.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    public synchronized void shutdown() throws Exception {
-        // Must call super.shutdown()
-        super.shutdown();
-    }
 }

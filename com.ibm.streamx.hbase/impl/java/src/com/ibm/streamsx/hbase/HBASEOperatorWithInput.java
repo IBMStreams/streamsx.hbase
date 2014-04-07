@@ -37,17 +37,17 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	byte colFamBytes[] = null;
 	byte colQualBytes[] = null;	
 	
-	@Parameter(name=COL_FAM_PARAM_NAME,optional=true)
+	@Parameter(name=COL_FAM_PARAM_NAME,optional=true,description="Name of the attribute containing the columnFamily")
 	public void setColumnFamilyAttr(String colF) {
 	columnFamilyAttr = colF;
 	}
 	
-	@Parameter(name=COL_QUAL_PARAM_NAME,optional=true)
+	@Parameter(name=COL_QUAL_PARAM_NAME,optional=true,description="Name of the attribute containing the columnQualifier")
 	public void setColumnQualifierAttr(String colQ) {
 		columnQualifierAttr = colQ;	
 	}
 
-	@Parameter(name=ROW_PARAM_NAME,optional=false)
+	@Parameter(name=ROW_PARAM_NAME,optional=false,description="Name of the attribute containing the row")
 	public void setRowAttr(String row) {
 		rowAttr = row;
 	}
@@ -73,6 +73,13 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		}
 	}
 
+	/**
+	 * For {rowAttrName,columnFamilyAttrName,columnQualifierAttrName}, if specified, ensures the attribute
+	 * exists, and stores the index in class variable.
+	 * 
+	 * If there is a statiColumnFamily or staticColumnQualifier specified, it checks that list has length
+	 * at most one.
+	 */
 	@Override
 	public synchronized void initialize(OperatorContext context)
 			throws Exception {

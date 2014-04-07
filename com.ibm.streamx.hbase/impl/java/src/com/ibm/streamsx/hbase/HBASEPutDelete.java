@@ -39,8 +39,13 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * some common functions not shared by get and increment. Support for these is
  * placed here.
  * 
- * This class handles: - batchSize parameter - success attribute - check
- * attribute - outputing a tuple and indicating success or failure
+ * This class handles: - 
+ * <ul>
+ * <li> batchSize parameter
+ * <li> success attribute
+ * <li> check attribute 
+ * <li> outputting a tuple and indicating success or failure when check attribute is one.
+ * </ul>
  * 
  */
 
@@ -65,17 +70,17 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 	StreamingOutput<OutputTuple> outStream = null;
 
 	
-	@Parameter(name = SUCCESS_PARAM, optional = true)
+	@Parameter(name = SUCCESS_PARAM, optional = true,description="Attribute on the output port to be set to true if the check passes and the action is successful")
 	public void setSuccessAttr(String name) {
 		successAttrName = name;
 	}
 
-	@Parameter(name = BATCHSIZE_NAME, optional = true)
+	@Parameter(name = BATCHSIZE_NAME, optional = true,description="Number of mutations to received before sending the to HBASE.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.")
 	public void setBatchSize(int _size) {
 		batchSize = _size;
 	}
 
-	@Parameter(name = CHECK_ATTR_PARAM, optional = true)
+	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description="Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.")
 	public void setCheckAttr(String name) {
 		checkAttr = name;
 	}
@@ -115,8 +120,11 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 	}
 
 	/**
-	 * Initialize this operator. Called once before any tuples are processed.
-	 * 
+	 * This checks that
+	 * <ul>
+	 * <li> If checkAttr is specified, then batchSize must not be specified.
+	 * <li> Checks that checkAttr, if specified, exists and is the right type
+	 * <li> If success attribute is specified, checks that checkAttribute is also specified.
 	 * @param context
 	 *            OperatorContext for this operator.
 	 * @throws Exception
@@ -172,25 +180,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 		}
 	}
 
-	/**
-	 * Notification that initialization is complete and all input and output
-	 * ports are connected and ready to receive and submit tuples.
-	 * 
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public synchronized void allPortsReady() throws Exception {
-		// This method is commonly used by source operators.
-		// Operators that process incoming tuples generally do not need this
-		// notification.
-		OperatorContext context = getOperatorContext();
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName()
-						+ " all ports are ready in PE: "
-						+ context.getPE().getPEId() + " in Job: "
-						+ context.getPE().getJobId());
-	}
 
 	/**
 	 * Populate and submit an output tuple. If the operator is configured with
@@ -216,35 +205,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 			}
 			outStream.submit(outTuple);
 		}
-	}
-
-	/**
-	 * Process an incoming punctuation that arrived on the specified port.
-	 * 
-	 * @param stream
-	 *            Port the punctuation is arriving on.
-	 * @param mark
-	 *            The punctuation mark
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public void processPunctuation(StreamingInput<Tuple> stream,
-			Punctuation mark) throws Exception {
-		// TODO: If window punctuations are meaningful to the external system or
-		// data store,
-		// insert code here to process the incoming punctuation.
-	}
-
-	/**
-	 * Shutdown this operator.
-	 * 
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public synchronized void shutdown() throws Exception {
-		super.shutdown();
 	}
 
 }

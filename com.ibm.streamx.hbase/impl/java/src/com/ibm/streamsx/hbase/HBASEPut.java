@@ -52,7 +52,7 @@ public class HBASEPut extends HBASEPutDelete {
 	protected String valueAttr=null;
 	final static String VALUE_NAME = "valueAttrName";
 	
-	@Parameter(name=VALUE_NAME,optional=false)
+	@Parameter(name=VALUE_NAME,optional=false,description="Name of the attribute containing the value to put into the table")
 	public void setValueAttr(String val) {
 		valueAttr = val;
 	}
@@ -60,7 +60,7 @@ public class HBASEPut extends HBASEPutDelete {
 	Logger logger = Logger.getLogger(this.getClass());
 	
     /**
-     * Initialize this operator. Called once before any tuples are processed.
+     * Initialize this operator. Create the list to store the batch.
      * @param context OperatorContext for this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
@@ -74,21 +74,10 @@ public class HBASEPut extends HBASEPutDelete {
 		}
 	}
 
+   
     /**
-     * Notification that initialization is complete and all input and output ports 
-     * are connected and ready to receive and submit tuples.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public synchronized void allPortsReady() throws Exception {
-    	// This method is commonly used by source operators. 
-    	// Operators that process incoming tuples generally do not need this notification. 
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " all ports are ready in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-    }
-
-    /**
-     * Process an incoming tuple that arrived on the specified port.
+     * Process an incoming tuple.  Either put it on the put list, or call the HBASE put.
+     * 
      * @param stream Port the tuple is arriving on.
      * @param tuple Object representing the incoming tuple.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
@@ -131,31 +120,17 @@ public class HBASEPut extends HBASEPutDelete {
     	submitOutputTuple(tuple,success);
     }
     
-    /**
-     * Process an incoming punctuation that arrived on the specified port.
-     * @param stream Port the punctuation is arriving on.
-     * @param mark The punctuation mark
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public void processPunctuation(StreamingInput<Tuple> stream,
-    		Punctuation mark) throws Exception {
-    	// TODO: If window punctuations are meaningful to the external system or data store, 
-    	// insert code here to process the incoming punctuation.
-    }
-
-    /**
-     * Shutdown this operator.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public synchronized void shutdown() throws Exception {
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        if (myTable != null && putList != null && putList.size() > 0) {
-        	myTable.put(putList);
+        /**
+         * Shutdown this operator.
+         * @throws Exception Operator failure, will cause the enclosing PE to terminate.
+         */
+       @Override
+       public synchronized void shutdown() throws Exception {
+            OperatorContext context = getOperatorContext();
+           Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
+            if (myTable != null && putList != null && putList.size() > 0) {
+                   myTable.put(putList);
+            }
+           super.shutdown();
         }
-        super.shutdown();
-    }
-    
 }

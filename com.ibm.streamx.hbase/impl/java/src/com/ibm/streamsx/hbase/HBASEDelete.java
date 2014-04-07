@@ -28,7 +28,7 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * HBASE table.  .
  * <P>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete tuples from HBASE, with optional checkAndDelete.  Can delete a row, a column family in a row, or a tuple in a row, column family, and column qualifier.")
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete tuples from HBASE, with optional checkAndDelete.  Can delete a row, a column family in a row, or a tuple (row, columnFamily, and columnQualifier.")
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Port that produces tuples", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 public class HBASEDelete extends HBASEPutDelete {
@@ -42,7 +42,8 @@ public class HBASEDelete extends HBASEPutDelete {
 	List<Delete> deleteList = null;
 	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
 	/**
-	 * Initialize this operator. Called once before any tuples are processed.
+	 * Setup for execution. Parameter checking is set in the parent class.
+	 * Sets deleteMode based on the set of input parameters.
 	 * 
 	 * @param context
 	 *            OperatorContext for this operator.
@@ -72,26 +73,6 @@ public class HBASEDelete extends HBASEPutDelete {
 		// TODO add a proper check to make sure that column qualifer
 		// is not used without column family
 
-	}
-
-	/**
-	 * Notification that initialization is complete and all input and output
-	 * ports are connected and ready to receive and submit tuples.
-	 * 
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public synchronized void allPortsReady() throws Exception {
-		// This method is commonly used by source operators.
-		// Operators that process incoming tuples generally do not need this
-		// notification.
-		OperatorContext context = getOperatorContext();
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName()
-						+ " all ports are ready in PE: "
-						+ context.getPE().getPEId() + " in Job: "
-						+ context.getPE().getJobId());
 	}
 
 	/**
@@ -148,50 +129,25 @@ public class HBASEDelete extends HBASEPutDelete {
 		// submits it.
 		submitOutputTuple(tuple, success);
 	}
-
-	/**
-	 * Process an incoming punctuation that arrived on the specified port.
-	 * 
-	 * @param stream
-	 *            Port the punctuation is arriving on.
-	 * @param mark
-	 *            The punctuation mark
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public void processPunctuation(StreamingInput<Tuple> stream,
-			Punctuation mark) throws Exception {
-		if (Punctuation.FINAL_MARKER == mark) {
-			synchronized (listLock) {
-				if (batchSize > 0 && myTable != null && deleteList != null
-						&& deleteList.size() > 0) {
-					myTable.delete(deleteList);
-					deleteList = null;
-				} else if (deleteList != null && deleteList.size() == 0) {
-					deleteList = null;
-				}
-			}
-		}
-		super.processPunctuation(stream, mark);
-	}
-
-	/**
-	 * Shutdown this operator.
-	 * 
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public synchronized void shutdown() throws Exception {
-		OperatorContext context = getOperatorContext();
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName() + " shutting down in PE: "
-						+ context.getPE().getPEId() + " in Job: "
-						+ context.getPE().getJobId());
-
-		// Must call super.shutdown()
-		super.shutdown();
-	}
+	
+	
+	       /**
+	 		* Shutdown this operator.
+	        * 
+	        * @throws Exception
+	        *             Operator failure, will cause the enclosing PE to terminate.
+	        */
+	      @Override
+	      public synchronized void shutdown() throws Exception {
+	              OperatorContext context = getOperatorContext();
+	              Logger.getLogger(this.getClass()).trace(
+	                               "Operator " + context.getName() + " shutting down in PE: "
+	                                               + context.getPE().getPEId() + " in Job: "
+	                                               + context.getPE().getJobId());
+	
+	               // Must call super.shutdown()
+	               super.shutdown();
+	       }
+	
 
 }

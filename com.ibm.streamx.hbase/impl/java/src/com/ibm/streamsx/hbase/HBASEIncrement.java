@@ -4,29 +4,21 @@
 package com.ibm.streamsx.hbase;
 
 
-import org.apache.hadoop.hbase.client.Increment;
-
 import org.apache.log4j.Logger;
 
-import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
-import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
-import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
-import com.ibm.streams.operator.model.OutputPortSet;
-import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
-import com.ibm.streams.operator.model.OutputPorts;
-import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.model.PrimitiveOperator;
 /**
  * Increment a particular HBASE entry.  The row, columnFamily, and columnQualifier must all
  * be specified, either as parameters or they must come from the tuples.
@@ -34,7 +26,7 @@ import com.ibm.streams.operator.model.Parameter;
 
 @PrimitiveOperator(name="HBASEIncrement", namespace="com.ibm.streamsx.hbase",
 description="Increment the specified HBASE entry")
-@InputPorts({@InputPortSet(description="Port that ingests tuples", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
+@InputPorts({@InputPortSet(description="Tuples describing entry to increment", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 public class HBASEIncrement extends HBASEOperatorWithInput {
 	
 	String incrAttr = null;
@@ -44,18 +36,21 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	private static final String INCREMENT_ATTR_PARAM="incrementAttrName";
 	private static final String STATIC_INCREMENT_VALUE="increment";
 	
-	@Parameter(name=INCREMENT_ATTR_PARAM,optional=true)
+	@Parameter(name=INCREMENT_ATTR_PARAM,optional=true,description="Attribute to be used to determine the increment. Cannot be used with "+STATIC_INCREMENT_VALUE)
 	public void setIncrAttr(String name) {
 		incrAttr=name;
 	}
 	
-	@Parameter(name=STATIC_INCREMENT_VALUE, optional = true) 
+	@Parameter(name=STATIC_INCREMENT_VALUE, optional = true,description="Value by which to increment.  Cannot be specified with "+INCREMENT_ATTR_PARAM) 
 	public void setIncr(long _inc){
 		defaultIncr = _inc;
 	}
 	
     /**
-     * Initialize this operator. Called once before any tuples are processed.
+     * Checks that a row, columnFamily, and columnQualifier are all specified, either in the tuple or
+     * as static values.
+     * Checks that the increment attribute, if specified, is a valid attribute and a usable type.
+     * 
      * @param context OperatorContext for this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
@@ -84,18 +79,6 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
         }
 	}
 
-    /**
-     * Notification that initialization is complete and all input and output ports 
-     * are connected and ready to receive and submit tuples.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public synchronized void allPortsReady() throws Exception {
-    	// This method is commonly used by source operators. 
-    	// Operators that process incoming tuples generally do not need this notification. 
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " all ports are ready in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-    }
 
     /**
      * Increment the HBASE entry.
@@ -128,30 +111,4 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
     	long newValue = myTable.incrementColumnValue(row, colF, colQ, incr);
     }
     
-    /**
-     * Process an incoming punctuation that arrived on the specified port.
-     * @param stream Port the punctuation is arriving on.
-     * @param mark The punctuation mark
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    @Override
-    public void processPunctuation(StreamingInput<Tuple> stream,
-    		Punctuation mark) throws Exception {
-    	// For window markers, punctuate all output ports 
-    	super.processPunctuation(stream, mark);
-    }
-
-    /**
-     * Shutdown this operator.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    public synchronized void shutdown() throws Exception {
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        
-        // TODO: If needed, close connections or release resources related to any external system or data store.
-
-        // Must call super.shutdown()
-        super.shutdown();
-    }
 }
