@@ -130,6 +130,34 @@ public class HBASEDelete extends HBASEPutDelete {
 		submitOutputTuple(tuple, success);
 	}
 	
+		/**
+		 * Process an incoming punctuation that arrived on the specified port.
+		 * 
+		 * @param stream
+		 *            Port the punctuation is arriving on.
+		 * @param mark
+		 *            The punctuation mark
+		 * @throws Exception
+		 *             Operator failure, will cause the enclosing PE to terminate.
+		 */
+
+		@Override
+
+		public void processPunctuation(StreamingInput<Tuple> stream,
+				Punctuation mark) throws Exception {
+			if (Punctuation.FINAL_MARKER == mark) {
+				synchronized (listLock) {
+					if (batchSize > 0 && myTable != null && deleteList != null
+							&& deleteList.size() > 0) {
+						myTable.delete(deleteList);
+						deleteList = null;
+					} else if (deleteList != null && deleteList.size() == 0) {
+						deleteList = null;
+					}
+				}
+			}
+			super.processPunctuation(stream, mark);
+		}
 	
 	       /**
 	 		* Shutdown this operator.
@@ -144,6 +172,13 @@ public class HBASEDelete extends HBASEPutDelete {
 	                               "Operator " + context.getName() + " shutting down in PE: "
 	                                               + context.getPE().getPEId() + " in Job: "
 	                                               + context.getPE().getJobId());
+	              if (myTable != null && deleteList != null && deleteList.size() > 0) {
+	            	  synchronized (listLock) {
+	            		  if (deleteList != null && deleteList.size() >0) { 
+	            			  myTable.delete(deleteList);
+	            		  }
+	            	  }
+	            }
 	
 	               // Must call super.shutdown()
 	               super.shutdown();

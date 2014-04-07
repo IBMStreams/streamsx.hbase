@@ -99,4 +99,24 @@ public abstract class HBASEOperator extends AbstractOperator {
     	}
 	}
 	
+	/**
+	 * Process an incoming punctuation that arrived on the specified port.
+	 * 
+	 * @param stream
+	 *            Port the punctuation is arriving on.
+	 * @param mark
+	 *            The punctuation mark
+	 * @throws Exception
+	 *             Operator failure, will cause the enclosing PE to terminate.
+	 */
+	@Override
+	public void processPunctuation(StreamingInput<Tuple> stream,
+			Punctuation mark) throws Exception {
+		if (Punctuation.FINAL_MARKER == mark) {
+			myTable.close();
+		}
+		super.processPunctuation(stream, mark);
+	}
+	
+	
 }
