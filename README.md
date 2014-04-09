@@ -16,4 +16,4 @@ This is tested with HBase 0.94.3.
 
 ## Configuration
 
-To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME` must contain a valid `hbase-site.xml`, since that is what the operator uses to configure it self.  However, the operator does not need to run on the same host as HBASE, so long as it has an `hbase-site.xml` and all the HBASE and hadoop libraries.  
+To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME` must contain a valid `hbase-site.xml`, since that is what the operator uses to configure itself.  However, the operator does not need to run on the same host as HBASE, so long as it has an `hbase-site.xml` and all the HBASE and hadoop libraries.  
