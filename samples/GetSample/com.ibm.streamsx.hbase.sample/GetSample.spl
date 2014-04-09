@@ -55,7 +55,7 @@ composite GetSample
 		() as querySink = FileSink(queryResults)
 		{
 			param
-				file : "queryResults.txt" ;
+				file : "queryResults.out" ;
 		}
 		///////////////// Get all results for a row ////////////////
 		// Generate all rows
@@ -84,7 +84,7 @@ composite GetSample
 		() as charSinkRaw = FileSink(allDetails)
 		{
 			param
-				file : "charSink.txt" ;
+				file : "charSink.out" ;
 		}
 
 		// Unfold the maps
@@ -108,7 +108,7 @@ composite GetSample
 		() as charSinkExpanded = FileSink(expanded)
 		{
 			param
-				file : "charSinkExpanded.txt" ;
+				file : "charSinkExpanded.out" ;
 		}
 
 		/////////////////  Using columnFamily
@@ -128,7 +128,7 @@ composite GetSample
 		() as locationSink = FileSink(locationResults)
 		{
 			param
-				file : "location.txt" ;
+				file : "location.out" ;
 		}
 
 }

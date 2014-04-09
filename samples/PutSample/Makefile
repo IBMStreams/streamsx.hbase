@@ -19,7 +19,7 @@ SPL_MAIN_EXIST_CHECK=com.ibm.streamsx.hbase.sample::PutExistCheck
 SPL_MAIN_PUT=com.ibm.streamsx.hbase.sample::PutSample
 
 
-all: standalone_update standalone_check standalone_exist standalone_update
+all: standalone_update standalone_check standalone_exist standalone_put
 
 standalone_update:
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS) --output-dir output_update

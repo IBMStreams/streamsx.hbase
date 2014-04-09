@@ -27,9 +27,31 @@ use com.ibm.streamsx.hbase::HBASEPut ;
  * To run this example, initialize a table with name streamsSample_lotr (short for
  * Lord of the Rings), and column families appearance and location.
  * In hbase shell, this is 
- * create 'streamsSample_lotr','appearance','location'
- * 
+ * <pre>create 'streamsSample_lotr','appearance','location'</pre>
+ *<p> 
+ * After running, if you scan the table
+ <pre> hbase(main):024:0> scan 'streamsSample_lotr'
+ROW                                 COLUMN+CELL                                                                                          
+ Aragorn                            column=appearance:height, timestamp=1383069681219, value=tall                                        
+ Arwen                              column=appearance:hair, timestamp=1383069681207, value=dark                                          
+ Arwen                              column=appearance:overall, timestamp=1383069681214, value=beautiful                                  
+ Bilbo                              column=appearance:age, timestamp=1383069681201, value=well-preserved                                 
+ Boromir                            column=location:beginFellowship, timestamp=1383069681206, value=travelling                           
+ Boromir                            column=location:beginTwoTowers, timestamp=1383069681209, value=dead                                  
+ Elrond                             column=location:beginFellowship, timestamp=1383069681204, value=Rivendell                            
+ Eowyn                              column=appearance:hair, timestamp=1383069681204, value=blonde                                        
+ Eowyn                              column=appearance:overall, timestamp=1383069681217, value=beautiful                                  
+ Frodo                              column=appearance:height, timestamp=1383069681191, value=short                                       
+ Frodo                              column=location:beginFellowship, timestamp=1383069681191, value=The Shire                            
+ Gandalf                            column=appearance:beard, timestamp=1383069681195, value=bushy                                        
+ Gandalf                            column=location:beginFellowship, timestamp=1383069681195, value=The Shire                            
+ Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead                                  
+ Tom Bombadil                       column=location:beginFellowship, timestamp=1383069681201, value=Old Forest                           
+9 row(s) in 0.0500 seconds
+</pre>
+* (NOTE: Gandalf is of course not dead at the end of the two Towers; see the update example.) 
  */
+
 composite PutSample
 {
 	graph
@@ -93,25 +115,3 @@ composite PutSample
 
 }
 
-/* After running, if you scan the table
- * scan 'streamsSample_lotr' in the hbase shell:
- * hbase(main):024:0> scan 'streamsSample_lotr'
-ROW                                 COLUMN+CELL                                                                                          
- Aragorn                            column=appearance:height, timestamp=1383069681219, value=tall                                        
- Arwen                              column=appearance:hair, timestamp=1383069681207, value=dark                                          
- Arwen                              column=appearance:overall, timestamp=1383069681214, value=beautiful                                  
- Bilbo                              column=appearance:age, timestamp=1383069681201, value=well-preserved                                 
- Boromir                            column=location:beginFellowship, timestamp=1383069681206, value=travelling                           
- Boromir                            column=location:beginTwoTowers, timestamp=1383069681209, value=dead                                  
- Elrond                             column=location:beginFellowship, timestamp=1383069681204, value=Rivendell                            
- Eowyn                              column=appearance:hair, timestamp=1383069681204, value=blonde                                        
- Eowyn                              column=appearance:overall, timestamp=1383069681217, value=beautiful                                  
- Frodo                              column=appearance:height, timestamp=1383069681191, value=short                                       
- Frodo                              column=location:beginFellowship, timestamp=1383069681191, value=The Shire                            
- Gandalf                            column=appearance:beard, timestamp=1383069681195, value=bushy                                        
- Gandalf                            column=location:beginFellowship, timestamp=1383069681195, value=The Shire                            
- Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead                                  
- Tom Bombadil                       column=location:beginFellowship, timestamp=1383069681201, value=Old Forest                           
-9 row(s) in 0.0500 seconds
-* (NOTE: Gandalf is of course not dead at the end of the two Towers; see the update example.) 
- */

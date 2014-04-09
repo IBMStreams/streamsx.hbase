@@ -13,8 +13,8 @@ type CheckType = rstring columnFamily, rstring columnQualifier, rstring value ;
  * This example requires you to have created the streamsSample_lotr table as in
  * the PutSample.  
  * <p>
- * The descriptions of what you'll see in the table will assume
- * that you ran the put example.
+ * The descriptions of what you'll see in the table -- which are printed 
+ * in checkAndPut.out will assume that you ran the put example.
  */
 composite CheckAndPut
 {

@@ -9,13 +9,13 @@
 .PHONY: all clean 
 
 # Fill in HBASE_TOOLKIT location here.
-STREAMS_HBASE_TOOLKIT = ..
+STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 
 SPLC_FLAGS = -a 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
-SPL_MAIN_COMPOSITE = sample::ScanString
+SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::ScanString
 
 all: standalone
 

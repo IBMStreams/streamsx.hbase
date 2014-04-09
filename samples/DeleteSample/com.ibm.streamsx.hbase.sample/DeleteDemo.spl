@@ -5,7 +5,7 @@
  
 namespace com.ibm.streamsx.hbase.sample;
 
-use streamsx.bigdata.hbase::HBASEDelete ;
+use com.ibm.streamsx.hbase::HBASEDelete ;
 
 /** Basic delete demo
  * You can delete entire rows, row + column family, or 

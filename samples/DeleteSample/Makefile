@@ -13,8 +13,8 @@ SPLC_FLAGS = -a
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
-SPL_MAIN_COMPOSITE_CHECK = sample::CheckAndDelete
-SPL_MAIN_COMPOSITE_DELETE = sample::DeleteDemo
+SPL_MAIN_COMPOSITE_CHECK = com.ibm.streamsx.hbase.sample::CheckAndDelete
+SPL_MAIN_COMPOSITE_DELETE = com.ibm.streamsx.hbase.sample::DeleteDemo
 
 all: standalone_delete standalone_check
 

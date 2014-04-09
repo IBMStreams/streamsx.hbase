@@ -2,7 +2,7 @@
 /* All Rights Reserved                                	                 */
 namespace com.ibm.streamsx.hbase.sample ;
 
-use streamsx.bigdata.hbase::HBASEDelete ;
+use com.ibm.streamsx.hbase::HBASEDelete ;
 type AbsentCheckType = rstring columnFamily, rstring columnQualifier ;
 type FullCheckType = AbsentCheckType, tuple<rstring value> ;
 
@@ -22,7 +22,7 @@ type FullCheckType = AbsentCheckType, tuple<rstring value> ;
  * In this mode, the operator is allowed to have an output port
  * and a success attribute to say whether a delete succeeded or 
  * failed.
- * </>
+ * <p>
  * The input files describe what output you should see.  The 
  * put sample needs to have been run in order for this sample to work.
  *   

@@ -139,7 +139,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
         	throw new Exception("Not supported output type.");
         }
        	logger.info("outputMode="+outputMode);
-       	logger.info("Exit init get: StaticColFamily: "+staticColumnFamilyList.get(0));
 	}
 	
 	Map<RString,RString> makeStringMap(Map<byte[],byte[]> inMap) {
@@ -154,6 +153,9 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	}
 	
 	Map<RString,Map<RString,RString>> makeMapOfMap(NavigableMap<byte[],NavigableMap<byte[],byte[]>> inMap) {
+	    if (inMap == null) {
+		return new HashMap<RString,Map<RString,RString>>();
+	    }
 		Map<RString,Map<RString,RString>> toReturn = new HashMap<RString,Map<RString,RString>>(inMap.size());
 		for (byte[] key: inMap.keySet()) {
 			toReturn.put(new RString(key),makeStringMap(inMap.get(key)));

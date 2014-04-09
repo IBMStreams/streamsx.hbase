@@ -21,6 +21,7 @@ use com.ibm.streamsx.hbase::HBASEPut ;
  *  Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead 
  * After update:
  *  Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien
+ * (your timestamps will be different in both cases)
  */
  
 composite BasicUpdate

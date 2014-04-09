@@ -7,13 +7,13 @@
 .PHONY: all clean 
 
 # Fill in STREAMS_HBASE_TOOLKIT location here.
-HSTREAMS_BASE_TOOLKIT = ../../com.ibm.streamsx.hbase
+STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 
 SPLC_FLAGS = -a 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
-SPL_MAIN_COMPOSITE = sample::GetSample
+SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::GetSample
 
 all: standalone
 
