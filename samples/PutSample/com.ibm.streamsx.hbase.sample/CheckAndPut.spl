@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2013-2014, International Business Machines Corporation  
+ * All Rights Reserved                                	                 
+ */
+
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+type CheckType = rstring columnFamily, rstring columnQualifier, rstring value ;
+
+/** Demonstrates check and put with the value field
+ * <p>
+ * This example requires you to have created the streamsSample_lotr table as in
+ * the PutSample.  
+ * <p>
+ * The descriptions of what you'll see in the table will assume
+ * that you ran the put example.
+ */
+composite CheckAndPut
+{
+	graph
+		stream<rstring expected, rstring character, rstring when, rstring where,
+			CheckType check> updateStream = FileSource()
+		{
+			param
+				file : "checkAndPut.csv" ;
+		}
+
+		stream<boolean success, rstring expected, rstring character, rstring when,
+			rstring where, CheckType check> resultStream = HBASEPut(updateStream)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				staticColumnFamily : "location" ;
+				columnQualifierAttrName : "when" ;
+				valueAttrName : "where" ;
+				rowAttrName : "character" ;
+				checkAttrName : "check" ;
+				successAttr : "success" ;
+		}
+
+		() as resultSink = FileSink(resultStream)
+		{
+			param
+				file : 'checkAndPut.out' ;
+		}
+
+}
