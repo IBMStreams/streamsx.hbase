@@ -1,0 +1,82 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEDelete ;
+type AbsentCheckType = rstring columnFamily, rstring columnQualifier ;
+type FullCheckType = AbsentCheckType, tuple<rstring value> ;
+
+/** Demonstrate how to use the atomic check-and-delete
+ * In this mode, the delete operator works as before, except that
+ * a check attribute is expected on the input stream.  This 
+ * attribute contains a columnFamily and columnQualifier, or
+ * a columnFamily, columnQualifier an a value. 
+ * <p>
+ * If there is a value, that entry in the table is checked; if it
+ * matches, the delete is happens, otherwise it does not.
+ * <p>
+ * When the check attribute type as no value , the delete only happens if that 
+ * particular row, columnFamily, columnQualifier combination doesn't
+ * exist.
+ * <p>
+ * In this mode, the operator is allowed to have an output port
+ * and a success attribute to say whether a delete succeeded or 
+ * failed.
+ * <p>
+ * The input files describe what output you should see.  The 
+ * put sample needs to have been run in order for this sample to work.
+ *   
+ */
+composite CheckAndDelete
+{
+	graph
+		stream<rstring comment, rstring row, AbsentCheckType check> absenceCheck =
+			FileSource()
+		{
+			param
+				file : 'absenceCheck.csv' ;
+				format : csv ;
+		}
+
+		stream<boolean result, rstring comment, rstring row> absenceCheckOutput =
+			HBASEDelete(absenceCheck)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+				checkAttrName : "check" ;
+				successAttr : "result" ;
+		}
+
+		() as absenseCheckSink = FileSink(absenceCheckOutput)
+		{
+			param
+				file : "absenceCheck.out" ;
+		}
+
+		stream<rstring comment, rstring row, rstring columnFamily,
+			rstring columnQualifier, FullCheckType check> valueCheck = FileSource()
+		{
+			param
+				file : 'fullCheck.csv' ;
+		}
+
+		stream<boolean result, rstring comment, rstring row, rstring columnFamily,
+			rstring columnQualifier> valueCheckOutput = HBASEDelete(valueCheck)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+				columnFamilyAttrName : "columnFamily" ;
+				columnQualifierAttrName : "columnQualifier" ;
+				checkAttrName : "check" ;
+				successAttr : "result" ;
+		}
+
+		() as valueCheckSink = FileSink(valueCheckOutput)
+		{
+			param
+				file : "valueCheck.out" ;
+		}
+
+}

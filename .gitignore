@@ -12,6 +12,15 @@ samples/*/output
 samples/*/toolkit.xml
 $StreamsModel.java
 
+# begin streamsx.hbase excluded
+samples/*/data/*.out
+.classpath
+.settings
+.toolkitList
+.namespace
+samples/*/output_*
+
+
 ## java excludes
 *.class
 
