@@ -1,0 +1,73 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEScan;
+
+
+/** Demonstrates HBASEScan
+ * This example demonstrates HBASEScan. 
+ * It assumes you've run both the increment sample and 
+ * the put sample, as it reads the table streamsSample_lotr and the 
+ * table streamsSample_wordCount.  
+ * <p>
+ * It consists of three pieces:
+ * <ul>
+ * <li> Scan example where the value is a string and all tuple attributes
+ * are populated
+ *  <li> Scan example where the value is an int64.  No columnQualifier on 
+ * the output.
+ * <li>Scan example where the row set is limited by a startRow and an endRow.
+ * </ul>
+ */
+composite ScanString
+{
+	graph
+		// Read LOTR table, shows reading where value is a string.
+		stream<rstring row, rstring columnFamily, rstring columnQualifier,
+			rstring value> lotrTable = HBASEScan()
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+		}
+		
+		() as lotrSink =  FileSink(lotrTable) {
+		param
+		file: "lotr.out";
+		}
+
+	// Read where value is an int64, also, no columnQualifier on the 
+	// output tuple. 
+		stream<rstring row, rstring columnFamily, int64 value> countTable =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+		}
+			
+		() as IliadSink = FileSink(countTable) {
+		param
+		file: "iliad.out";
+		}
+		
+		// Read only a subset of rows.
+				stream<rstring row, rstring columnFamily, int64 value> partialTable =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+				startRow:"K";
+				endRow:"L";
+		}
+			
+		() as IliadPartialSink = FileSink(partialTable) {
+		param
+		file: "iliad_k.out";
+		}
+
+}
