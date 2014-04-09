@@ -1,7 +1,7 @@
 streamsx.hbase
 ==============
 
-This toolkit allows Streams to write tuples into HBASE and to read tuples from HBASE. To use it, you set HADOOP_HOME and HBASE_HOME, and it picks up the HBASE configuarion from there.  Web page with SPLDoc for operators and samples: http://ibmstreams.github.io/streamsx.hbase/
+This toolkit allows Streams to write tuples into HBASE and to read tuples from HBASE. To use it, you set HADOOP_HOME and HBASE_HOME, and it picks up the HBASE configuration from there.  Web page with SPLDoc for operators and samples: http://ibmstreams.github.io/streamsx.hbase/
 
 It uses the operator parameter values to determine what's a row, columnFamily, columnQualifier, value, and so on. It includes:
 *    HBASEPut, including checkAndPut support
