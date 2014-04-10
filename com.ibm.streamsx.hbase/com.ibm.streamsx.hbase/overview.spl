@@ -1,4 +1,3 @@
-
 /**
  * A set of operators for writing to and reading from Apache HBASE.
  * 
@@ -59,5 +58,6 @@
  * The sample applications were constructed to demonstrate the various use cases.
  * 
  */
+
 namespace com.ibm.streamsx.hbase;
 
