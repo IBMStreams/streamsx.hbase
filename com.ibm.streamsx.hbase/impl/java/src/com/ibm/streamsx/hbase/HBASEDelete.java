@@ -28,9 +28,9 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * HBASE table.  .
  * <P>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete tuples from HBASE, with optional checkAndDelete.  Can delete a row, a column family in a row, or a tuple (row, columnFamily, and columnQualifier.")
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE, with optional checkAndDelete.  The mode in which the operator is working depends on the parameters.  To delete an entire row, specify only the row.  To delete a columnFamily, specify the row and the columnFamily (either via the staticColumnFamily parameter or the columnFamilyAttrName parameter), and to delete just a single entry, specify the row, columnFamily, and columnQualifier (either via the staticColumnQualifer or the columnQualiferAttrName parameter).  To support locking, HBASE allows for a conditional delete.  To use the conditional delete, you must set "+HBASEPutDelete.CHECK_ATTR_PARAM+" which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true if the delete succeeded, and false otherwise.")
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Port that produces tuples", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+@OutputPorts({ @OutputPortSet(description = "Copies tuple from input, setting "+HBASEPutDelete.SUCCESS_PARAM+" if "+HBASEPutDelete.CHECK_ATTR_PARAM+" is specified", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 public class HBASEDelete extends HBASEPutDelete {
 
 	private enum DeleteMode {
@@ -41,6 +41,9 @@ public class HBASEDelete extends HBASEPutDelete {
 
 	List<Delete> deleteList = null;
 	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
+
+
+
 	/**
 	 * Setup for execution. Parameter checking is set in the parent class.
 	 * Sets deleteMode based on the set of input parameters.
@@ -55,11 +58,6 @@ public class HBASEDelete extends HBASEPutDelete {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		logger.trace(
-				"Operator " + context.getName() + " initializing in PE: "
-						+ context.getPE().getPEId() + " in Job: "
-						+ context.getPE().getJobId());
-
 		if (batchSize > 0) {
 			deleteList = new ArrayList<Delete>(batchSize);
 		}
@@ -70,9 +68,6 @@ public class HBASEDelete extends HBASEPutDelete {
 			} else
 				deleteMode = DeleteMode.COLUMN_FAMILY;
 		}
-		// TODO add a proper check to make sure that column qualifer
-		// is not used without column family
-
 	}
 
 	/**

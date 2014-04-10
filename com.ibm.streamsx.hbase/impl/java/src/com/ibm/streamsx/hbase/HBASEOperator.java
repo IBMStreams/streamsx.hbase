@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -29,25 +30,31 @@ import com.ibm.streams.operator.Type.MetaType;
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
-	
+	protected Charset charset = Charset.forName("UTF-8");
 	private String tableName;
 	protected HTable myTable;
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
+	static final String CHARSET_PARAM_NAME = "charset";
 	
-	@Parameter(name=TABLE_PARAM_NAME,optional=false,description="Name of the HBASE table")
+	@Parameter(name=CHARSET_PARAM_NAME, optional=true,description="Character set to be used for converting byte[] to Strings and Strings to byte[].  Defaults to UTF-8")
+	public void getCharset(String _name) {
+		charset = Charset.forName(_name);
+	}
+	
+	@Parameter(name=TABLE_PARAM_NAME,optional=false,description="Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
 	public void setTableName(String _name) {
 		tableName = _name;
 	}
 
-	@Parameter(name=STATIC_COLF_NAME, optional = true,description="Column family to be used for all tuples.  It may be a list in some cases.")
+	@Parameter(name=STATIC_COLF_NAME, optional = true,description="If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.")
 	public void setStaticColumnFamily(List<String> name) {
 		staticColumnFamilyList = name;
 	}
 	
-	@Parameter(name=STATIC_COLQ_NAME, optional = true,description="Column qualifier to be used for all tuples.  It may be a list for some operators.") 
+	@Parameter(name=STATIC_COLQ_NAME, optional = true,description="If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.") 
 	public void setStaticColumnQualifier(List<String> name) {
 		staticColumnQualifierList = name;
 	}
@@ -80,7 +87,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	
 	
 	/**
-	 * Loads the configuration, and creates an HTable instance.  If the table doesn not exist, or cannot be
+	 * Loads the configuration, and creates an HTable instance.  If the table doesn't not exist, or cannot be
 	 * accessed, it will throw an error.
 	 */
 	@Override
@@ -100,7 +107,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 	
 	/**
-	 * Process an incoming punctuation that arrived on the specified port.
+	 * Close the table if a it's a final punctuation.
 	 * 
 	 * @param stream
 	 *            Port the punctuation is arriving on.

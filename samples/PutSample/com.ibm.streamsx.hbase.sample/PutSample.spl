@@ -7,48 +7,49 @@ use com.ibm.streamsx.hbase::HBASEPut ;
 
 /** Show three ways to put tuples into HBASE.  
  * This demonstrates three ways to put tuples into HBASE.  
- * <p>
+ * 
  * In HBASE, the column is divided up into two parts, the columnFamily
  * and the columnQualifier.  All columns in a columnFamily are grouped
  * together on disk, so that  which affects the efficience of access.  
  * The table has a fixed set of column families, and you may not add a 
  * tuple to any other family.  ColumnQualifiers, on the other hand, may be added
  * at runtime.  
- * <p>
+ * 
  * We show three ways to put data in. First, we read them from a file 
- * containing the row, columnfamily, columnqualifer,  and value.
- * <P>
+ * containing the row, columnFamily, columnQualifer,  and value.
+ * 
  * Next, we read from a file where the columnFamily is the same for all
  * rows, so the file only contains the row, column qualifier, and value.
- * <p>
+ * 
  * Finally, we read from a file where the columnFamily and columnQualifier
  * are both assumed, and the file only contains a row and a value.
- * <p>
+ *
  * To run this example, initialize a table with name streamsSample_lotr (short for
  * Lord of the Rings), and column families appearance and location.
  * In hbase shell, this is 
- * <pre>create 'streamsSample_lotr','appearance','location'</pre>
- *<p> 
+ * `create 'streamsSample_lotr','appearance','location'`
+ * 
  * After running, if you scan the table
- <pre> hbase(main):024:0> scan 'streamsSample_lotr'
-ROW                                 COLUMN+CELL                                                                                          
- Aragorn                            column=appearance:height, timestamp=1383069681219, value=tall                                        
- Arwen                              column=appearance:hair, timestamp=1383069681207, value=dark                                          
- Arwen                              column=appearance:overall, timestamp=1383069681214, value=beautiful                                  
- Bilbo                              column=appearance:age, timestamp=1383069681201, value=well-preserved                                 
- Boromir                            column=location:beginFellowship, timestamp=1383069681206, value=travelling                           
- Boromir                            column=location:beginTwoTowers, timestamp=1383069681209, value=dead                                  
- Elrond                             column=location:beginFellowship, timestamp=1383069681204, value=Rivendell                            
- Eowyn                              column=appearance:hair, timestamp=1383069681204, value=blonde                                        
- Eowyn                              column=appearance:overall, timestamp=1383069681217, value=beautiful                                  
- Frodo                              column=appearance:height, timestamp=1383069681191, value=short                                       
- Frodo                              column=location:beginFellowship, timestamp=1383069681191, value=The Shire                            
- Gandalf                            column=appearance:beard, timestamp=1383069681195, value=bushy                                        
- Gandalf                            column=location:beginFellowship, timestamp=1383069681195, value=The Shire                            
- Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead                                  
- Tom Bombadil                       column=location:beginFellowship, timestamp=1383069681201, value=Old Forest                           
-9 row(s) in 0.0500 seconds
-</pre>
+ * 
+      hbase(main):024:0> scan 'streamsSample_lotr'
+    ROW                                 COLUMN+CELL                                                                                          
+    Aragorn                            column=appearance:height, timestamp=1383069681219, value=tall                                        
+    Arwen                              column=appearance:hair, timestamp=1383069681207, value=dark                                          
+    Arwen                              column=appearance:overall, timestamp=1383069681214, value=beautiful                                  
+    Bilbo                              column=appearance:age, timestamp=1383069681201, value=well-preserved                                 
+    Boromir                            column=location:beginFellowship, timestamp=1383069681206, value=travelling                           
+    Boromir                            column=location:beginTwoTowers, timestamp=1383069681209, value=dead                                  
+    Elrond                             column=location:beginFellowship, timestamp=1383069681204, value=Rivendell                            
+    Eowyn                              column=appearance:hair, timestamp=1383069681204, value=blonde                                        
+    Eowyn                              column=appearance:overall, timestamp=1383069681217, value=beautiful                                  
+    Frodo                              column=appearance:height, timestamp=1383069681191, value=short                                       
+    Frodo                              column=location:beginFellowship, timestamp=1383069681191, value=The Shire                            
+    Gandalf                            column=appearance:beard, timestamp=1383069681195, value=bushy                                        
+    Gandalf                            column=location:beginFellowship, timestamp=1383069681195, value=The Shire                            
+    Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead                                  
+    Tom Bombadil                       column=location:beginFellowship, timestamp=1383069681201, value=Old Forest                           
+    9 row(s) in 0.0500 seconds
+
 * (NOTE: Gandalf is of course not dead at the end of the two Towers; see the update example.) 
  */
 

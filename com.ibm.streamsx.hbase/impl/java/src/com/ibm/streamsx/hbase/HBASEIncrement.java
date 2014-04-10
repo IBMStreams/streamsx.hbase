@@ -8,11 +8,13 @@ import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
@@ -25,8 +27,8 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  */
 
 @PrimitiveOperator(name="HBASEIncrement", namespace="com.ibm.streamsx.hbase",
-description="Increment the specified HBASE entry")
-@InputPorts({@InputPortSet(description="Tuples describing entry to increment", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
+description="Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple.")
+    @InputPorts({@InputPortSet(description="Tuples describing entry to increment", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 public class HBASEIncrement extends HBASEOperatorWithInput {
 	
 	String incrAttr = null;
@@ -45,6 +47,12 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	public void setIncr(long _inc){
 		defaultIncr = _inc;
 	}
+
+    @ContextCheck(compile=true) 
+	public static void checkIncrement(OperatorContextChecker checker) {
+    	checker.checkExcludedParameters(INCREMENT_ATTR_PARAM,STATIC_INCREMENT_VALUE);
+	checker.checkExcludedParameters(STATIC_INCREMENT_VALUE,INCREMENT_ATTR_PARAM);
+    }
 	
     /**
      * Checks that a row, columnFamily, and columnQualifier are all specified, either in the tuple or

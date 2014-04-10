@@ -9,18 +9,22 @@ use com.ibm.streamsx.hbase::HBASEPut ;
  * To update, you can simply put a new tuple with the same row,
  * column family, and column qualifier.  Future gets will find the
  * new value.  See note below.
- * <p>
+ * 
  * This example assumes you have already run the PutSample.
- * <p>
+ * 
  * The old one isn't deleted, but will not be accessible unless 
  * you request all versions, and may be deleted at the next major 
  * compaction.
  * 
- * <p>
+ * 
  * Before update:
- *  Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead 
- * After update:
- *  Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien
+ * 
+ *      Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead 
+ *
+ *  After update:
+ * 
+ *       Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien
+ * 
  * (your timestamps will be different in both cases)
  */
  

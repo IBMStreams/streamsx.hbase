@@ -24,14 +24,15 @@ import com.ibm.streams.operator.model.OutputPortSet;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streams.operator.types.RString;
 
 /**
  * Scan an HBASE table and output the specified tuples.
  * 
  */
 @PrimitiveOperator(name="HBASEScan", namespace="com.ibm.streamsx.hbase",
-description="Scan an HBASE table ")
-@OutputPorts({@OutputPortSet(description="Tuples found", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating), @OutputPortSet(optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
+description="Scan an HBASE table, outputing all entries as tuples.  An optional start row and end row may be specified.")
+    @OutputPorts({@OutputPortSet(description="Tuples found", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
 public class HBASEScan extends HBASEOperator{
 
 	/**
@@ -49,12 +50,12 @@ public class HBASEScan extends HBASEOperator{
     private int outColumnQ = -1;
     private OutputMapper outValue = null;
     
-    @Parameter(name=START_ROW_PARAM,optional=true)
+    @Parameter(name=START_ROW_PARAM,optional=true,description="Row to use to start the scan (inclusive)")
     public void setStartRow(String row) {
     	startRow = row;
     }
     
-    @Parameter(name=END_ROW_PARAM,optional=true)
+    @Parameter(name=END_ROW_PARAM,optional=true,description="Row to use to stop the scan (exclusive)")
     public void setEndRow(String row) {
     	endRow = row;
     }
@@ -70,18 +71,6 @@ public class HBASEScan extends HBASEOperator{
             throws Exception {
     	// Must call super.initialize(context) to correctly setup an operator.
         super.initialize(context);
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        
-        // TODO:
-        // If needed, insert code to establish connections or resources to communicate an external system or data store.
-        // The configuration information for this may come from parameters supplied to the operator invocation, 
-        // or external configuration files or a combination of the two.
-        
-        /*
-         * Create the thread for producing tuples. 
-         * The thread is created at initialize time but started.
-         * The thread will be started by allPortsReady().
-         */
         processThread = getOperatorContext().getThreadFactory().newThread(
                 new Runnable() {
 
@@ -109,7 +98,7 @@ public class HBASEScan extends HBASEOperator{
         outRow = checkAndGetIndex(outSchema,"row",false);
         outColumnF = checkAndGetIndex(outSchema,"columnFamily",false);
         outColumnQ = checkAndGetIndex(outSchema,"columnQualifier",false);
-        outValue = new OutputMapper(outSchema, "value");
+        outValue = new OutputMapper(outSchema, "value",charset);
     }
 
     /**
@@ -136,11 +125,14 @@ public class HBASEScan extends HBASEOperator{
         Scan myScan;
         
         if (startRow != null && endRow != null) {
-        	myScan = new Scan(startRow.getBytes(),endRow.getBytes());
+        	myScan = new Scan(startRow.getBytes(charset),endRow.getBytes(charset));
         }
         else if (startRow != null)  {
-        	myScan = new Scan(startRow.getBytes());
+        	myScan = new Scan(startRow.getBytes(charset));
         }
+	else if (endRow != null) {
+	    myScan = new Scan(endRow.getBytes(charset));
+	}
         else {
         	myScan = new Scan();
         }
@@ -172,10 +164,10 @@ public class HBASEScan extends HBASEOperator{
         		if (outRow >= 0)
         			tuple.setString(outRow,row);
         		if (outColumnF >= 0)
-        			tuple.setString(outColumnF,new String(family));
+			    tuple.setString(outColumnF,new String(family,charset));
         		
         		if (outColumnQ >= 0)
-        			tuple.setString(outColumnQ,new String(qual));
+			    tuple.setString(outColumnQ,new String(qual,charset));
         		
         		outValue.populate(tuple,allValues.get(family).get(qual));
                 out.submit(tuple);
