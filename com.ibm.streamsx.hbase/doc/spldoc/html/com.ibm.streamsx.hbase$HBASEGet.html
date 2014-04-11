@@ -31,7 +31,7 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 
-<p class="p">Java Operator HBASEGet
+<p class="p">Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by outAttrName  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then outAttrName is populated with a map of columnQualifiers to values. If columnFamily is also left unspecified, then outAttrName is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name outputCountAttr exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.
 </p>
 
 </div>
@@ -49,7 +49,7 @@ com.ibm.streamsx.hbase
  
   <dt class="dt dlterm">Ports</dt>
 
-  <dd class="dd">This operator has 1 or more input port and 1 or more output port.</dd>
+  <dd class="dd">This operator has 1 input port and 1 output port.</dd>
 
  
  
@@ -95,7 +95,7 @@ com.ibm.streamsx.hbase
 
    <dd class="dd">
 
-<p class="p">Port that ingests tuples
+<p class="p">Description of which tuples to get
 </p>
    </dd>
 
@@ -132,42 +132,6 @@ com.ibm.streamsx.hbase
       </dd>
 
     
-  
-   <dt class="dt dlterm">Ports (1...)</dt>
-
-    <dd class="dd">
-   <dl class="dl">
-    
-      <dt class="dt dlterm">Windowing</dt>
-
-      <dd class="dd">
-      </dd>
-
-    
-    
-      <dt class="dt dlterm">Properties</dt>
-
-      <dd class="dd">
-   <ul class="sl simple">
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__controlport">ControlPort</a>: false
-</li>
-
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowingmode">WindowingMode</a>: NonWindowed
-</li>
-
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowpunctuationinputmode">WindowPunctuationInputMode</a>: Oblivious
-</li>
-
-   </ul>
-
-      </dd>
-
-    
-   </dl>
-
-  </dd>
-
-
 </dl>
 
 </div>
@@ -190,7 +154,7 @@ com.ibm.streamsx.hbase
 
    <dd class="dd">
 
-<p class="p">Port that produces tuples
+<p class="p">Input tuple with value or values from HBASE
 </p>
 
 <p class="p"/>
@@ -207,35 +171,7 @@ com.ibm.streamsx.hbase
    </ul>
 
    <ul class="sl simple">
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Generating
-     </li>
-
-   </ul>
-
-      </dd>
-
-    
-   </dl>
-
-   <p class="p"/>
-
-   </dd>
-
-  
-  
-   <dt class="dt dlterm">Ports (1...)</dt>
-
-   <dd class="dd">
-
-   <p class="p"/>
-
-   <dl class="dl">
-    
-      <dt class="dt dlterm">Properties</dt>
-
-      <dd class="dd">
-   <ul class="sl simple">
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Generating
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Preserving
      </li>
 
    </ul>
@@ -261,7 +197,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_columnFamilyAttrName"><tt class="ph tt">columnFamilyAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnFamily
+<p class="p">Name of the attribute on the input tuple containing the columnFamily.  Cannot be used with staticColumnFmily.
 </p>
 <dl class="dl">
 
@@ -292,7 +228,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_columnQualifierAttrName"><tt class="ph tt">columnQualifierAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnQualifier
+<p class="p">Name of the attribute on the input tuple containing the columnQualifier.  Cannot be used with staticColumnQualifier.
 </p>
 <dl class="dl">
 
@@ -323,7 +259,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_outAttrName"><tt class="ph tt">outAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute in which to put the result of the get.
+<p class="p">Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.
 </p>
 <dl class="dl">
 
@@ -354,7 +290,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_rowAttrName"><tt class="ph tt">rowAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the row
+<p class="p">Name of the attribute on the input tuple containing the row.  It is required.
 </p>
 <dl class="dl">
 
@@ -385,7 +321,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
-<p class="p">Column family to be used for all tuples.  It may be a list in some cases.
+<p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
 </p>
 <dl class="dl">
 
@@ -413,7 +349,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
-<p class="p">Column qualifier to be used for all tuples.  It may be a list for some operators.
+<p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
 </p>
 <dl class="dl">
 
@@ -441,7 +377,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_outputCountAttr"><tt class="ph tt">outputCountAttr</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of attribute in which to put whether the get is successful
+<p class="p">Name of attribute of the output port in which to put the count of values returned
 </p>
 <dl class="dl">
 
@@ -472,7 +408,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the HBASE table
+<p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
 </p>
 <dl class="dl">
 

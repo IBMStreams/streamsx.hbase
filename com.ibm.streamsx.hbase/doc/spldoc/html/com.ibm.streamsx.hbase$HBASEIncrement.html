@@ -31,7 +31,7 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 
-<p class="p">Increment the specified HBASE entry
+<p class="p">Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple.
 </p>
 
 </div>
@@ -49,7 +49,7 @@ com.ibm.streamsx.hbase
  
   <dt class="dt dlterm">Ports</dt>
 
-  <dd class="dd">This operator has 1 or more input port and 0 output port.</dd>
+  <dd class="dd">This operator has 1 input port and 0 output port.</dd>
 
  
  
@@ -132,42 +132,6 @@ com.ibm.streamsx.hbase
       </dd>
 
     
-  
-   <dt class="dt dlterm">Ports (1...)</dt>
-
-    <dd class="dd">
-   <dl class="dl">
-    
-      <dt class="dt dlterm">Windowing</dt>
-
-      <dd class="dd">
-      </dd>
-
-    
-    
-      <dt class="dt dlterm">Properties</dt>
-
-      <dd class="dd">
-   <ul class="sl simple">
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__controlport">ControlPort</a>: false
-</li>
-
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowingmode">WindowingMode</a>: NonWindowed
-</li>
-
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowpunctuationinputmode">WindowPunctuationInputMode</a>: Oblivious
-</li>
-
-   </ul>
-
-      </dd>
-
-    
-   </dl>
-
-  </dd>
-
-
 </dl>
 
 </div>
@@ -179,7 +143,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_columnFamilyAttrName"><tt class="ph tt">columnFamilyAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnFamily
+<p class="p">Name of the attribute on the input tuple containing the columnFamily.  Cannot be used with staticColumnFmily.
 </p>
 <dl class="dl">
 
@@ -210,7 +174,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_columnQualifierAttrName"><tt class="ph tt">columnQualifierAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnQualifier
+<p class="p">Name of the attribute on the input tuple containing the columnQualifier.  Cannot be used with staticColumnQualifier.
 </p>
 <dl class="dl">
 
@@ -303,7 +267,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_rowAttrName"><tt class="ph tt">rowAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the row
+<p class="p">Name of the attribute on the input tuple containing the row.  It is required.
 </p>
 <dl class="dl">
 
@@ -334,7 +298,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
-<p class="p">Column family to be used for all tuples.  It may be a list in some cases.
+<p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
 </p>
 <dl class="dl">
 
@@ -362,7 +326,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
-<p class="p">Column qualifier to be used for all tuples.  It may be a list for some operators.
+<p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
 </p>
 <dl class="dl">
 
@@ -390,7 +354,7 @@ This operator supports 8 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEIncrement__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the HBASE table
+<p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
 </p>
 <dl class="dl">
 

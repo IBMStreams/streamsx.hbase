@@ -31,7 +31,7 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 
-<p class="p">Delete tuples from HBASE, with optional checkAndDelete.  Can delete a row, a column family in a row, or a tuple (row, columnFamily, and columnQualifier.
+<p class="p">Delete an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE, with optional checkAndDelete.  The mode in which the operator is working depends on the parameters.  To delete an entire row, specify only the row.  To delete a columnFamily, specify the row and the columnFamily (either via the staticColumnFamily parameter or the columnFamilyAttrName parameter), and to delete just a single entry, specify the row, columnFamily, and columnQualifier (either via the staticColumnQualifer or the columnQualiferAttrName parameter).  To support locking, HBASE allows for a conditional delete.  To use the conditional delete, you must set checkAttrName which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by successAttr is set to true if the delete succeeded, and false otherwise.
 </p>
 
 </div>
@@ -154,7 +154,7 @@ com.ibm.streamsx.hbase
 
    <dd class="dd">
 
-<p class="p">Port that produces tuples
+<p class="p">Copies tuple from input, setting successAttr if checkAttrName is specified
 </p>
 
 <p class="p"/>
@@ -228,7 +228,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_checkAttrName"><tt class="ph tt">checkAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.
+<p class="p">Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.  When a value is specified, the put or delete operation will only succeed when that entry specified by the check attribute exists.  When there is no value in the type of the checkAttribute, the put or delete operation will only succeed when there is no entry for that row, columnFamily, columnQualifer combination.
 </p>
 <dl class="dl">
 
@@ -259,7 +259,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_columnFamilyAttrName"><tt class="ph tt">columnFamilyAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnFamily
+<p class="p">Name of the attribute on the input tuple containing the columnFamily.  Cannot be used with staticColumnFmily.
 </p>
 <dl class="dl">
 
@@ -290,7 +290,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_columnQualifierAttrName"><tt class="ph tt">columnQualifierAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the columnQualifier
+<p class="p">Name of the attribute on the input tuple containing the columnQualifier.  Cannot be used with staticColumnQualifier.
 </p>
 <dl class="dl">
 
@@ -321,7 +321,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_rowAttrName"><tt class="ph tt">rowAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the row
+<p class="p">Name of the attribute on the input tuple containing the row.  It is required.
 </p>
 <dl class="dl">
 
@@ -352,7 +352,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
-<p class="p">Column family to be used for all tuples.  It may be a list in some cases.
+<p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
 </p>
 <dl class="dl">
 
@@ -380,7 +380,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
-<p class="p">Column qualifier to be used for all tuples.  It may be a list for some operators.
+<p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
 </p>
 <dl class="dl">
 
@@ -439,7 +439,7 @@ This operator supports 9 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEDelete__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the HBASE table
+<p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
 </p>
 <dl class="dl">
 

@@ -83,7 +83,19 @@ DeleteSample
 
 <div class="section">
 
-<p class="p">Demonstrate how to use the atomic check-and-delete In this mode, the delete operator works as before, except that a check attribute is expected on the input stream.  This  attribute contains a columnFamily and columnQualifier, or a columnFamily, columnQualifier an a value.  &lt;p&gt; If there is a value, that entry in the table is checked; if it matches, the delete is happens, otherwise it does not. &lt;p&gt; When the check attribute type as no value , the delete only happens if that  particular row, columnFamily, columnQualifier combination doesn't exist. &lt;p&gt; In this mode, the operator is allowed to have an output port and a success attribute to say whether a delete succeeded or  failed. &lt;p&gt; The input files describe what output you should see.  The  put sample needs to have been run in order for this sample to work. 
+<p class="p">Demonstrate how to use the atomic check-and-delete In this mode, the delete operator works as before, except that a check attribute is expected on the input stream.  This  attribute contains a columnFamily and columnQualifier, or a columnFamily, columnQualifier an a value.  
+</p>
+
+<p class="p">If there is a value, that entry in the table is checked; if it matches, the delete is happens, otherwise it does not. 
+</p>
+
+<p class="p">When the check attribute type as no value , the delete only happens if that  particular row, columnFamily, columnQualifier combination doesn't exist. 
+</p>
+
+<p class="p">In this mode, the operator is allowed to have an output port and a success attribute to say whether a delete succeeded or  failed. 
+</p>
+
+<p class="p">The input files describe what output you should see.  The  put sample needs to have been run in order for this sample to work. 
 </p>
 
 </div>

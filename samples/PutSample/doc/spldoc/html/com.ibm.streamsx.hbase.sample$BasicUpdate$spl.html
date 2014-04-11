@@ -63,10 +63,38 @@ PutSample
 
 <div class="section">
 
-<p class="p">Demostrate basic updating To update, you can simply put a new tuple with the same row, column family, and column qualifier.  Future gets will find the new value.  See note below. &lt;p&gt; This example assumes you have already run the PutSample. &lt;p&gt; The old one isn't deleted, but will not be accessible unless  you request all versions, and may be deleted at the next major  compaction. 
+<p class="p">Demostrate basic updating To update, you can simply put a new tuple with the same row, column family, and column qualifier.  Future gets will find the new value.  See note below. 
 </p>
 
-<p class="p">&lt;p&gt; Before update: Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead  After update: Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien (your timestamps will be different in both cases) 
+<p class="p">This example assumes you have already run the PutSample. 
+</p>
+
+<p class="p">The old one isn't deleted, but will not be accessible unless  you request all versions, and may be deleted at the next major  compaction. 
+</p>
+
+<p class="p">Before update: 
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead 
+</pre>
+
+
+</div>
+
+<p class="p"> After update: 
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+ Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien
+</pre>
+
+
+</div>
+
+<p class="p"> (your timestamps will be different in both cases) 
 </p>
 
 </div>

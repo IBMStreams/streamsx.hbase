@@ -42,7 +42,7 @@ PutSample
   
      <dt class="dt dlterm"><a class="xref" href="#spldoc_compilationunit____composite_operator__PutExistCheck">composite PutExistCheck</a></dt>
 
-     <dd class="dd">Use putAndCheck to put an entry only if another entry doesn't exist &lt;p&gt; This demonstrates the put and check interface, where the check is for the non-existence of a column.</dd>
+     <dd class="dd">Use putAndCheck to put an entry only if another entry doesn't exist This demonstrates the put and check interface, where the check is for the non-existence of a column.</dd>
 
   
      </dl>
@@ -77,7 +77,32 @@ PutSample
 
 <div class="section">
 
-<p class="p">Use putAndCheck to put an entry only if another entry doesn't exist &lt;p&gt; This demonstrates the put and check interface, where the check is for the non-existence of a column.   &lt;p&gt; In this mode, the operator has an optional output port with  a success attribute for saying whether the put succeeded or failed. &lt;p&gt; First run, the checkExist.out file is: &lt;ul&gt; &lt;li&gt;"Gandalf","beard","bushy",false &lt;li&gt;"Gandalf","eyebrows","bushy",true &lt;li&gt;"Frodo","hairy",false &lt;/ul&gt; The second time, all are false, because &lt;pre&gt;Gandalf appearance:eyebrows&lt;/pre&gt; has already been added to the table.   
+<p class="p">Use putAndCheck to put an entry only if another entry doesn't exist 
+</p>
+
+<p class="p">This demonstrates the put and check interface, where the check is for the non-existence of a column.   
+</p>
+
+<p class="p">In this mode, the operator has an optional output port with  a success attribute for saying whether the put succeeded or failed. 
+</p>
+
+<p class="p">First run, the checkExist.out file is: 
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+"Gandalf","beard","bushy",false
+"Gandalf","eyebrows","bushy",true
+"Frodo","hairy",false
+</pre>
+
+
+</div>
+
+<p class="p"> 
+</p>
+
+<p class="p">The second time, all are false, because &lt;pre&gt;Gandalf appearance:eyebrows&lt;/pre&gt; has already been added to the table.   
 </p>
 
 </div>

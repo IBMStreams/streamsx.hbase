@@ -31,7 +31,7 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 
-<p class="p">Scan an HBASE table 
+<p class="p">Scan an HBASE table.  Each row/columnFamily/columnQualifer/value entry is mapped to a tuple, with the row populating the row attribute, the columnFamily populating teh columnFamily attribute, the columnQualifier attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be a long or a string, all other values must be rstring.  An optional start row and end row may be specified.
 </p>
 
 </div>
@@ -49,7 +49,7 @@ com.ibm.streamsx.hbase
  
   <dt class="dt dlterm">Ports</dt>
 
-  <dd class="dd">This operator has 0 input port and 1 or more output port.</dd>
+  <dd class="dd">This operator has 0 input port and 1 output port.</dd>
 
  
  
@@ -137,34 +137,6 @@ com.ibm.streamsx.hbase
    </dd>
 
   
-  
-   <dt class="dt dlterm">Ports (1...)</dt>
-
-   <dd class="dd">
-
-   <p class="p"/>
-
-   <dl class="dl">
-    
-      <dt class="dt dlterm">Properties</dt>
-
-      <dd class="dd">
-   <ul class="sl simple">
-     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Generating
-     </li>
-
-   </ul>
-
-      </dd>
-
-    
-   </dl>
-
-   <p class="p"/>
-
-   </dd>
-
-  
 </dl>
 
 </div>
@@ -175,7 +147,10 @@ This operator supports 5 parameters.<dl class="dl">
 
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_endRow"><tt class="ph tt">endRow</tt></dt>
 
-<dd class="dd"><dl class="dl">
+<dd class="dd">
+<p class="p">Row to use to stop the scan (exclusive)
+</p>
+<dl class="dl">
 
  <dt class="dt dlterm">Properties </dt>
 
@@ -203,7 +178,10 @@ This operator supports 5 parameters.<dl class="dl">
 
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_startRow"><tt class="ph tt">startRow</tt></dt>
 
-<dd class="dd"><dl class="dl">
+<dd class="dd">
+<p class="p">Row to use to start the scan (inclusive)
+</p>
+<dl class="dl">
 
  <dt class="dt dlterm">Properties </dt>
 
@@ -232,7 +210,7 @@ This operator supports 5 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
-<p class="p">Column family to be used for all tuples.  It may be a list in some cases.
+<p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
 </p>
 <dl class="dl">
 
@@ -260,7 +238,7 @@ This operator supports 5 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
-<p class="p">Column qualifier to be used for all tuples.  It may be a list for some operators.
+<p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
 </p>
 <dl class="dl">
 
@@ -288,7 +266,7 @@ This operator supports 5 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the HBASE table
+<p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
 </p>
 <dl class="dl">
 
