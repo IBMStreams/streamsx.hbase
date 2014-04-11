@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
@@ -13,6 +14,7 @@ import org.apache.log4j.Logger;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
@@ -21,6 +23,7 @@ import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.InputPortSet;
 import java.util.ArrayList;
@@ -40,12 +43,11 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * placed here.
  * 
  * This class handles: - 
- * <ul>
- * <li> batchSize parameter
- * <li> success attribute
- * <li> check attribute 
- * <li> outputting a tuple and indicating success or failure when check attribute is one.
- * </ul>
+ * * batchSize parameter
+ * * success attribute
+ * * check attribute 
+ * * outputting a tuple and indicating success or failure when check attribute is one.
+ *
  * 
  */
 
@@ -59,12 +61,12 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 	final protected Object listLock = new Object();
 	protected int batchSize = 0;
 
-	final String BATCHSIZE_NAME = "batchSize";
+	static final String BATCHSIZE_NAME = "batchSize";
 
 	protected String checkAttr = null;
-	final String CHECK_ATTR_PARAM = "checkAttrName";
+	static final String CHECK_ATTR_PARAM = "checkAttrName";
 	protected int checkAttrIndex = -1;
-	final String SUCCESS_PARAM = "successAttr";
+	static final String SUCCESS_PARAM = "successAttr";
 	private String successAttrName = null;
 	private int successAttrIndex = -1;
 	StreamingOutput<OutputTuple> outStream = null;
@@ -80,10 +82,29 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 		batchSize = _size;
 	}
 
-	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description="Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.")
+	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description="Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.  When a value is specified, the put or delete operation will only succeed when that entry specified by the check attribute exists.  When there is no value in the type of the checkAttribute, the put or delete operation will only succeed when there is no entry for that row, columnFamily, columnQualifer combination.")
 	public void setCheckAttr(String name) {
 		checkAttr = name;
 	}
+
+    @ContextCheck(compile=true)
+	static void successRequiresOutput(OperatorContextChecker checker) {
+	OperatorContext context = checker.getOperatorContext();
+	Set<String> params = context.getParameterNames();
+	if (params.contains(SUCCESS_PARAM)) {
+
+	    if (context.getStreamingOutputs().size() == 0) {
+		checker.setInvalidContext("Parameter "+SUCCESS_PARAM+" requires an output port",new Object[0]);
+	    }
+	}
+
+    }
+
+    @ContextCheck(compile=true)
+	static void compileTimeCheck(OperatorContextChecker checker) {
+	// If successAttr is set, then we must be using checkAttrParam
+	checker.checkDependentParameters(SUCCESS_PARAM,CHECK_ATTR_PARAM);
+    }
 
 	protected void establishCheckAttrMatching(Attribute checkAttr)
 			throws Exception {
@@ -105,16 +126,16 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 	}
 
 	byte[] getCheckColF(Tuple tuple) {
-		return tuple.getString(checkColFIndex).getBytes();
+		return tuple.getString(checkColFIndex).getBytes(charset);
 	}
 
 	byte[] getCheckColQ(Tuple tuple) {
-		return tuple.getString(checkColQIndex).getBytes();
+		return tuple.getString(checkColQIndex).getBytes(charset);
 	}
 
 	byte[] getCheckValue(Tuple tuple) {
 		if (checkValueIndex > 0) {
-			return tuple.getString(checkValueIndex).getBytes();
+			return tuple.getString(checkValueIndex).getBytes(charset);
 		} else
 			return null;
 	}

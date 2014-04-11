@@ -11,15 +11,15 @@ use com.ibm.streamsx.hbase::HBASEScan;
  * It assumes you've run both the increment sample and 
  * the put sample, as it reads the table streamsSample_lotr and the 
  * table streamsSample_wordCount.  
- * <p>
+ * 
  * It consists of three pieces:
- * <ul>
- * <li> Scan example where the value is a string and all tuple attributes
+ * 
+ * *Scan example where the value is a string and all tuple attributes
  * are populated
- *  <li> Scan example where the value is an int64.  No columnQualifier on 
+ * * Scan example where the value is an int64.  No columnQualifier on 
  * the output.
- * <li>Scan example where the row set is limited by a startRow and an endRow.
- * </ul>
+ * * Scan example where the row set is limited by a startRow and an endRow.
+ * 
  */
 composite ScanString
 {

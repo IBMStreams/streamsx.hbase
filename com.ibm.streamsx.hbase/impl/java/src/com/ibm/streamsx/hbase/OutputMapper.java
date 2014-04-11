@@ -4,18 +4,22 @@
 package com.ibm.streamsx.hbase;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.types.RString;
 
 public class OutputMapper {
 	
 	private int attrIndex = -1;
 	private MetaType attrMetaType = null;
+    private Charset charset = null;
 	
-	OutputMapper(StreamSchema schema, String attrName) throws Exception{
+	    OutputMapper(StreamSchema schema, String attrName,Charset incharset) throws Exception{
+	charset = incharset;
 		Attribute attr = schema.getAttribute(attrName);
 		if (attr == null) {
 			throw new Exception ("Expected to find attribute "+attrName);
@@ -33,7 +37,7 @@ public class OutputMapper {
 			tuple.setLong(attrIndex, ByteBuffer.wrap(value).getLong());
 		}
 		else if (attrMetaType == MetaType.RSTRING) {	
-			tuple.setString(attrIndex, new String(value));
+		    tuple.setString(attrIndex, new String(value,charset));
 		}
 	}
 

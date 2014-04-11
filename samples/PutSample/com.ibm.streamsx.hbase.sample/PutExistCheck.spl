@@ -7,19 +7,20 @@ use com.ibm.streamsx.hbase::HBASEPut ;
 type ExistCheckType = rstring columnFamily, rstring columnQualifier ;
 
 /** Use putAndCheck to put an entry only if another entry doesn't exist
- * <p>
+ * 
  * This demonstrates the put and check interface, where the check
  * is for the non-existence of a column.  
- * <p>
+ * 
  * In this mode, the operator has an optional output port with 
  * a success attribute for saying whether the put succeeded or failed.
- * <p>
+ * 
  * First run, the checkExist.out file is:
- * <ul>
- * <li>"Gandalf","beard","bushy",false
- * <li>"Gandalf","eyebrows","bushy",true
- * <li>"Frodo","hairy",false
- * </ul>
+ * 
+ *      "Gandalf","beard","bushy",false
+ *      "Gandalf","eyebrows","bushy",true
+ *      "Frodo","hairy",false
+ * 
+ * 
  * The second time, all are false, because <pre>Gandalf appearance:eyebrows</pre>
  * has already been added to the table.  
  */

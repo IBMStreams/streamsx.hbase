@@ -37,21 +37,21 @@ import com.ibm.streams.operator.types.RString;
 
 /**
  * Gets a tuple or set of tuples from HBASE.
- * <P>
+ * 
  * The input may be a
- * <ul>
- * <li> row id 
- * <li> row id and column family
- * <li> row id, column family, and column qualifier
- * </ul>
+ * 
+ * * row id 
+ * * row id and column family
+ * * row id, column family, and column qualifier
+ * 
  * 
  * 
  * In the first two cases, the output must be a map, in the third it is a value.  
  */
 @PrimitiveOperator(name="HBASEGet", namespace="com.ibm.streamsx.hbase",
-description="Java Operator HBASEGet")
-@InputPorts({@InputPortSet(description="Port that ingests tuples", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious), @InputPortSet(optional=true, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
-@OutputPorts({@OutputPortSet(description="Port that produces tuples", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating), @OutputPortSet(optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
+description="Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "+HBASEGet.OUT_PARAM_NAME+"  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnQualifiers to values."+" If columnFamily is also left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "+HBASEGet.SUCCESS_PARAM_NAME+" exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.")
+    @InputPorts({@InputPortSet(description="Description of which tuples to get", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
+    @OutputPorts({@OutputPortSet(description="Input tuple with value or values from HBASE", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
 public class HBASEGet extends HBASEOperatorWithInput {
 
 	private enum OutputMode {
@@ -72,11 +72,11 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private String successAttr = null;
 	private OutputMapper primativeOutputMapper = null;
 	
-	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute in which to put whether the get is successful",optional=true)
+	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute of the output port in which to put the count of values returned",optional=true)
 	public void setSuccessAttr(String name) {
 		successAttr = name;
 	}
-	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute in which to put the result of the get.", optional=false)
+	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional=false)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}
@@ -109,7 +109,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         		|| (colQualBytes == null && columnQualifierAttr == null)) {
         		throw new Exception("If output is of type rstring or long, both "+COL_FAM_PARAM_NAME+" and "+COL_QUAL_PARAM_NAME+" must be specified");
         	}
-        	primativeOutputMapper = new OutputMapper(outSchema,outAttrName);
+        	primativeOutputMapper = new OutputMapper(outSchema,outAttrName,charset);
         }
         else if (mType.isMap()) {
         	Type elementType = ((CollectionType)outType).getElementType();
@@ -147,7 +147,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		}
 		Map<RString,RString> toReturn = new HashMap<RString,RString>(inMap.size());
 		for (byte[] key: inMap.keySet()) {
-			toReturn.put(new RString(key), new RString(inMap.get(key)));
+		    toReturn.put(new RString(new String(key,charset)), new RString(new String(inMap.get(key),charset)));
 		}
 		return toReturn;
 	}
@@ -158,7 +158,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	    }
 		Map<RString,Map<RString,RString>> toReturn = new HashMap<RString,Map<RString,RString>>(inMap.size());
 		for (byte[] key: inMap.keySet()) {
-			toReturn.put(new RString(key),makeStringMap(inMap.get(key)));
+		    toReturn.put(new RString(new String(key,charset)),makeStringMap(inMap.get(key)));
 		}
 		return toReturn;
 	}

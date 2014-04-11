@@ -11,19 +11,19 @@ use com.ibm.streamsx.hbase::HBASEIncrement ;
  * To use this example:
  * create a table streamsSample_wordCount with column family Iliad.
  * In hbase shell
- * create 'streamsSample_wordCount', 'Iliad'
- * <p>
+ * `create 'streamsSample_wordCount', 'Iliad'`
+ * 
  * There are three increment operators in this composite.
  * tupleIncrement: the row and the increment come from the tuple,
  * the column family and column qualifier are operator parameters.
- * <p>
+ * 
  * IncrementWithColumnFromParam: Only the row comes from the tuple.
  * The column family and column qualifier are given in the operator 
  * parameters, and the increment is the operator default.
- * <p>
+ * 
  * IncrementWithColumnFromTuple: the row, column family, and column qualifier
  * are from the tuple.  The increment is supplied as an operator parameter.
- * <p>
+ * 
  * Some of the table is reproduced below the composite
  */
 composite CountProperNouns
