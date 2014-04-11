@@ -31,8 +31,8 @@ import com.ibm.streams.operator.types.RString;
  * 
  */
 @PrimitiveOperator(name="HBASEScan", namespace="com.ibm.streamsx.hbase",
-description="Scan an HBASE table, outputing all entries as tuples.  An optional start row and end row may be specified.")
-    @OutputPorts({@OutputPortSet(description="Tuples found", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
+description="Scan an HBASE table.  Each row/columnFamily/columnQualifer/value entry is mapped to a tuple, with the row populating the row attribute, the columnFamily populating teh columnFamily attribute, the columnQualifier attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be a long or a string, all other values must be rstring.  An optional start row and end row may be specified.")
+@OutputPorts({@OutputPortSet(description="Tuples found", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
 public class HBASEScan extends HBASEOperator{
 
 	/**
@@ -141,13 +141,13 @@ public class HBASEScan extends HBASEOperator{
         	
         	for (String fam: staticColumnFamilyList) {
         		for (String qual: staticColumnQualifierList) {
-        			myScan.addColumn(fam.getBytes(), qual.getBytes());
+        			myScan.addColumn(fam.getBytes(charset), qual.getBytes(charset));
         		}
         	}
         }
         else if (staticColumnFamilyList != null) {
         	for (String fam: staticColumnFamilyList) {
-        		myScan.addFamily(fam.getBytes());
+        		myScan.addFamily(fam.getBytes(charset));
         	}
         }
         
