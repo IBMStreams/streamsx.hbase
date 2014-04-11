@@ -9,7 +9,13 @@
 <project name="com.ibm.streamsx.hbase" basedir="." default="all">
 
 	<property environment="env" />
+	<!-- you must set HBASE_HOME and HADOOP_HOME in the environment -->
+	<!-- you do not need to have either running base or hdfs running -->
+	<fail unless="env.HADOOP_HOME" message="HADOOP_HOME not set."/>
+	<fail unless="env.HBASE_HOME" message="HBASE_HOME not set."/>
+	<fail unless="env.STREAMS_INSTALL" message="STREAMS_INSTALL not set."/>
 	<property name="streams.install" value="${env.STREAMS_INSTALL}" />
+
 	<property name="hadoop_home" value="${env.HADOOP_HOME}" />
         <property name="hbase_home" value="${env.HBASE_HOME}" />
 	<property name="src.dir" value="impl/java/src" />

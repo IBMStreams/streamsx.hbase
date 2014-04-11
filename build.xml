@@ -3,7 +3,13 @@
         Build file for streamsx.hbase project, built the toolkits and samples.
     </description>
   <!-- set global properties for this build -->
+
   <property environment="env" />
+
+  <!-- you must set HBASE_HOME and HADOOP_HOME in the environment -->
+  <!-- you do not need to have either running base or hdfs running -->
+  <fail unless="env.HADOOP_HOME" message="HADOOP_HOME not set."/>
+  <fail unless="env.HBASE_HOME" message="HBASE_HOME not set."/>
   <property name="streams.install" value="${env.STREAMS_INSTALL}" />
   <property name="toolkit" location="com.ibm.streamsx.hbase"/>
   <property name="tmp" location="tmp" />
