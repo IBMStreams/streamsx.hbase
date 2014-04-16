@@ -12,8 +12,12 @@ It uses the operator parameter values to determine what's a row, columnFamily, c
 
 It includes at least one sample for each of those operators.
 
-This is tested with HBase 0.94.3.
+This is tested with HBase 0.94.3 and Hadoop 1.1.0.  
 
 ## Configuration
 
-To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME` must contain a valid `hbase-site.xml`, since that is what the operator uses to configure itself.  However, the operator does not need to run on the same host as HBASE, so long as it has an `hbase-site.xml` and all the HBASE and hadoop libraries.  
+To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME/conf/hbase-site.xml` should be correspond to a running hbase instance (eg, the zookeeper referenced there should be running) since that is what the operator uses to configure itself.   The operator does not need to run on the same host as HBASE.  If you are running Streams on an HBASE host, just set HBASE_HOME to point the the directory for HBASE (ie, the directory that is the parent of the bin directory the conf directory).  
+
+If you are running Streams on a different host, copy that whole directory to the Streams host.  
+
+
