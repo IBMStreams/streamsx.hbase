@@ -41,16 +41,32 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  */
 
 @PrimitiveOperator(name="HBASEPut", namespace="com.ibm.streamsx.hbase",
-		   description="Put tuples in HBASE, with support for checkAndPut.  A put must have a row, columnFamily, columnQualifier, and value specified.  The row and value are from the input tuple, specified by the attribute "+HBASEOperator.ROW_PARAM_NAME+" and "+HBASEPut.VALUE_NAME+", respectively.  The columnFamily and columnQualifier may be specified in the same way (via "+HBASEOperatorWithInput.COL_FAM_PARAM_NAME+" and "+HBASEOperatorWithInput.COL_QUAL_PARAM_NAME+" respectively), or they may be the same for all tuples, by setting "+HBASEOperator.STATIC_COLF_NAME+" and "+HBASEOperator.STATIC_COLQ_NAME+".  Currently all must be of type rstring. To allow for locking, HBASE supports a conditional put.  That is supported in this operator via the "+HBASEPutDelete.CHECK_ATTR_PARAM+".  If that parameter is set, then the input attribute it refers to must be a valid check type--see the description for details.  On a put, the condition is checked.  If it passes, the put happens, if not, the put fails.  To check the success or failure of the put, the operator has an optional output port.  The attribute "+HBASEPutDelete.SUCCESS_PARAM+" on the output port will be set to true if the put happens, and false otherwise.")
+		   description="Put tuples in HBASE, with support for checkAndPut.  In the value is a primitive type, a Put must have a row, columnFamily, columnQualifier,"
+				   +"and value specified.  The row and value are from the input tuple, specified by the attribute "
+				   +HBASEOperator.ROW_PARAM_NAME+" and "+HBASEPut.VALUE_NAME+", respectively.  The columnFamily and "
+				   +"columnQualifier may be specified in the same way (via "+HBASEOperatorWithInput.COL_FAM_PARAM_NAME
+				   +" and "+HBASEOperatorWithInput.COL_QUAL_PARAM_NAME+" respectively), or they may be the same for all "
+				   +"tuples, by setting "+HBASEOperator.STATIC_COLF_NAME+" and "+HBASEOperator.STATIC_COLQ_NAME+".  Currently "
+				   +"all must be of type rstring. "
+				   +"\n If the value is a tuple type, then attribute names of the tuple will be interpreted as the columnQualifiers "
+				   +" for the correponding values.  See the PutRecord sample application for an example.\n"
+				   +"To allow for locking, HBASE supports a conditional put.  That is supported "
+				   +"in this operator via the "+HBASEPutDelete.CHECK_ATTR_PARAM+".  If that parameter is set, then the input "
+				   +"attribute it refers to must be a valid check type--see the description for details.  On a put, the condition"
+				   +"is checked.  If it passes, the put happens, if not, the put fails.  To check the success or failure of the "
+				   +"put, the operator has an optional output port.  The attribute "+HBASEPutDelete.SUCCESS_PARAM+" on the output "
+				   +"port will be set to true if the put happens, and false otherwise.")
 @InputPorts({@InputPortSet(description="Tuple to put into HBASE", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 @OutputPorts({@OutputPortSet(description="Optional port for success or failure information.", cardinality=1, optional=true, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
 
 public class HBASEPut extends HBASEPutDelete {
 
 	List<Put> putList;
-	
+	private enum PutMode {ENTRY,RECORD};
+	private PutMode putMode = null;
 	protected String valueAttr=null;
 	final static String VALUE_NAME = "valueAttrName";
+	protected byte[][] qualifierArray = null;
 	
 	@Parameter(name=VALUE_NAME,optional=false,description="Name of the attribute containing the value to put into the table")
 	public void setValueAttr(String val) {
@@ -67,10 +83,25 @@ public class HBASEPut extends HBASEPutDelete {
 	@Override
 	public synchronized void initialize(OperatorContext context)
 			throws Exception {
-		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 		if (batchSize > 0) { 
 			putList = new ArrayList<Put>(batchSize);
+		}
+		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
+		StreamSchema schema = inputPort.getStreamSchema();
+		Attribute attr = schema.getAttribute(valueAttr);
+		if (attr.getType().getMetaType() == MetaType.TUPLE) {
+			// In this mode, we treat the attribute name as the column qualifer.
+			putMode = PutMode.RECORD;
+			// Let's get all the attribute names, and store them in the qualifier array.
+			StreamSchema valueSchema = ((TupleType)attr.getType()).getTupleSchema();
+			qualifierArray = new byte[valueSchema.getAttributeCount()][];
+			for (int i = 0; i < valueSchema.getAttributeCount(); i++) {
+				qualifierArray[i] = valueSchema.getAttribute(i).getName().getBytes(charset);
+			}
+		}
+		else {
+			putMode = PutMode.ENTRY;
 		}
 	}
 
@@ -88,11 +119,26 @@ public class HBASEPut extends HBASEPutDelete {
     	
     	byte row[] = getRow(tuple);
     	byte colF[] = getColumnFamily(tuple);
-    	byte colQ[] = getColumnQualifier(tuple);
-    	byte value[] = tuple.getString(valueAttr).getBytes();
     	boolean success = false;
     	Put myPut = new Put(row);
-    	myPut.add(colF, colQ, value);
+    	
+    	switch(putMode) {
+    
+    	case ENTRY:
+        	byte colQ[] = getColumnQualifier(tuple);
+        	byte value[] = tuple.getString(valueAttr).getBytes();
+        	myPut.add(colF, colQ, value);
+    	break;
+    	case RECORD:
+    		Tuple values = tuple.getTuple(valueAttr);
+    	for (int i = 0; i < qualifierArray.length; i++) {
+    		myPut.add(colF,qualifierArray[i],values.getString(i).getBytes(charset));
+    	}
+    		break;
+    		default:
+    			// It should be impossible to get here.
+    			throw new Exception("Unsupported Put type");
+    	}
     	
     	if (checkAttr != null) {
     		Tuple checkTuple = tuple.getTuple(checkAttrIndex);
