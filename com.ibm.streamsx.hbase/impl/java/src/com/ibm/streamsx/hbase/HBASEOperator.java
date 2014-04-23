@@ -4,7 +4,11 @@
 package com.ibm.streamsx.hbase;
 
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
@@ -13,6 +17,7 @@ import org.apache.log4j.Logger;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
@@ -125,5 +130,37 @@ public abstract class HBASEOperator extends AbstractOperator {
 		super.processPunctuation(stream, mark);
 	}
 	
+	/**
+	 * Used by HBASEGet and HBASEScan create a map suitable for tuple creation from
+	 * the family map
+	 * @param attrNames The names of hte attributes to populate
+	 * @param familyMap HBASE results
+	 * @return
+	 */
+	protected Map<String,RString> extractRStrings(Set<String> attrNames,
+			NavigableMap<byte[], byte[]> familyMap) {
+		Map<String,RString> toReturn = new HashMap<String,RString>();
+		for (String attr: attrNames) {
+			byte qualName[] = attr.getBytes(charset);
+			if (familyMap.containsKey(qualName)) {
+				toReturn.put(attr,new RString(familyMap.get(qualName)));;
+			}
+		}
+		return toReturn;
+	}
+	
+	/**
+	 * Used in HBASEGet and HBASEScan to figure out which fields need to be looked for in the results.
+	 * @param schema the scheme that will be populated from the hbase query
+	 * @return An array of the byteArrays representing columnQualifiers.
+	 */
+	protected byte[][] getAttributeNamesAsBytes(StreamSchema schema) {
+		int numAttr = schema.getAttributeCount();
+		byte toReturn[][] = new byte[numAttr][];
+		for (int i = 0; i < numAttr; i++) {
+			toReturn[i] = schema.getAttribute(i).getName().getBytes(charset);
+		}
+		return toReturn;
+	}
 	
 }
