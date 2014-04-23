@@ -25,5 +25,5 @@ Please see the individual product pages for instructions on installation.
 To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME/conf/hbase-site.xml` should be correspond to a running hbase instance (eg, the zookeeper referenced there should be running) since that is what the operator uses to configure itself.   The operator does not need to run on the same host as HBASE.  If you are running Streams on an HBASE host, just set HBASE_HOME to point the the directory for HBASE (ie, the directory that is the parent of the bin directory the conf directory).  
 
 If you are running Streams on a different host than where you ran HBASE, copy that whole directory to the Streams host.  
-
-
+##Contributing
+This repository is using the fork-and-pull model (https://help.github.com/articles/using-pull-requests).  If you'd like to contribute code, fork a copy of the repository, make changes, and when ready, issue a pull request.  For more details, see the wiki in the IBMStreams/toolkits repository.
