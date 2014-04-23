@@ -32,16 +32,17 @@
  * *If streams is not a host containing the HBASE* then first copy the HBASE_HOME and HADOOP_HOME to
  * a place accessible to streams.  
  * 
- * ** Viewing tuples in HBASE**
+ * **Viewing tuples in HBASE**
  * One very useful tool for debugging is the hbase shell.  To run it, you must be on a HBASE host (ie, 
  * just copying over the files works for streams, but won't work here), and then run `$HBASE_HOME/bin/hbase shell`
  * You'll use the shell to create tables and view their status.
  * 
  * **Using the toolkit**
- * The [file:com.ibm.streamsx.hbase:overview.spl] contains an overall description of the toolkit.  To see the operators
+ * The [com.ibm.streamsx.hbase:overview.spl] contains an overall description of the toolkit.  To see the operators
  * in action, look at the samples.  `PutRecord` uses HBASE to store book information, and `PutSample` stores information
  * about characters in a book.  In both cases, you'll need to create the table before running the app, so be sure to read 
  * the comment.
  * 
  */
 
+namespace com.ibm.streamsx.hbase;
