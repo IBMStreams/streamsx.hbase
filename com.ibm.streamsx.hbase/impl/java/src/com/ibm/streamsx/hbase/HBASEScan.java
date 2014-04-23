@@ -4,7 +4,9 @@
 package com.ibm.streamsx.hbase;
 
 
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -12,14 +14,19 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 
 import com.ibm.gsk.ikeyman.keystore.entry.Entry;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
+import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Parameter;
 
 import com.ibm.streams.operator.AbstractOperator;
+import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingOutput;
+import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.model.OutputPortSet;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.OutputPorts;
@@ -35,11 +42,21 @@ description="Scan an HBASE table.  Each row/columnFamily/columnQualifer/value en
 @OutputPorts({@OutputPortSet(description="Tuples found", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Generating)})
 public class HBASEScan extends HBASEOperator{
 
+	/*
+	 * Used to describe the way tuples will be populated.  It is set at initialization time, and then used on process
+	 * to determine what to do.  
+	 */
+	private enum OutputMode {
+		TUPLES,
+		RECORD
+	}
+	
 	/**
 	 * Thread for calling <code>produceTuples()</code> to produce tuples 
 	 */
     private Thread processThread;
     
+    private OutputMode outputMode= null;
     protected String startRow = null;
     protected String endRow = null;
     static final String START_ROW_PARAM="startRow";
@@ -50,6 +67,23 @@ public class HBASEScan extends HBASEOperator{
     private int outColumnQ = -1;
     private OutputMapper outValue = null;
     
+    private String outAttrName = "value";
+    private int outAttrIndex = -1;
+    
+    private String resultCountAttrName = null;
+    private int resultCountIndex = -1;
+    
+    // Used only in record mode
+    private Set<String> recordNames = null;
+    private StreamSchema recordSchema = null;
+    
+    @Parameter(name=HBASEGet.SUCCESS_PARAM_NAME,optional=true,description=
+    		"Output attribute in which to put the number of results found.  When the result is a tuple, "+
+    		"is the number attributes in that tuple that were populated.")
+    public void setResultCountName(String name) {
+    	resultCountAttrName = name;
+    }
+    
     @Parameter(name=START_ROW_PARAM,optional=true,description="Row to use to start the scan (inclusive)")
     public void setStartRow(String row) {
     	startRow = row;
@@ -59,10 +93,22 @@ public class HBASEScan extends HBASEOperator{
     public void setEndRow(String row) {
     	endRow = row;
     }
-    // TODO: add check that if endRow is specified, start row also is
+    
+    @Parameter(name=HBASEGet.OUT_PARAM_NAME,optional=true,description="Name of the attribute in which to put the value."
+    			+"Defaults to value.  If it is a tuple type, the attribute names are used as columnQualifiers"
+    			+ "if multiple families are included in the scan, and they have the ame columnQualifiers, there is no "
+    			+ "way of knowing which columnFamily was used to populate a tuple attribute")
+    public void setOutAttrName(String name) {
+    	outAttrName = name;
+    }
+    
+    @ContextCheck(compile=true)
+    public static void checks(OperatorContextChecker checker) {
+    	checker.checkDependentParameters("endRow", "startRow");
+    }
     
     /**
-     * Initialize this operator. Called once before any tuples are processed.
+     * Process parameters and get setup of scan.
      * @param context OperatorContext for this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
@@ -95,10 +141,28 @@ public class HBASEScan extends HBASEOperator{
         // Now check that the output is hte proper format.
         StreamingOutput<OutputTuple> output = getOutput(0);
         StreamSchema outSchema = output.getStreamSchema();
+    
+        if (resultCountAttrName != null) {
+        	resultCountIndex = checkAndGetIndex(outSchema,resultCountAttrName,true) ;
+        }
+		Attribute outAttr = outSchema.getAttribute(outAttrName);
+		if (outAttr == null) {
+				throw new Exception("Expected attribute "+outAttrName+" to be present, but not found");
+		}
+        outAttrIndex = outAttr.getIndex();
         outRow = checkAndGetIndex(outSchema,"row",false);
         outColumnF = checkAndGetIndex(outSchema,"columnFamily",false);
         outColumnQ = checkAndGetIndex(outSchema,"columnQualifier",false);
-        outValue = new OutputMapper(outSchema, "value",charset);
+        if (outAttr.getType().getMetaType() == MetaType.TUPLE) {
+        	outputMode = OutputMode.RECORD;
+        	TupleType temp = ((TupleType)outSchema.getAttribute(outAttrIndex).getType());
+        	recordSchema = temp.getTupleSchema();
+        	recordNames =recordSchema.getAttributeNames();
+        }
+        else {
+        	outputMode = OutputMode.TUPLES;
+        	outValue = new OutputMapper(outSchema, outAttrName,charset);
+        }
     }
 
     /**
@@ -155,8 +219,9 @@ public class HBASEScan extends HBASEOperator{
        
         Result currRow = results.next();
         while (currRow != null) {
-        String row = new String(currRow.getRow());
+        String row = new String(currRow.getRow(),charset);
         NavigableMap<byte[],NavigableMap<byte[],byte[]>> allValues = currRow.getNoVersionMap();
+        if (OutputMode.TUPLES == outputMode) {
         for (byte[] family: allValues.keySet()) {
         	for (byte [] qual: allValues.get(family).keySet()) {
         		OutputTuple tuple = out.newTuple();
@@ -170,14 +235,41 @@ public class HBASEScan extends HBASEOperator{
 			    tuple.setString(outColumnQ,new String(qual,charset));
         		
         		outValue.populate(tuple,allValues.get(family).get(qual));
+        		if (resultCountIndex >=0) {
+        			tuple.setInt(resultCountIndex,1);
+        		}
                 out.submit(tuple);
         	}
-        }         
+        }
+        }
+        else if (OutputMode.RECORD == outputMode) {
+        	Map<String,RString> fields = null;
+        	for (byte[] family: allValues.keySet()) {
+        	Map<String,RString>	 tmpMap = extractRStrings(recordNames,allValues.get(family));
+        	if (fields == null) {
+        		fields = tmpMap;
+        	}
+        	else {
+        		fields.putAll(tmpMap);
+        	}
+        	}
+        	OutputTuple tuple = out.newTuple();
+        	tuple.setTuple(outAttrIndex, recordSchema.getTuple(fields));
+    		if (outRow >= 0)
+    			tuple.setString(outRow,row);
+        	if (resultCountIndex >=0) {
+        		tuple.setInt(resultCountIndex, fields.size());
+        	}
+        	out.submit(tuple);
+        }
+        if (OutputMode.TUPLES == outputMode) {
+        	out.punctuate(Punctuation.WINDOW_MARKER);
+        }
         currRow = results.next();
         }
      
         results.close();
-        out.punctuate(Punctuation.WINDOW_MARKER);
+        
         out.punctuate(Punctuation.FINAL_MARKER);
     }
 
@@ -191,10 +283,6 @@ public class HBASEScan extends HBASEOperator{
             processThread.interrupt();
             processThread = null;
         }
-        OperatorContext context = getOperatorContext();
-        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-        
-        // TODO: If needed, close connections or release resources related to any external system or data store.
 
         // Must call super.shutdown()
         super.shutdown();

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
@@ -24,6 +25,7 @@ import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.meta.CollectionType;
+import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
@@ -44,24 +46,43 @@ import com.ibm.streams.operator.types.RString;
  * * row id and column family
  * * row id, column family, and column qualifier
  * 
+ * When the input is: row id, columnFamily, and columnQualifier
+ * the outAttribute must be a value type (currently just rstring)
  * 
+ * When the input is a rowid and columnFamily,
+ * the outAttribute can be:
+ * *  a map of columnQualifiers to values
+ * * a tuple, where the tuple attribute names correspond to column qualifiers
  * 
- * In the first two cases, the output must be a map, in the third it is a value.  
+ * When the input is a rowid
+ * the out attribute must be a map of maps of columnQualifers to values.
+ * 
  */
 @PrimitiveOperator(name="HBASEGet", namespace="com.ibm.streamsx.hbase",
 description="Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "+HBASEGet.OUT_PARAM_NAME+"  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnQualifiers to values."+" If columnFamily is also left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "+HBASEGet.SUCCESS_PARAM_NAME+" exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.")
     @InputPorts({@InputPortSet(description="Description of which tuples to get", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
-    @OutputPorts({@OutputPortSet(description="Input tuple with value or values from HBASE", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
+@OutputPorts({@OutputPortSet(description="Input tuple with value or values from HBASE", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
 public class HBASEGet extends HBASEOperatorWithInput {
 
+	/*
+	 * Used to describe the way tuples will be populated.  It is set at initialization time, and then used on process
+	 * to determine what to do.  
+	 */
 	private enum OutputMode {
 		VALUE,
 		VALUE_LIST,
+		RECORD,
 		QUAL_TO_VALUE,
 		QUAL_TO_LIST,
 		FAMILY_TO_VALUE,
 		FAMILY_TO_LIST,
 	}
+	
+	// The next two are used in Record mode only.
+	private Set<String> colQualifiers = null;
+	StreamSchema recordSchema = null;
+	
+
 	Logger logger = Logger.getLogger(this.getClass());
 
 	
@@ -72,11 +93,11 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private String successAttr = null;
 	private OutputMapper primativeOutputMapper = null;
 	
-	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute of the output port in which to put the count of values returned",optional=true)
+	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute of the output port in which to put the count of values populated.",optional=true)
 	public void setSuccessAttr(String name) {
 		successAttr = name;
 	}
-	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional=false)
+	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional=true)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}
@@ -117,7 +138,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         	if (MetaType.RSTRING == elementMetaType) {
         		outputMode = OutputMode.QUAL_TO_VALUE;
         		if (columnFamilyAttr == null  && colFamBytes == null)
-        			throw new Exception("If output is of type map<rstring,rstring>, then "+COL_FAM_PARAM_NAME+" must be set");
+        			throw new Exception("If output is of type map<rstring,rstring>, then "+COL_FAM_PARAM_NAME+" or "+STATIC_COLF_NAME+" must be set");
         	}
         	else if (elementMetaType.isMap()) {
         		MetaType elementElementMetaType = ((CollectionType)elementType).getElementType().getMetaType();
@@ -127,6 +148,18 @@ public class HBASEGet extends HBASEOperatorWithInput {
         		else {
         			throw new Exception("Invalid type "+mType+" in attribute given by "+OUT_PARAM_NAME);
         		}
+        	}
+        }
+        else if (MetaType.TUPLE == mType){
+    		if (columnFamilyAttr == null  && colFamBytes == null)
+    			throw new Exception("If output is of type tuple, then "+COL_FAM_PARAM_NAME+" or "+STATIC_COLF_NAME+" must be set");
+        	outputMode = OutputMode.RECORD;
+        	
+        	// These two need to be populated.  Let's do it once during initialization.
+        	recordSchema = ((TupleType)outType).getTupleSchema();
+        	colQualifiers = recordSchema.getAttributeNames();
+        	if (logger.isInfoEnabled()) {
+        	logger.info("Expect to find the following columnQualifers: ");
         	}
         }
         else {
@@ -199,9 +232,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         Result r = myTable.get(myGet);
         
         int numResults = r.size();
-        if (successAttr != null) {
-        	outTuple.setInt(successAttr,numResults);
-        }
+
         switch (outputMode) {
         case VALUE:
         	if (numResults > 0)
@@ -213,17 +244,30 @@ public class HBASEGet extends HBASEOperatorWithInput {
         case FAMILY_TO_VALUE:
         		outTuple.setMap(outAttrName,makeMapOfMap(r.getNoVersionMap()));
         		break;
+        case RECORD:
+        	if (numResults > 0) {
+        		// use the family map to get the outTupleFields.
+        		Map<String,RString> outTupleFields =  extractRStrings(colQualifiers,r.getFamilyMap(colF));
+        		// In this case, we reset the number of results.  This way, a down stream operator can check that all were
+        		// populated.
+        		numResults = outTupleFields.size();
+        		outTuple.setTuple(outAttrName, recordSchema.getTuple(outTupleFields));
+        	}
+        	break;
         case VALUE_LIST:
         case QUAL_TO_LIST:
         case FAMILY_TO_LIST:
         				throw new Exception("Unsupported output type "+outputMode);
         }
-       
-        // TODO: Insert code to perform transformation on output tuple as needed:
-        // outTuple.setString("AttributeName", "AttributeValue");
-
+        // Set the num results, if needed.
+        if (successAttr != null) {
+        	outTuple.setInt(successAttr,numResults);
+        }
+        
         // Submit new tuple to output port 0
         outStream.submit(outTuple);
     }
+    
+
 
 }

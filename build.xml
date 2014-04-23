@@ -3,7 +3,14 @@
         Build file for streamsx.hbase project, built the toolkits and samples.
     </description>
   <!-- set global properties for this build -->
+
   <property environment="env" />
+
+  <!-- you must set HBASE_HOME and HADOOP_HOME in the environment -->
+  <!-- you do not need to have either running base or hdfs running -->
+  <!-- toolkit was tested with HBase 0.94.3 and Hadoop 1.1.1      -->
+  <fail unless="env.HADOOP_HOME" message="HADOOP_HOME not set.  This toolkit requres Apache Hadoop, see  http://hadoop.apache.org/.  Set HADOOP_HOME to the parent directory of the bin directory.  The toolkit was tested with 1.1.0 and may require modifications for other versions.  If you are running with IBM's BigInsights, sourcing the BIGINSIGHTS_HOME/conf/biginsights-env.sh will set the environment needed."/>
+  <fail unless="env.HBASE_HOME" message="HBASE_HOME not set.  This toolkit requires Apache HBASE, see https://hbase.apache.org/.  Set HBASE_HOME to the parent directory of the bin directory.  This toolkit was tested 0.94.3.  If you are running with IBM's BigInsights, sourcing the BIGINSIGHTS_HOME/conf/biginsights-env.sh will set the environment needed."/>
   <property name="streams.install" value="${env.STREAMS_INSTALL}" />
   <property name="toolkit" location="com.ibm.streamsx.hbase"/>
   <property name="tmp" location="tmp" />
