@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2014, International Business Machines Corporation  
+# Copyright (C) 2014, International Business Machines Corporation  
 # All Rights Reserved      
 
 # NOTE: To compile, you must have HBASE_HOME and HBASE_HOME set in your
