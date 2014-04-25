@@ -29,8 +29,9 @@
  * to the directory containing hadoop.  Again, this is the directory one step up from conf and bin.
  * In BigInsights, it's `IHC`.
  * 
- * *If streams is not a host containing the HBASE* then first copy the HBASE_HOME and HADOOP_HOME to
- * a place accessible to streams.  
+ * *If streams is not a host containing the HBASE* then first copy the entire HBASE_HOME and HADOOP_HOME to
+ * a place accessible to streams.  The operators need both the config files from the conf directory
+ * and some of the jars under those directories.
  * 
  * **Viewing tuples in HBASE**
  * One very useful tool for debugging is the hbase shell.  To run it, you must be on a HBASE host (ie, 
