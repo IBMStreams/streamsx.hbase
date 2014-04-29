@@ -1,0 +1,35 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample;
+use com.ibm.streamsx.hbase::HBASEScan;
+type 
+	BookType = rstring author_lname, rstring author_fname,rstring year, rstring rating, rstring title;
+type 	BookWithKeyType = tuple<rstring key>,BookType;
+
+composite ScanBooks {
+
+
+graph
+
+stream<rstring row, BookType bookDetails> allBooks = HBASEScan() {
+
+param 
+	tableName: "streamsSample_books";
+	outAttrName: "bookDetails";
+	staticColumnFamily: "all";
+}
+stream<BookWithKeyType> details = Functor(allBooks) {
+output details:
+key = row,
+author_fname=bookDetails.author_fname,
+author_lname=bookDetails.author_lname,
+year= bookDetails.year,
+rating=bookDetails.rating,
+title=bookDetails.title;
+}
+
+() as sink = FileSink(details) {
+param file: "books.out";
+}
+
+}
