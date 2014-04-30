@@ -68,6 +68,7 @@ public class HBASEScan extends HBASEOperator{
     static final String START_ROW_PARAM="startRow";
     static final String END_ROW_PARAM="endRow";
     static final String MAXIMUM_SCAN_THREADS="maxThreads";
+    private double initDelay = 0.0;
     private int outRow = -1;
     private int outColumnF = -1;
     private int outColumnQ = -1;
@@ -92,6 +93,11 @@ public class HBASEScan extends HBASEOperator{
     @Parameter(name=MAXIMUM_SCAN_THREADS,optional=true,description="Maximum number of threads to use to scan the table")
     public void setMaximumThreads(int max) {
     	maxThreads = max;
+    }
+    
+    @Parameter(optional=true,description="Delay, in seconds, before starting scan.")
+    public void setInitDelay(double delay) {
+    	initDelay=delay;
     }
     
     @Parameter(name=HBASEGet.SUCCESS_PARAM_NAME,optional=true,description=
@@ -276,6 +282,9 @@ public class HBASEScan extends HBASEOperator{
     private void produceTuples() throws Exception  {
     	final StreamingOutput<OutputTuple> out = getOutput(0);
 
+    	if (initDelay > 0.0) {
+    		Thread.sleep((int)initDelay*1000);
+    	}
     	// First check to see if there are any regions left to scan.  If not, this thread is finished.
     	while (!regionQueue.isEmpty()) {
     		// the try-catch block is here because regionQueue.remove() could throw an exception if 
