@@ -87,6 +87,8 @@ public class HBASEScan extends HBASEOperator{
     private int maxThreads = 1;
     private int actualNumThreads = -1;
     private int numFinishedThreads = -1;
+    private int channel = -1;
+    private int maxChannels = 0;
     java.util.concurrent.ConcurrentLinkedQueue<Pair<byte[],byte[]>> regionQueue;
     Logger logger = Logger.getLogger(this.getClass());
     
@@ -98,6 +100,16 @@ public class HBASEScan extends HBASEOperator{
     @Parameter(optional=true,description="Delay, in seconds, before starting scan.")
     public void setInitDelay(double delay) {
     	initDelay=delay;
+    }
+    
+    @Parameter(optional=true,description="The channel number of this operator.  Required if maximum number of channels is other than zero")
+    public void setChannel(int chan) {
+    	channel = chan;
+    }
+    
+    @Parameter(optional=true,description="The maximum number of channels.  Defaults to zero.")
+    public void setMaxChannels(int numChan) {
+    	maxChannels = numChan;
     }
     
     @Parameter(name=HBASEGet.SUCCESS_PARAM_NAME,optional=true,description=
@@ -128,6 +140,7 @@ public class HBASEScan extends HBASEOperator{
     @ContextCheck(compile=true)
     public static void checks(OperatorContextChecker checker) {
     	checker.checkDependentParameters("endRow", "startRow");
+    	checker.checkDependentParameters("maxChannels","channel");
     }
     
     /**
@@ -169,8 +182,7 @@ public class HBASEScan extends HBASEOperator{
 
 
     	regionQueue = new ConcurrentLinkedQueue<Pair<byte[],byte[]>>();
-    	int channel = context.getChannel();
-    	int max_channels = context.getMaxChannels();
+
     	byte startBytes[] = null;
     	byte endBytes[] = null;
     	
@@ -194,16 +206,21 @@ public class HBASEScan extends HBASEOperator{
     	// In order to get the regions, we need to supply a startrow and an end row.
     	logger.info("Start row: "+new String(startBytes)+" end row "+new String(endBytes));
     	List<HRegionLocation> regionList = myTable.getRegionsInRange(startBytes,endBytes);
+
+    	if (maxChannels == 0 && channel ==-1) {
+    		throw new Exception("channel must be set if maxChannels is set");
+    	}
+    	logger.info("This is channel "+channel +" of "+maxChannels);
     	for (int i = 0; i < regionList.size(); i++) {
-    		if (max_channels <=1 || i % max_channels == channel) {
+    		if (maxChannels == 0  || i % maxChannels == channel) {
     			numRegions++;
     			HRegionInfo info = regionList.get(i).getRegionInfo();
     			byte[] startKey = info.getStartKey();
     			byte[] endKey = info.getEndKey();
-    		 	if (info.containsRow(startBytes)) {
+    		 	if (startBytes != null && info.containsRow(startBytes)) {
     		 		startKey = startBytes;
     		 	}
-    		 	if (info.containsRow(endBytes)) {
+    		 	if (endBytes != null && info.containsRow(endBytes)) {
     		 		endKey = endBytes;
     		 	}
     		 	logger.info("Region "+i+" original range ["+new String(info.getStartKey())+","+new String(info.getEndKey())+"), changed to ["+new String(startKey)+","+new String(endKey)+")");
@@ -212,6 +229,7 @@ public class HBASEScan extends HBASEOperator{
     	}
 
     	actualNumThreads = numRegions < maxThreads ? numRegions: maxThreads;
+    	logger.info("MaxThreads = "+maxThreads+" numRegions = "+numRegions+" actualNumThreads "+actualNumThreads);
     	numFinishedThreads = 0;
     	processThreadArray = new Thread[actualNumThreads];
     	for (int i = 0; i < actualNumThreads; i++) {
