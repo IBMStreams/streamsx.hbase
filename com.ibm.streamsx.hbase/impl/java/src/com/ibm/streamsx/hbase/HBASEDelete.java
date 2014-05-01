@@ -125,6 +125,9 @@ public class HBASEDelete extends HBASEPutDelete {
 			if (deleteAll) {
 				myDelete.deleteColumns(colF, colQ);
 			}
+			else {
+				myDelete.deleteColumn(colF, colQ);
+			}
 		}
 
 		boolean success = false;
