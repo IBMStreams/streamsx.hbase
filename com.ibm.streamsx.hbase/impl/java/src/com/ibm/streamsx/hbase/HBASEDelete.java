@@ -5,13 +5,18 @@ package com.ibm.streamsx.hbase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.log4j.Logger;
+
+import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.model.OutputPortSet;
 import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
@@ -41,9 +46,33 @@ public class HBASEDelete extends HBASEPutDelete {
 
 	List<Delete> deleteList = null;
 	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
-
-
-
+	private final String DELETE_ALL_PARAM_NAME="deleteAllVersions";
+	boolean deleteAll = true;
+	
+	@Parameter(name=DELETE_ALL_PARAM_NAME,optional=true,description="Defaults to true.  If true, delete all versions of a cell.  If false, delete only the most recent.")
+	public void setDeleteAll(boolean _delete) {
+		deleteAll=_delete;
+	}
+	
+	/**
+	 * deleteAll only has an effect when a single cell is being deleted, so let's make sure no one is misusing it.
+	 * To do this, we make sure a columnQualifier is specified, either via an operator parameter or via the tuple.
+	 * @param checker
+	 */
+	@ContextCheck(compile=true)
+	public void checkDeleteAll(OperatorContextChecker checker) {
+		OperatorContext context = checker.getOperatorContext();
+		Set<String> params = context.getParameterNames();
+		if (params.contains(DELETE_ALL_PARAM_NAME)) {
+			if (params.contains(HBASEOperator.STATIC_COLQ_NAME) || params.contains(HBASEPutDelete.COL_QUAL_PARAM_NAME)) {
+				// we're okay--
+			}
+			else {
+				checker.setInvalidContext("Parameter "+DELETE_ALL_PARAM_NAME+" requires that either "+HBASEOperator.STATIC_COLQ_NAME+" or "+HBASEPutDelete.COL_QUAL_PARAM_NAME+ " be set.", null);
+			}
+		}
+	}
+	
 	/**
 	 * Setup for execution. Parameter checking is set in the parent class.
 	 * Sets deleteMode based on the set of input parameters.
@@ -93,7 +122,9 @@ public class HBASEDelete extends HBASEPutDelete {
 		} else if (DeleteMode.COLUMN == deleteMode) {
 			byte colF[] = getColumnFamily(tuple);
 			byte colQ[] = getColumnQualifier(tuple);
-			myDelete.deleteColumns(colF, colQ);
+			if (deleteAll) {
+				myDelete.deleteColumns(colF, colQ);
+			}
 		}
 
 		boolean success = false;
