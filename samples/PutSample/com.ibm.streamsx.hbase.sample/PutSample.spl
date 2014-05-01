@@ -31,6 +31,7 @@ use com.ibm.streamsx.hbase::HBASEPut ;
  * 
  * After running, if you scan the table
  * 
+<code>
       hbase(main):024:0> scan 'streamsSample_lotr'
     ROW                                 COLUMN+CELL                                                                                          
     Aragorn                            column=appearance:height, timestamp=1383069681219, value=tall                                        
@@ -49,7 +50,7 @@ use com.ibm.streamsx.hbase::HBASEPut ;
     Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead                                  
     Tom Bombadil                       column=location:beginFellowship, timestamp=1383069681201, value=Old Forest                           
     9 row(s) in 0.0500 seconds
-
+</code>
 * (NOTE: Gandalf is of course not dead at the end of the two Towers; see the update example.) 
  */
 
@@ -89,6 +90,7 @@ composite PutSample
 			param
 				tableName : "streamsSample_lotr" ;
 				rowAttrName : "character" ;
+				// Use the same column family for all tuples
 				staticColumnFamily : "appearance" ;
 				columnQualifierAttrName : "feature" ;
 				valueAttrName : "description" ;
@@ -109,6 +111,7 @@ composite PutSample
 			param
 				tableName : "streamsSample_lotr" ;
 				rowAttrName : "character" ;
+				// same column family and same column qualifier for all tuples
 				staticColumnFamily : "location" ;
 				staticColumnQualifier : "beginFellowship" ;
 				valueAttrName : "location" ;

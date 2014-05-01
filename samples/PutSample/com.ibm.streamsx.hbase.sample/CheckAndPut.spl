@@ -8,11 +8,11 @@ namespace com.ibm.streamsx.hbase.sample ;
 use com.ibm.streamsx.hbase::HBASEPut ;
 type CheckType = rstring columnFamily, rstring columnQualifier, rstring value ;
 
-/** Demonstrates check and put with the value field
- * <p>
+/** Demonstrates check and put with the check including the value field
+ * 
  * This example requires you to have created the streamsSample_lotr table as in
  * the PutSample.  
- * <p>
+ * 
  * The descriptions of what you'll see in the table -- which are printed 
  * in checkAndPut.out will assume that you ran the put example.
  */
