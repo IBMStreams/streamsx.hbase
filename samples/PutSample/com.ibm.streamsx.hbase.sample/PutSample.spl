@@ -90,6 +90,7 @@ composite PutSample
 			param
 				tableName : "streamsSample_lotr" ;
 				rowAttrName : "character" ;
+				// Use the same column family for all tuples
 				staticColumnFamily : "appearance" ;
 				columnQualifierAttrName : "feature" ;
 				valueAttrName : "description" ;
@@ -110,6 +111,7 @@ composite PutSample
 			param
 				tableName : "streamsSample_lotr" ;
 				rowAttrName : "character" ;
+				// same column family and same column qualifier for all tuples
 				staticColumnFamily : "location" ;
 				staticColumnQualifier : "beginFellowship" ;
 				valueAttrName : "location" ;
