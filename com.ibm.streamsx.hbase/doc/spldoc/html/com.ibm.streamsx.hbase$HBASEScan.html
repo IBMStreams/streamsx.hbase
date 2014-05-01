@@ -61,7 +61,7 @@ com.ibm.streamsx.hbase
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 5 parameters. (<tt class="ph tt">endRow, startRow, staticColumnFamily, staticColumnQualifier, tableName</tt>)
+  <dd class="dd">This operator supports 11 parameters. (<tt class="ph tt">channel, endRow, initDelay, maxChannels, maxThreads, outAttrName, outputCountAttr, startRow, staticColumnFamily, staticColumnQualifier, tableName</tt>)
 </dd>
 
  
@@ -143,12 +143,198 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 5 parameters.<dl class="dl">
+This operator supports 11 parameters.<dl class="dl">
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_channel"><tt class="ph tt">channel</tt></dt>
+
+<dd class="dd">
+<p class="p">If this operator is part of a parallel region it shares the work of scanning with other operators in the region.  To do this, this should be set by calling getChannel().  It is required if maximum number of channels is other than zero.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
 
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_endRow"><tt class="ph tt">endRow</tt></dt>
 
 <dd class="dd">
 <p class="p">Row to use to stop the scan (exclusive)
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_initDelay"><tt class="ph tt">initDelay</tt></dt>
+
+<dd class="dd">
+<p class="p">Delay, in seconds, before starting scan.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: float64
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_maxChannels"><tt class="ph tt">maxChannels</tt></dt>
+
+<dd class="dd">
+<p class="p">If this operator is part of a parallel region, this should be set by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned will be divided among the other copies of this operator in the other channels.  You must set channel if this parameter is set.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_maxThreads"><tt class="ph tt">maxThreads</tt></dt>
+
+<dd class="dd">
+<p class="p">Maximum number of threads to use to scan the table.  Defaults to one.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_outAttrName"><tt class="ph tt">outAttrName</tt></dt>
+
+<dd class="dd">
+<p class="p">Name of the attribute in which to put the value.Defaults to value.  If it is a tuple type, the attribute names are used as columnQualifiersif multiple families are included in the scan, and they have the ame columnQualifiers, there is no way of knowing which columnFamily was used to populate a tuple attribute
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEScan__parameter_outputCountAttr"><tt class="ph tt">outputCountAttr</tt></dt>
+
+<dd class="dd">
+<p class="p">Output attribute in which to put the number of results found.  When the result is a tuple, is the number attributes in that tuple that were populated.
 </p>
 <dl class="dl">
 

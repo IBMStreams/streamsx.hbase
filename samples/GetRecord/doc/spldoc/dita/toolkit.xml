@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//ENs"
+"/homes/hny2/hildrum/Distillery.dir/kaveri_mar/ext/dita-ot/dtd/technicalContent/dtd/reference.dtd">
+<reference id="spldoc_toolkit__toolkit__1.0.0">
+<title outputclass="spltoolkitname">GetRecord</title>
+<refbody>
+<section>
+<title outputclass="splhead-1">General Information</title>
+
+<p>Demonstrate how to populate a tuple using HBASEGet
+</p>
+<dl>
+  <dlentry>
+  <dt>Version</dt>
+  <dd>1.0.0</dd>
+  </dlentry>
+  <dlentry>
+  <dt>Required Product Version</dt>
+  <dd>3.2.1.0</dd>
+  </dlentry>
+  <dlentry>
+  <dt>Author</dt>
+  <dd>IBMStreams Open Source Community at GitHub - https://github.com/IBMStreams/streamsx.hbase</dd>
+  </dlentry>
+</dl>
+</section>
+<section>
+  <title outputclass="splhead-1">Namespaces</title>
+<dl>
+   <dlentry>
+     <dt outputclass="splpart"><xref href="com.ibm.streamsx.hbase.sample$.xml">com.ibm.streamsx.hbase.sample</xref></dt>
+  <dd>SPL Files
+       <sl>
+         <sli><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml">com.ibm.streamsx.hbase.sample/GetRecord.spl</xref></sli>
+       </sl>
+   </dd>
+   <dd>Operators
+       <sl>
+         <sli><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/composite_operator__GetRecord">GetRecord</xref></sli>
+       </sl>
+   </dd>
+    <dd>Types
+       <sl>
+         <sli><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/type__GetBookPlusType">GetBookPlusType</xref></sli>
+         <sli><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/type__GetBookType">GetBookType</xref></sli>
+       </sl>
+    </dd>
+     </dlentry></dl>
+</section>
+</refbody>
+</reference>
+

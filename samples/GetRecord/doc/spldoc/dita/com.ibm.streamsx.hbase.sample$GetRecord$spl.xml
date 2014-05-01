@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//ENs"
+"/homes/hny2/hildrum/Distillery.dir/kaveri_mar/ext/dita-ot/dtd/technicalContent/dtd/reference.dtd">
+<reference id ="spldoc_compilationunit__">
+<title>GetRecord.spl</title>
+<refbody>
+<section>
+<p>
+<xref href="toolkit.xml">
+GetRecord
+</xref>
+-&gt; <xref href="com.ibm.streamsx.hbase.sample$.xml">com.ibm.streamsx.hbase.sample</xref>-&gt; GetRecord.spl</p>
+</section>
+<section>
+  <title outputclass="splhead-1">Content</title>
+    <dl>
+    <dlentry><dt></dt><dd></dd></dlentry>
+    <dlentry>
+      <dt outputclass="splhead-2">Composites</dt>
+      <dd><dl>
+  <dlentry>
+     <dt><xref href="#spldoc_compilationunit__/composite_operator__GetRecord">composite GetRecord</xref></dt>
+     <dd>Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.</dd>
+  </dlentry>
+     </dl></dd>
+    </dlentry>
+    <dlentry>
+      <dt outputclass="splhead-2">Types</dt>
+      <dd><dl>
+  <dlentry>
+     <dt><xref href="#spldoc_compilationunit__/type__GetBookType">GetBookType</xref></dt>
+     <dd>The type this get will use.</dd>
+  </dlentry>
+  <dlentry>
+     <dt><xref href="#spldoc_compilationunit__/type__GetBookPlusType">GetBookPlusType</xref></dt>
+     <dd>The type this get will use.</dd>
+  </dlentry>
+     </dl></dd>
+    </dlentry>
+     </dl>
+</section>
+<section>
+  <title outputclass="splhead-1">Composites</title>
+</section>
+<section id="composite_operator__GetRecord">
+  <title outputclass="splpart">composite GetRecord</title>
+</section>
+<section>
+
+<p>Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple. 
+</p>
+<p>In the GetSample, the possible outputs are either a value (of type rstring), a map, or a map of maps.  These are close to the HBASE interface, but this is not always a convenient format.   
+</p>
+<p>In the PutRecord, GetRecord, and ScanRecord, we show a way to convert a streams tuple into HBASE entries.  In this mode, a tuple's attributes become columnQualifiers, and the values of those attributes are the the values corresponding to the columnQualifier.  
+</p>
+<p>This example assumes you have already run PutRecord.   
+</p>
+<p>We have two HBASEGet, below.  The first works fine, populating the book tuple based on what's in HBASE.  See the enriched stream, and the books.out file after running. Because there is no "Dracula:1897" in the database, all strings are empty. 
+</p>
+<p>&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""} "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""} "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""} "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""} &lt;/code&gt; 
+</p>
+<p>In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type has the "fiction" attribute, and there is no corresponding column qualifier, so all the fiction attributes are empty. In this case, we made use of the outputCountAttr, so it's possible to check notice that only four attributes of the five were populated.  Also, for the case of Dracula, numResults is zero because we not able to populate title, author_fname,  author_lname, year, or fiction.   
+</p>
+<p>&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4 "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4 "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4 "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""},0 &lt;/code&gt; 
+</p>
+</section>
+<section>
+<title>Parameters</title>
+<sl>
+<sli><b>keyList</b>: 
+</sli>
+</sl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+  <title outputclass="splhead-2">Composite Graph</title>
+</section>
+<section outputclass="splgraph">
+<object type="image/svg+xml" data="../image/com.ibm.streamsx.hbase.sample$GetRecord.svg" width="342" height="154">
+<desc>SPL composite operator image not displayed. Problem loading file: ../image/com.ibm.streamsx.hbase.sample$GetRecord.svg
+</desc>
+</object>
+</section>
+<section>
+  <title outputclass="splhead-1">Types</title>
+</section>
+<section id="type__GetBookType">
+  <title outputclass="splpart">GetBookType</title>
+</section><section>
+
+<p>The type this get will use.  Notice that our PutRecord type doesn't exactly match this type--we are missing rating 
+</p>
+</section>
+<section>
+   <p>
+<tt>GetBookType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction;</tt>
+   </p>
+</section>
+<section id="type__GetBookPlusType">
+  <title outputclass="splpart">GetBookPlusType</title>
+</section><section>
+
+<p>The type this get will use.  Notice that here we have an extra field, fiction, which was not populated in the  put example.  We will use this to demonstrate the  results parameter. 
+</p>
+</section>
+<section>
+   <p>
+<tt>GetBookPlusType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction;</tt>
+   </p>
+</section>
+</refbody>
+</reference>
+

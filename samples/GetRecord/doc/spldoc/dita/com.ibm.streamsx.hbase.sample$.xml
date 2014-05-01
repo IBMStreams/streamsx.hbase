@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//ENs"
+"/homes/hny2/hildrum/Distillery.dir/kaveri_mar/ext/dita-ot/dtd/technicalContent/dtd/reference.dtd">
+<reference id ="X">
+<title> Namespace <tt>com.ibm.streamsx.hbase.sample</tt></title>
+<abstract>
+
+
+</abstract>
+<refbody>
+<section>
+<p>
+<xref href="toolkit.xml">
+GetRecord
+</xref>
+-&gt; com.ibm.streamsx.hbase.sample</p>
+</section>
+<section>
+  <title outputclass="splhead-1">Operators</title>
+<sl>
+<sli><b><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/composite_operator__GetRecord">GetRecord</xref></b>: Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.
+</sli>
+</sl>
+</section>
+<section>
+  <title outputclass="splhead-1">Types</title>
+<sl>
+<sli><b><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/type__GetBookPlusType">GetBookPlusType</xref></b>: The type this get will use.
+</sli>
+<sli><b><xref href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml#spldoc_compilationunit__/type__GetBookType">GetBookType</xref></b>: The type this get will use.
+</sli>
+    </sl>
+</section>
+</refbody>
+</reference>
+

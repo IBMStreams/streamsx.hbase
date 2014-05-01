@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//ENs"
+"/homes/hny2/hildrum/Distillery.dir/kaveri_mar/ext/dita-ot/dtd/technicalContent/dtd/map.dtd">
+<map id="spldoc_map__toolkit__1.0.0">
+<title>GetRecord</title>
+<topicref navtitle="GetRecord 1.0.0" locktitle="yes" href="toolkit.xml" toc="yes" linking="normal">
+<topichead><topicmeta><navtitle>Namespaces</navtitle></topicmeta>
+<topicref navtitle="com.ibm.streamsx.hbase.sample" locktitle="yes" format="dita" href="com.ibm.streamsx.hbase.sample$.xml" toc="yes" linking="none"/>
+</topichead><topichead><topicmeta><navtitle>SPL Files</navtitle></topicmeta>
+<topicref navtitle="com.ibm.streamsx.hbase.sample/GetRecord.spl" locktitle="yes" format="dita" href="com.ibm.streamsx.hbase.sample$GetRecord$spl.xml" toc="yes" linking="none"/>
+</topichead></topicref></map>
+

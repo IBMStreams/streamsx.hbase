@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="GetRecord.spl"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_compilationunit__"/>
+<link rel="stylesheet" type="text/css" href="../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../html/spldoc.css"/>
+<title>GetRecord.spl</title>
+</head>
+<body id="spldoc_compilationunit__">
+
+
+<h1 class="title topictitle1">GetRecord.spl</h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="toolkit.html">
+GetRecord
+</a>
+-&gt; <a class="xref" href="com.ibm.streamsx.hbase.sample$.html">com.ibm.streamsx.hbase.sample</a>-&gt; GetRecord.spl</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
+  
+    <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    
+      <dt class="dt dlterm splhead-2">Composites</dt>
+
+      <dd class="dd"><dl class="dl">
+  
+     <dt class="dt dlterm"><a class="xref" href="#spldoc_compilationunit____composite_operator__GetRecord">composite GetRecord</a></dt>
+
+     <dd class="dd">Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.</dd>
+
+  
+     </dl>
+</dd>
+
+    
+    
+      <dt class="dt dlterm splhead-2">Types</dt>
+
+      <dd class="dd"><dl class="dl">
+  
+     <dt class="dt dlterm"><a class="xref" href="#spldoc_compilationunit____type__GetBookType">GetBookType</a></dt>
+
+     <dd class="dd">The type this get will use.</dd>
+
+  
+  
+     <dt class="dt dlterm"><a class="xref" href="#spldoc_compilationunit____type__GetBookPlusType">GetBookPlusType</a></dt>
+
+     <dd class="dd">The type this get will use.</dd>
+
+  
+     </dl>
+</dd>
+
+    
+     </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Composites</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit____composite_operator__GetRecord"><h2 class="title sectiontitle splpart">composite GetRecord</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple. 
+</p>
+
+<p class="p">In the GetSample, the possible outputs are either a value (of type rstring), a map, or a map of maps.  These are close to the HBASE interface, but this is not always a convenient format.   
+</p>
+
+<p class="p">In the PutRecord, GetRecord, and ScanRecord, we show a way to convert a streams tuple into HBASE entries.  In this mode, a tuple's attributes become columnQualifiers, and the values of those attributes are the the values corresponding to the columnQualifier.  
+</p>
+
+<p class="p">This example assumes you have already run PutRecord.   
+</p>
+
+<p class="p">We have two HBASEGet, below.  The first works fine, populating the book tuple based on what's in HBASE.  See the enriched stream, and the books.out file after running. Because there is no "Dracula:1897" in the database, all strings are empty. 
+</p>
+
+<p class="p">&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""} "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""} "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""} "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""} &lt;/code&gt; 
+</p>
+
+<p class="p">In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type has the "fiction" attribute, and there is no corresponding column qualifier, so all the fiction attributes are empty. In this case, we made use of the outputCountAttr, so it's possible to check notice that only four attributes of the five were populated.  Also, for the case of Dracula, numResults is zero because we not able to populate title, author_fname,  author_lname, year, or fiction.   
+</p>
+
+<p class="p">&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4 "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4 "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4 "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""},0 &lt;/code&gt; 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">keyList</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../image/com.ibm.streamsx.hbase.sample$GetRecord.svg" width="342" height="154">
+<span>SPL composite operator image not displayed. Problem loading file: ../image/com.ibm.streamsx.hbase.sample$GetRecord.svg
+</span>
+</object>
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Types</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit____type__GetBookType"><h2 class="title sectiontitle splpart">GetBookType</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">The type this get will use.  Notice that our PutRecord type doesn't exactly match this type--we are missing rating 
+</p>
+
+</div>
+
+<div class="section">
+   <p class="p">
+<tt class="ph tt">GetBookType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction;</tt>
+   </p>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit____type__GetBookPlusType"><h2 class="title sectiontitle splpart">GetBookPlusType</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">The type this get will use.  Notice that here we have an extra field, fiction, which was not populated in the  put example.  We will use this to demonstrate the  results parameter. 
+</p>
+
+</div>
+
+<div class="section">
+   <p class="p">
+<tt class="ph tt">GetBookPlusType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction;</tt>
+   </p>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

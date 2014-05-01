@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<srcCode:sourceModel xmlns:srcCode="http://www.ibm.com/xmlns/prod/streams/spl/sourceCode" xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <srcCode:sourceFile uri="com.ibm.streamsx.hbase.sample/GetRecord.spl">
+    <srcCode:compilationUnit>
+      <srcCode:splNamespace column="11" line="4" name="com.ibm.streamsx.hbase.sample"/>
+      <srcCode:useDirectives>
+        <srcCode:useDirective column="5" line="5" namespaceName="com.ibm.streamsx.hbase" tail="::HBASEGet"/>
+      </srcCode:useDirectives>
+      <srcCode:definitions>
+        <srcCode:typeDefinition endColumn="107" endLine="11" name="GetBookType" startColumn="1" startLine="11" value="rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction">
+          <srcCode:splDoc>
+            <srcCode:description>
+              <srcCode:description>The type this get will use.  Notice that our PutRecord type doesn't exactly match this type--we are missing rating
+
+</srcCode:description>
+            </srcCode:description>
+          </srcCode:splDoc>
+        </srcCode:typeDefinition>
+        <srcCode:typeDefinition endColumn="111" endLine="18" name="GetBookPlusType" startColumn="1" startLine="18" value="rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction">
+          <srcCode:splDoc>
+            <srcCode:description>
+              <srcCode:description>The type this get will use.  Notice that here we have an extra field, fiction, which was not populated in the 
+put example.  We will use this to demonstrate the  results parameter.
+
+</srcCode:description>
+            </srcCode:description>
+          </srcCode:splDoc>
+        </srcCode:typeDefinition>
+        <srcCode:compositeDefinition endColumn="1" endLine="93" startColumn="1" startLine="20">
+          <srcCode:compositeHead column="1" line="55" name="GetRecord">
+            <srcCode:splDoc>
+              <srcCode:description>
+                <srcCode:description>Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.
+
+In the GetSample, the possible outputs are either a value (of type rstring), a map, or a map of maps.  These are close
+to the HBASE interface, but this is not always a convenient format.  
+
+In the PutRecord, GetRecord, and ScanRecord, we show a way to convert a streams tuple into HBASE entries.  In this mode,
+a tuple's attributes become columnQualifiers, and the values of those attributes are the the values corresponding to the
+columnQualifier. 
+
+This example assumes you have already run PutRecord.  
+
+We have two HBASEGet, below.  The first works fine, populating the book tuple based on what's in HBASE.  See the enriched
+stream, and the books.out file after running. Because there is no "Dracula:1897" in the database, all strings are empty.
+
+&lt;code&gt;
+"War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""}
+"Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""}
+"Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""}
+"Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""}
+&lt;/code&gt;
+
+In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type
+has the "fiction" attribute, and there is no corresponding column qualifier, so all the fiction attributes are empty.
+In this case, we made use of the outputCountAttr, so it's possible to check notice that only four attributes of the five
+were populated.  Also, for the case of Dracula, numResults is zero because we not able to populate title, author_fname, 
+author_lname, year, or fiction.  
+
+&lt;code&gt;
+"War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4
+"Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4
+"Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4
+"Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""},0
+&lt;/code&gt;
+</srcCode:description>
+              </srcCode:description>
+            </srcCode:splDoc>
+          </srcCode:compositeHead>
+          <srcCode:compositeBody>
+            <srcCode:parameters>
+              <srcCode:parameter column="12" defaultValue="[&quot;War and Peace:1869&quot;, &quot;Jane Eyre:1847&quot;, &quot;Twilight:2005&quot;, &quot;Dracula:1897&quot;];" line="57" name="$keyList">
+                <srcCode:expressionMode mode="expression"/>
+              </srcCode:parameter>
+            </srcCode:parameters>
+            <srcCode:graph>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="33" line="63" operatorName="Beacon">
+                  <srcCode:outputs>
+                    <srcCode:output column="21" index="0" line="63" streamName="keyStream" type="rstring key"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="65" name="iterations">
+                      <srcCode:value expr="size($keyList)"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                  <srcCode:outputAssignments>
+                    <srcCode:outputAssignment column="8" line="66" portName="keyStream">
+                      <srcCode:attributeAssignment column="2" line="67" name="key">
+                        <srcCode:value expr="$keyList[IterationCount()]"/>
+                      </srcCode:attributeAssignment>
+                    </srcCode:outputAssignment>
+                  </srcCode:outputAssignments>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="50" line="70" operatorName="HBASEGet">
+                  <srcCode:outputs>
+                    <srcCode:output column="39" index="0" line="70" streamName="enriched" type="rstring key, GetBookType value"/>
+                  </srcCode:outputs>
+                  <srcCode:inputs>
+                    <srcCode:input column="59" index="0" line="70">
+                      <srcCode:istream column="59" line="70" name="keyStream"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="72" name="rowAttrName">
+                      <srcCode:value expr="&quot;key&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="73" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_books&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="74" name="staticColumnFamily">
+                      <srcCode:value expr="&quot;all&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="75" name="outAttrName">
+                      <srcCode:value expr="&quot;value&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="BookSink" line="78" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="27" index="0" line="78">
+                      <srcCode:istream column="27" line="78" name="enriched"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="79" name="file">
+                      <srcCode:value expr="&quot;books.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="78" line="82" operatorName="HBASEGet">
+                  <srcCode:outputs>
+                    <srcCode:output column="61" index="0" line="82" streamName="missingFiction" type="rstring key, GetBookPlusType value, int32 numResults"/>
+                  </srcCode:outputs>
+                  <srcCode:inputs>
+                    <srcCode:input column="87" index="0" line="82">
+                      <srcCode:istream column="87" line="82" name="keyStream"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="84" name="rowAttrName">
+                      <srcCode:value expr="&quot;key&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="85" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_books&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="86" name="staticColumnFamily">
+                      <srcCode:value expr="&quot;all&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="87" name="outputCountAttr">
+                      <srcCode:value expr="&quot;numResults&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="88" name="outAttrName">
+                      <srcCode:value expr="&quot;value&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="BookPlusSink" line="90" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="31" index="0" line="90">
+                      <srcCode:istream column="31" line="90" name="missingFiction"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="91" name="file">
+                      <srcCode:value expr="&quot;bookPlusType.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+            </srcCode:graph>
+          </srcCode:compositeBody>
+        </srcCode:compositeDefinition>
+      </srcCode:definitions>
+    </srcCode:compilationUnit>
+  </srcCode:sourceFile>
+
+</srcCode:sourceModel>
