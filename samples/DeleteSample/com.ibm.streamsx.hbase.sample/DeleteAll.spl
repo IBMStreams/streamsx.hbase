@@ -1,0 +1,132 @@
+namespace com.ibm.streamsx.hbase.sample;
+use com.ibm.streamsx.hbase::*;
+/**
+ * This demonstrates the use of the deleteAllVersions parameter.
+ * 
+ * This parameter is used to control whether all versions of an entry are deleted, or just one.
+ * To use this, the table streamsSample_deleteTest needs to be created with columnFamily all.
+ * 
+ * The tuples will arrive one-by-one, and are sent round-robin to the the three column families.
+ * When all the 12 tuples from the initial beacon have been sent, you'll see that the table status is
+ * <code>"deleteTest",3,{justOne="This is tuple 10",all="This is tuple 11",notspecified="This is tuple 9"}</code>
+ * 
+ * This is--for the row deleteTest, three values in the tuple were populated.  Then it gives you
+ * the three values for the columnQualifers justOne, all, and notspecified.
+ * 
+ * At some point after that, the single deleteTuple is sent.  For
+ * * columnFamily justOne: it deletes just the most recent entry (deleteAllVersions: false)
+ * * columnFamily all: it delete all entries (deleteAllVersions: true)
+ * * columnFamily notspecified: it deletes all entries (deleteAllVersions unmentioned, and defaults to true.
+ * 
+ * After the delete, deleteVersion_tableStatus.out shows the following:
+ * <code>"deleteTest",1,{justOne="This is tuple 7",all="",notspecified=""</code>
+ * Note that only one entry of the three was populated, and the other two have their default values.
+ * Also, notice that the value for the columnFamily "justOne" is tuple 7 and no longer tuple 10.
+ * 
+ */
+composite DeleteAll {
+param 
+expression<rstring> $tableName: "streamsSample_deleteTest";
+expression<list<rstring>> $qualifiers : ["notspecified","justOne","all"];
+expression<float64> $deleteDelay: 30.0;
+graph
+
+/* The next two operators load the table. 
+ * What we do is that we load each of the columnFamilies with 
+ * <code>This is tuple i</code> for i from 0 to 3.
+ * 
+ * The column families are default, justOne, and all.  
+ * 
+ */
+stream<rstring row, rstring colQ, rstring message> inputStream = Beacon() {
+param iterations: 12;
+period: 1.0;
+
+output inputStream:
+row = "deleteTest",
+colQ = $qualifiers[IterationCount()%(uint64)size($qualifiers)],
+message = "This is tuple "+(rstring)IterationCount();
+}
+
+() as loadTable = HBASEPut(inputStream) {
+param
+staticColumnFamily: "all";
+rowAttrName: "row";
+columnQualifierAttrName: "colQ";
+valueAttrName: "message";
+tableName: $tableName;
+}
+// End table loading.  
+
+// These segments do the querying, just so we can see what's in the table.  We do a query every second.
+// for 100 seconds.  
+stream<rstring row> queryStream = Beacon() {
+param
+period: 1.0;
+iterations: 100;
+output queryStream:
+row="deleteTest";
+}
+
+stream<rstring row, int32 numResults, tuple<rstring justOne, rstring all, rstring notspecified> value > tableStatus= HBASEGet(queryStream) {
+param
+rowAttrName:"row";
+tableName: $tableName;
+outAttrName: "value";
+staticColumnFamily: "all";
+outputCountAttr: "numResults";
+}
+
+() as getSink = FileSink(tableStatus) {
+param file: "deleteVersion_tableStatus.out";
+}
+
+// Beacon to trigger the delete operator.
+stream<rstring row> deleteStream = Beacon() {
+param 
+iterations: 1;
+initDelay: $deleteDelay;
+output deleteStream:
+row = "deleteTest";
+}
+
+// Delete just one version.
+() as deleteOne = HBASEDelete(deleteStream) {
+param
+tableName: $tableName;
+rowAttrName: "row";
+staticColumnFamily:"all";
+staticColumnQualifier:"justOne";
+deleteAllVersions: false;
+}
+
+
+
+// Delete all versions explicitly
+() as deleteAll = HBASEDelete(deleteStream) {
+param
+tableName: $tableName;
+rowAttrName: "row";
+staticColumnFamily:"all";
+staticColumnQualifier:"all";
+deleteAllVersions: true;
+}
+
+// Use the default delete mode (delete all)
+// Also in this example, we specify the columnQualifier via the deleteStream
+stream<rstring row, rstring colQ> deleteStreamWithColQ = Functor(deleteStream) {
+output deleteStreamWithColQ:
+colQ= "notspecified";
+}
+
+
+() as deletedefault = HBASEDelete(deleteStreamWithColQ) {
+param
+tableName: $tableName;
+rowAttrName: "row";
+staticColumnFamily:"all";
+columnQualifierAttrName: "colQ";
+}
+
+
+}
