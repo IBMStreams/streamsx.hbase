@@ -18,6 +18,8 @@ This is tested with HBase 0.94.3 and Hadoop 1.1.0.
 
 To run these operators, you must install Apache HBASE (https://hbase.apache.org/).  Apache HBASE usually uses Apache Hadoop (http://hadoop.apache.org/) and Apache Zookeeper (http://zookeeper.apache.org/).  An installation of IBM's BigInsights includes everything you need.  
 
+The SPLDoc for this toolkit includes some information on getting started once you have HBASE and HADOOP http://ibmstreams.github.io/streamsx.hbase/com.ibm.streamsx.hbase/doc/spldoc/html/index.html
+
 Please see the individual product pages for instructions on installation.  
 
 ##Configuration
