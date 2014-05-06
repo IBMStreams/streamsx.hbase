@@ -1,9 +1,9 @@
 "Aragorn",{}
 "Arwen",{}
-"Elrond",{}
+"Elrond",{"beginFellowship":"Rivendell"}
 "Eowyn",{}
 "Bilbo",{}
 "Boromir",{"beginFellowship":"travelling","beginTwoTowers":"dead"}
-"Frodo",{}
-"Gandalf",{"beginTwoTowers":"dead"}
-"Tom Bombadil",{}
+"Frodo",{"beginFellowship":"The Shire"}
+"Gandalf",{"beginFellowship":"The Shire","beginTwoTowers":"dead"}
+"Tom Bombadil",{"beginFellowship":"Old Forest"}

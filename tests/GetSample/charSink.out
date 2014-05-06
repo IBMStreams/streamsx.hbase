@@ -1,9 +1,9 @@
 "Aragorn",{"appearance":{"height":"tall"}}
-"Arwen",{"appearance":{"overall":"beautiful"}}
-"Elrond",{}
-"Eowyn",{"appearance":{"overall":"beautiful"}}
-"Bilbo",{}
+"Arwen",{"appearance":{"hair":"dark","overall":"beautiful"}}
+"Elrond",{"location":{"beginFellowship":"Rivendell"}}
+"Eowyn",{"appearance":{"hair":"blonde","overall":"beautiful"}}
+"Bilbo",{"appearance":{"age":"well-preserved"}}
 "Boromir",{"location":{"beginFellowship":"travelling","beginTwoTowers":"dead"}}
-"Frodo",{}
-"Gandalf",{"location":{"beginTwoTowers":"dead"}}
-"Tom Bombadil",{}
+"Frodo",{"location":{"beginFellowship":"The Shire"},"appearance":{"height":"short"}}
+"Gandalf",{"location":{"beginFellowship":"The Shire","beginTwoTowers":"dead"},"appearance":{"beard":"bushy"}}
+"Tom Bombadil",{"location":{"beginFellowship":"Old Forest"}}

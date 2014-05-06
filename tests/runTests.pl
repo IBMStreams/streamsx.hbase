@@ -47,6 +47,7 @@ sub diff(%) {
         my %args = @_;
 	my $expected = $args{"expected"};
 	my $actual= $args{"actual"};
+	print "Checking $actual\n";
 	system("diff $expected $actual");
 	die "diff failed" unless ($? >> 8 == 0) ;
 }
@@ -64,6 +65,7 @@ sub main() {
 my @tests = `ls *.cfg`;
 
 for my $testFile (@tests) {
+    chomp($testFile);
     next unless (!$runPattern || $testFile =~/$runPattern/);
     open(INFILE,"<$testFile"); 
 
