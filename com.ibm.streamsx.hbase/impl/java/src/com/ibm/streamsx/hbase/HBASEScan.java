@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -91,6 +92,7 @@ public class HBASEScan extends HBASEOperator{
     private int maxChannels = 0;
     java.util.concurrent.ConcurrentLinkedQueue<Pair<byte[],byte[]>> regionQueue;
     Logger logger = Logger.getLogger(this.getClass());
+    PopulateTuple recordPopulator = null;
     
     @Parameter(name=MAXIMUM_SCAN_THREADS,optional=true,description="Maximum number of threads to use to scan the table.  Defaults to one.")
     public void setMaximumThreads(int max) {
@@ -174,7 +176,7 @@ public class HBASEScan extends HBASEOperator{
     		outputMode = OutputMode.RECORD;
     		TupleType temp = ((TupleType)outSchema.getAttribute(outAttrIndex).getType());
     		recordSchema = temp.getTupleSchema();
-    		recordNames =recordSchema.getAttributeNames();
+    		recordPopulator = new PopulateTuple(recordSchema,charset);
     	}
     	else {
     		outputMode = OutputMode.TUPLES;
@@ -395,15 +397,9 @@ public class HBASEScan extends HBASEOperator{
     				}
     			}
     			else if (OutputMode.RECORD == outputMode) {
-    				Map<String,RString> fields = null;
+    				Map<String,Object> fields = new HashMap<String,Object>();
     				for (byte[] family: allValues.keySet()) {
-    					Map<String,RString>	 tmpMap = extractRStrings(recordNames,allValues.get(family));
-    					if (fields == null) {
-    						fields = tmpMap;
-    					}
-    					else {
-    						fields.putAll(tmpMap);
-    					}
+    					recordPopulator.getAttributeMap(fields,allValues.get(family));
     				}
     				OutputTuple tuple = out.newTuple();
     				tuple.setTuple(outAttrIndex, recordSchema.getTuple(fields));

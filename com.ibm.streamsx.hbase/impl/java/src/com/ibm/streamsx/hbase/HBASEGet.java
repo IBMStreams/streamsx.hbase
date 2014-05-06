@@ -79,9 +79,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	}
 	
 	// The next two are used in Record mode only.
-	private Set<String> colQualifiers = null;
 	StreamSchema recordSchema = null;
-	
+	private PopulateTuple recordPopulator = null;
 
 	Logger logger = Logger.getLogger(this.getClass());
 
@@ -92,6 +91,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private String outAttrName;
 	private String successAttr = null;
 	private OutputMapper primativeOutputMapper = null;
+
 	
 	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute of the output port in which to put the count of values populated.",optional=true)
 	public void setSuccessAttr(String name) {
@@ -157,10 +157,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         	
         	// These two need to be populated.  Let's do it once during initialization.
         	recordSchema = ((TupleType)outType).getTupleSchema();
-        	colQualifiers = recordSchema.getAttributeNames();
-        	if (logger.isInfoEnabled()) {
-        	logger.info("Expect to find the following columnQualifers: ");
-        	}
+        	recordPopulator = new PopulateTuple(recordSchema,charset);
         }
         else {
         	throw new Exception("Attribute "+outAttrName+" must be of type rstring, list<rstring>, or a map");
@@ -247,7 +244,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
         case RECORD:
         	if (numResults > 0) {
         		// use the family map to get the outTupleFields.
-        		Map<String,RString> outTupleFields =  extractRStrings(colQualifiers,r.getFamilyMap(colF));
+        		Map<String,Object> outTupleFields =  new HashMap<String,Object>(recordSchema.getAttributeCount());
+        		recordPopulator.getAttributeMap(outTupleFields,r.getFamilyMap(colF));
         		// In this case, we reset the number of results.  This way, a down stream operator can check that all were
         		// populated.
         		numResults = outTupleFields.size();

@@ -10,7 +10,9 @@ import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.types.Blob;
 import com.ibm.streams.operator.types.RString;
+import com.ibm.streams.operator.types.ValueFactory;
 
 public class OutputMapper {
 	
@@ -19,15 +21,16 @@ public class OutputMapper {
     private Charset charset = null;
 	
 	    OutputMapper(StreamSchema schema, String attrName,Charset incharset) throws Exception{
-	charset = incharset;
+	    	charset = incharset;
 		Attribute attr = schema.getAttribute(attrName);
 		if (attr == null) {
 			throw new Exception ("Expected to find attribute "+attrName);
 		}
 		attrIndex = attr.getIndex();
 		attrMetaType = attr.getType().getMetaType();
-		if (attrMetaType != MetaType.RSTRING &
-				MetaType.INT64  != attrMetaType) {
+		if (attrMetaType != MetaType.RSTRING &&
+				MetaType.INT64  != attrMetaType &&
+				MetaType.BLOB != attrMetaType) {
 			throw new Exception("Unsupported type "+attrMetaType+" for attribute "+attrName);
 		}
 	}
@@ -38,6 +41,9 @@ public class OutputMapper {
 		}
 		else if (attrMetaType == MetaType.RSTRING) {	
 		    tuple.setString(attrIndex, new String(value,charset));
+		}
+		else if (attrMetaType == MetaType.BLOB) {
+			tuple.setBlob(attrIndex,ValueFactory.newBlob(value));
 		}
 	}
 

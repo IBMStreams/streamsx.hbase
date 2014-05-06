@@ -35,7 +35,8 @@ import com.ibm.streams.operator.Type.MetaType;
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
-	protected Charset charset = Charset.forName("UTF-8");
+	public final static Charset DEFAULT_CHAR_SET = Charset.forName("UTF-8");
+	protected Charset charset = DEFAULT_CHAR_SET;
 	private String tableName;
 	protected HTable myTable;
 	static final String TABLE_PARAM_NAME = "tableName";
@@ -43,6 +44,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String CHARSET_PARAM_NAME = "charset";
+	
 	
 	@Parameter(name=CHARSET_PARAM_NAME, optional=true,description="Character set to be used for converting byte[] to Strings and Strings to byte[].  Defaults to UTF-8")
 	public void getCharset(String _name) {
@@ -128,25 +130,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 			myTable.close();
 		}
 		super.processPunctuation(stream, mark);
-	}
-	
-	/**
-	 * Used by HBASEGet and HBASEScan create a map suitable for tuple creation from
-	 * the family map
-	 * @param attrNames The names of hte attributes to populate
-	 * @param familyMap HBASE results
-	 * @return
-	 */
-	protected Map<String,RString> extractRStrings(Set<String> attrNames,
-			NavigableMap<byte[], byte[]> familyMap) {
-		Map<String,RString> toReturn = new HashMap<String,RString>();
-		for (String attr: attrNames) {
-			byte qualName[] = attr.getBytes(charset);
-			if (familyMap.containsKey(qualName)) {
-				toReturn.put(attr,new RString(familyMap.get(qualName)));;
-			}
-		}
-		return toReturn;
 	}
 	
 	/**

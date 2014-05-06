@@ -70,4 +70,5 @@ composite ScanString
 		file: "iliad_k.out";
 		}
 
+		config logLevel: info;
 }

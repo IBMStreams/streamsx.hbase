@@ -1,3 +1,8 @@
+# project specific excludes
+/com.ibm.streamsx.hbase/com.ibm.streamsx.hbase
+/samples/*/doc/
+com.ibm.streamsx.hbase/doc/
+
 # streams-specific excludes
 toolkit.xml
 impl/nl/include/*.h
