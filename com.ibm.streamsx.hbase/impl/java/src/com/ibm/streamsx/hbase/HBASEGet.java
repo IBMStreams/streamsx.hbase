@@ -81,12 +81,16 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	// The next two are used in Record mode only.
 	StreamSchema recordSchema = null;
 	private PopulateTuple recordPopulator = null;
+	private int maxVersions =-1;
+	private long minTimestamp = Long.MIN_VALUE;
 
 	Logger logger = Logger.getLogger(this.getClass());
 
 	
 	static final String OUT_PARAM_NAME ="outAttrName";
 	static final String SUCCESS_PARAM_NAME="outputCountAttr";
+	static final String MIN_TIMESTAMP_PARAM_NAME="minTimestamp";
+	static final String MAX_VERSIONS_PARAM_NAME="maxVersions";
 	private OutputMode outputMode;
 	private String outAttrName;
 	private String successAttr = null;
@@ -100,6 +104,15 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional=true)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
+	}
+	@Parameter(name=MIN_TIMESTAMP_PARAM_NAME,optional=true,description="The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.")
+	public void setMinTimestamp(long inTs) {
+		minTimestamp = inTs;
+	}
+	
+	@Parameter(name=MAX_VERSIONS_PARAM_NAME,optional=true,description="The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.")
+	public void setMaxVersions(int inMax) {
+		maxVersions = inMax;
 	}
 	
 	
@@ -151,8 +164,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
         	}
         }
         else if (MetaType.TUPLE == mType){
-    		if (columnFamilyAttr == null  && colFamBytes == null)
-    			throw new Exception("If output is of type tuple, then "+COL_FAM_PARAM_NAME+" or "+STATIC_COLF_NAME+" must be set");
         	outputMode = OutputMode.RECORD;
         	
         	// These two need to be populated.  Let's do it once during initialization.
@@ -211,6 +222,16 @@ public class HBASEGet extends HBASEOperatorWithInput {
         // Copy across all matching attributes.
         outTuple.assign(tuple);
         Get myGet = new Get(getRow(tuple));
+        if (maxVersions >0) {
+        	myGet.setMaxVersions(maxVersions);
+        }
+        else if (maxVersions == 0) {
+        	myGet.setMaxVersions();
+        }
+        if (minTimestamp != Long.MIN_VALUE) {
+        	if (logger.isInfoEnabled()) logger.info("Setting time range to ["+minTimestamp+", "+Long.MAX_VALUE+")");
+        	myGet.setTimeRange(minTimestamp, Long.MAX_VALUE);
+        }
         byte colF[] =null;
         byte colQ[] =null;
         if (colFamBytes != null || 
@@ -245,7 +266,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         	if (numResults > 0) {
         		// use the family map to get the outTupleFields.
         		Map<String,Object> outTupleFields =  new HashMap<String,Object>(recordSchema.getAttributeCount());
-        		recordPopulator.getAttributeMap(outTupleFields,r.getFamilyMap(colF));
+        		recordPopulator.getAttributeMapWithVersions(outTupleFields,r.getMap());
         		// In this case, we reset the number of results.  This way, a down stream operator can check that all were
         		// populated.
         		numResults = outTupleFields.size();

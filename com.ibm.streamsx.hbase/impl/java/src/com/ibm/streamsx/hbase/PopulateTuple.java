@@ -2,7 +2,9 @@ package com.ibm.streamsx.hbase;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -95,7 +97,7 @@ public class PopulateTuple {
 				// * first element is a supported basic type
 				// * second element is a long for the timestamp
 				tupleSchema[i] = tupSchema;
-				outTypes[i] = mType;
+				outTypes[i] = elementMetaType;
 			}
 			else {
 				throw new Exception("Attribute "+attr.getName()+" has unsupported type "+attr.getType());
@@ -135,22 +137,25 @@ public class PopulateTuple {
 			for(int i = 0; i < columnQualifiers.length; i++) {
 				byte colQ[] = columnQualifiers[i];
 				if (resultMap.get(fam).containsKey(colQ)) {
-					Map.Entry<Long, byte[]> lastEntry = resultMap.get(fam).get(colQ).lastEntry();
-					if (lastEntry == null) {
+					Map.Entry<Long, byte[]> lastestEntry = resultMap.get(fam).get(colQ).firstEntry();
+					if (lastestEntry == null) {
 						// If there is no entry then let's just skip to the next columnQualifier
 						continue;
 					}
 					if (tupleSchema[i] == null) {
 						// easy to populate!	
-						inMap.put(attrNames[i], castFromBytes(lastEntry.getValue(),outTypes[i]));
+						inMap.put(attrNames[i], castFromBytes(lastestEntry.getValue(),outTypes[i]));
 					}
 					else {
+						List<Tuple> tupleList = new ArrayList<Tuple>();
 						for (Map.Entry<Long,byte[]> entry : resultMap.get(fam).get(colQ).entrySet()) {
 							Object[] tupleArray= new Object[2];
-							tupleArray[0] = entry.getKey();
-							tupleArray[1] = castFromBytes(entry.getValue(),outTypes[i]);
+							tupleArray[1] = entry.getKey();
+							tupleArray[0] = castFromBytes(entry.getValue(),outTypes[i]);
 							Tuple newTuple = tupleSchema[i].getTuple(tupleArray);
+							tupleList.add(newTuple);
 						}
+						inMap.put(attrNames[i], tupleList);
 					}
 				}
 			}
@@ -165,10 +170,13 @@ public class PopulateTuple {
 			return ByteBuffer.wrap(value).getLong();
 		}
 		else if (MetaType.RSTRING == metaType) {
-			return new String(value,charset);
+			return new RString(value);
 		}
 		else if (MetaType.BLOB == metaType) {
 			return ValueFactory.newBlob(value);
+		}
+		else if (MetaType.USTRING == metaType) {
+			return new String(value,charset);
 		}
 		else {
 			throw new RuntimeException("Cannot create object from "+metaType);

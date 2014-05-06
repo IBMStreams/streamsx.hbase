@@ -29,6 +29,7 @@ public class OutputMapper {
 		attrIndex = attr.getIndex();
 		attrMetaType = attr.getType().getMetaType();
 		if (attrMetaType != MetaType.RSTRING &&
+				attrMetaType != MetaType.USTRING && 
 				MetaType.INT64  != attrMetaType &&
 				MetaType.BLOB != attrMetaType) {
 			throw new Exception("Unsupported type "+attrMetaType+" for attribute "+attrName);
@@ -39,8 +40,11 @@ public class OutputMapper {
 		if (attrMetaType == MetaType.INT64) {
 			tuple.setLong(attrIndex, ByteBuffer.wrap(value).getLong());
 		}
+		else if (attrMetaType == MetaType.USTRING) {
+			tuple.setString(attrIndex, new String(value,charset));
+		}
 		else if (attrMetaType == MetaType.RSTRING) {	
-		    tuple.setString(attrIndex, new String(value,charset));
+		    tuple.setObject(attrIndex, new RString(value));
 		}
 		else if (attrMetaType == MetaType.BLOB) {
 			tuple.setBlob(attrIndex,ValueFactory.newBlob(value));

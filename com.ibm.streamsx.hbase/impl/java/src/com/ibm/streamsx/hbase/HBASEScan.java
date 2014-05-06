@@ -82,7 +82,6 @@ public class HBASEScan extends HBASEOperator{
     private int resultCountIndex = -1;
     
     // Used only in record mode
-    private Set<String> recordNames = null;
     private StreamSchema recordSchema = null;
    
     private int maxThreads = 1;
@@ -333,7 +332,7 @@ public class HBASEScan extends HBASEOperator{
     	if (initDelay > 0.0) {
     		Thread.sleep((int)initDelay*1000);
     	}
-    	logger.info("Done sleeping");
+    	if (logger.isInfoEnabled()) logger.info("Done sleeping");
     	// First check to see if there are any regions left to scan.  If not, this thread is finished.
     	Pair<byte[],byte[]> thisScan = regionQueue.poll();
     	while (thisScan != null) {
@@ -367,7 +366,7 @@ public class HBASEScan extends HBASEOperator{
     				myScan.addFamily(fam.getBytes(charset));
     			}
     		}
-    		logger.info("Scan set, processing results");
+    		if (logger.isInfoEnabled()) logger.info("Scan set, processing results");
     		// Get a results scanner.
     		ResultScanner results = myTable.getScanner(myScan);
     		// Process results.
@@ -420,14 +419,14 @@ public class HBASEScan extends HBASEOperator{
     		}	
     		// All done!
     		results.close();
-    		logger.info("Close result set.");
+    		if (logger.isInfoEnabled()) logger.info("Close result set.");
     		// See if there's any more work to do.
     		thisScan = regionQueue.poll();
     	} // end while
     	
-    	// This function decides whether to send punctation.  We send a window marker when all threads have finished. 
+    	// This function decides whether to send punctuation.  We send a window marker when all threads have finished. 
     	threadFinished();
-    	logger.info("Thread finishing");
+    	if (logger.isInfoEnabled()) logger.info("Thread finishing");
     }
 
 }
