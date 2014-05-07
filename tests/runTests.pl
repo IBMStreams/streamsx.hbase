@@ -47,8 +47,15 @@ sub diff(%) {
         my %args = @_;
 	my $expected = $args{"expected"};
 	my $actual= $args{"actual"};
+	my $replaceTS = exists $args{"replaceTimestamp"};
 	print "Checking $actual\n";
-	system("diff $expected $actual");
+	if ($replaceTS) {
+	    print "sed 's/13[0-9]*/TIMESTAMP/g' $actual |  diff $expected -\n";
+	    system("sed 's/13[0-9]*/TIMESTAMP/g' $actual | diff $expected -");
+	}
+	else {
+	    system("diff $expected $actual");
+	}
 	die "diff failed" unless ($? >> 8 == 0) ;
 }
 
