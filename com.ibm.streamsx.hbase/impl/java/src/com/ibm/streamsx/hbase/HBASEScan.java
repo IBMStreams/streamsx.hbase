@@ -73,25 +73,23 @@ public class HBASEScan extends HBASEOperator{
     private int outRow = -1;
     private int outColumnF = -1;
     private int outColumnQ = -1;
-    private OutputMapper outValue = null;
     
     private String outAttrName = "value";
-    private int outAttrIndex = -1;
+    private OutputMapper outMapper = null;
     
     private String resultCountAttrName = null;
     private int resultCountIndex = -1;
-    
-    // Used only in record mode
-    private StreamSchema recordSchema = null;
    
     private int maxThreads = 1;
     private int actualNumThreads = -1;
     private int numFinishedThreads = -1;
     private int channel = -1;
     private int maxChannels = 0;
+    private long minTimestamp = Long.MIN_VALUE;
+    private int maxVersions = -1;
     java.util.concurrent.ConcurrentLinkedQueue<Pair<byte[],byte[]>> regionQueue;
     Logger logger = Logger.getLogger(this.getClass());
-    PopulateTuple recordPopulator = null;
+    RecordOutputMapper recordPopulator = null;
     
     @Parameter(name=MAXIMUM_SCAN_THREADS,optional=true,description="Maximum number of threads to use to scan the table.  Defaults to one.")
     public void setMaximumThreads(int max) {
@@ -101,6 +99,16 @@ public class HBASEScan extends HBASEOperator{
     @Parameter(optional=true,description="Delay, in seconds, before starting scan.")
     public void setInitDelay(double delay) {
     	initDelay=delay;
+    }
+    
+    @Parameter(name=HBASEGet.MIN_TIMESTAMP_PARAM_NAME,optional=true,description=HBASEGet.MIN_TIMESTAMP_DESC)
+    public void setMinTimestamp(long inTS) {
+    	minTimestamp= inTS;
+    }
+    
+    @Parameter(name=HBASEGet.MAX_VERSIONS_PARAM_NAME,optional=true,description=HBASEGet.MAX_VERSIONS_DESC)
+    public void setMaxVersions(int inMax) {
+    	maxVersions=inMax;
     }
     
     @Parameter(optional=true,description="If this operator is part of a parallel region it shares the work of scanning with other operators in the region.  To do this, this should be set by calling getChannel().  It is required if maximum number of channels is other than zero.")
@@ -161,26 +169,25 @@ public class HBASEScan extends HBASEOperator{
     	StreamSchema outSchema = output.getStreamSchema();
 
     	if (resultCountAttrName != null) {
-    		resultCountIndex = checkAndGetIndex(outSchema,resultCountAttrName,true) ;
+    		resultCountIndex = checkAndGetIndex(outSchema,resultCountAttrName,MetaType.INT32,true) ;
     	}
-    	Attribute outAttr = outSchema.getAttribute(outAttrName);
-    	if (outAttr == null) {
-    		throw new Exception("Expected attribute "+outAttrName+" to be present, but not found");
-    	}
-    	outAttrIndex = outAttr.getIndex();
+    	
+    	outMapper = OutputMapper.createOutputMapper(outSchema, outAttrName,charset);
+    	
     	outRow = checkAndGetIndex(outSchema,"row",false);
     	outColumnF = checkAndGetIndex(outSchema,"columnFamily",false);
     	outColumnQ = checkAndGetIndex(outSchema,"columnQualifier",false);
-    	if (outAttr.getType().getMetaType() == MetaType.TUPLE) {
+    	
+    	if (outMapper.isCellPopulator()) {
+    		outputMode = OutputMode.TUPLES;
+    	}
+    	else if (outMapper.isRecordPopulator()) {
     		outputMode = OutputMode.RECORD;
-    		TupleType temp = ((TupleType)outSchema.getAttribute(outAttrIndex).getType());
-    		recordSchema = temp.getTupleSchema();
-    		recordPopulator = new PopulateTuple(recordSchema,charset);
     	}
     	else {
-    		outputMode = OutputMode.TUPLES;
-    		outValue = new OutputMapper(outSchema, outAttrName,charset);
+    		throw new Exception("OutputMapper is neither Cell nor Record populator");
     	}
+  
 
 
     	regionQueue = new ConcurrentLinkedQueue<Pair<byte[],byte[]>>();
@@ -347,10 +354,20 @@ public class HBASEScan extends HBASEOperator{
     			myScan = new Scan(startBytes);
     		}
     		else if (endRow != null) {
-    			myScan = new Scan(null,endBytes);
+    			myScan = new Scan(new byte[0],endBytes);
     		}	
     		else {
     			myScan = new Scan();
+    		}
+    		if (maxVersions == 0) {
+    			myScan.setMaxVersions();
+    		}
+    		else if (maxVersions >0) {
+    			myScan.setMaxVersions(maxVersions);
+    		}
+    		
+    		if (minTimestamp != Long.MIN_VALUE) {
+    			myScan.setTimeRange(minTimestamp, Long.MAX_VALUE);
     		}
     		// select column families and column qualifiers
     		if (staticColumnFamilyList != null && staticColumnQualifierList != null) {
@@ -373,12 +390,17 @@ public class HBASEScan extends HBASEOperator{
     		Result currRow = results.next();
     		while (currRow != null) {
     			String row = new String(currRow.getRow(),charset);
-    			NavigableMap<byte[],NavigableMap<byte[],byte[]>> allValues = currRow.getNoVersionMap();
+    			NavigableMap<byte[],NavigableMap<byte[],NavigableMap<Long,byte[]>>> allValues = currRow.getMap();
     			if (OutputMode.TUPLES == outputMode) {
     				for (byte[] family: allValues.keySet()) {
     					for (byte [] qual: allValues.get(family).keySet()) {
+    						NavigableMap<Long,byte[]> thisCell = allValues.get(family).get(qual);
+    						if (thisCell.isEmpty()) {
+    							// If there are no values here, we don't want to output a tuple
+    							continue;
+    						}
+    						// If we get here, we can be probably assume the map is not empty.
     						OutputTuple tuple = out.newTuple();
-
     						if (outRow >= 0)
     							tuple.setString(outRow,row);
     						if (outColumnF >= 0)
@@ -386,8 +408,8 @@ public class HBASEScan extends HBASEOperator{
 
     						if (outColumnQ >= 0)
     							tuple.setString(outColumnQ,new String(qual,charset));
-
-    						outValue.populate(tuple,allValues.get(family).get(qual));
+    						// Don't need to look at teh return value, because we've already determined it's non-empty.
+    						outMapper.populate(tuple,thisCell);
     						if (resultCountIndex >=0) {
     							tuple.setInt(resultCountIndex,1);
     						}
@@ -396,16 +418,12 @@ public class HBASEScan extends HBASEOperator{
     				}
     			}
     			else if (OutputMode.RECORD == outputMode) {
-    				Map<String,Object> fields = new HashMap<String,Object>();
-    				for (byte[] family: allValues.keySet()) {
-    					recordPopulator.getAttributeMap(fields,allValues.get(family));
-    				}
     				OutputTuple tuple = out.newTuple();
-    				tuple.setTuple(outAttrIndex, recordSchema.getTuple(fields));
+    				int numResults = outMapper.populateRecord(tuple, currRow.getMap());
     				if (outRow >= 0)
     					tuple.setString(outRow,row);
     				if (resultCountIndex >=0) {
-    					tuple.setInt(resultCountIndex, fields.size());
+    					tuple.setInt(resultCountIndex, numResults);
     				}
     				out.submit(tuple);
     			}

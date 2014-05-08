@@ -92,6 +92,28 @@ public abstract class HBASEOperator extends AbstractOperator {
 		return checkAndGetIndex(schema,attrName,true);
 	}
 	
+	/**
+	 * Helper function to check that an attribute is the right type and return the index if so.
+	 * We may have to eventually allow a list of types...
+	 * @param schema Input schema
+	 * @param attrName Attribute name
+	 * @param throwException  If true, throw an exception when attribute isn't found., if false, return -1.
+	 * @return
+	 * @throws Exception
+	 */
+	protected int checkAndGetIndex(StreamSchema schema, String attrName, MetaType allowedType, boolean throwException) throws Exception {
+		Attribute attr = schema.getAttribute(attrName);
+		if (attr == null) {
+			if (throwException)
+				throw new Exception("Expected attribute "+attrName+" to be present, but not found");
+			else 
+				return -1;
+		}
+		if (attr.getType().getMetaType() != allowedType) {
+			throw new Exception("Expected attribute "+attrName+" to have type "+allowedType+", found "+attr.getType().getMetaType());
+		}
+		return attr.getIndex();
+	}
 	
 	/**
 	 * Loads the configuration, and creates an HTable instance.  If the table doesn't not exist, or cannot be
