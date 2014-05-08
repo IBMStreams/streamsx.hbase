@@ -9,11 +9,24 @@ die "Must have HADOOP_HOME specified in environment before running" if  ($ENV{HA
 die "Must have STREAMS_INSTALL specified in environment before running" if ($ENV{STREAMS_INSTALL} eq "");
 
 
+my $numDiff =0;
+my $numMakeAndRun =0;
+my $numRunCommand = 0;
+my $numClearTable = 0;
 my $runPattern;
-GetOptions ("runPattern=s" => \$runPattern);
+my $disableTableCreation;
+my $debug;
+GetOptions ("runPattern=s" => \$runPattern,
+            "disableTableCreation" =>\$disableTableCreation,
+            "debug" => \$debug);
+my %commandResults;
 
 
 sub clearTable(%) {
+    if ($disableTableCreation) {
+	return;
+    }
+    $numClearTable++;
     my %args = @_;
     my $tableName = $args{"tableName"};
     my $colFam1 = $args{"firstColumnFamily"};
@@ -25,30 +38,76 @@ sub clearTable(%) {
     }
     system("echo \"disable '$tableName'; drop '$tableName'\; ${createCommand}\" | \$HBASE_HOME/bin/hbase shell > shellResults");
    die "Problems creating table" unless ($? >> 8 == 0) ;
-    print "Table $tableName with columnfamilies $colFam1 $colFam2 is ready.\n";
+    $debug && print "Table $tableName with columnfamilies $colFam1 $colFam2 is ready.\n";
 
 }
 
 # Probably should copy, then make and run, but not doing that for now.
 sub makeAndRun(%) {
     my %args = @_;
+    $numMakeAndRun++;
     my $dir = $args{"dir"};
     my $target= $args{"target"};
     my $prog = "output/bin/standalone";
     if (exists $args{"exec"}) {
 	$prog = $args{"exec"}."/bin/standalone";
     }
-    print STDOUT "cd $dir; make $target; $prog\n";
-    system("cd $dir; make $target; $prog");
+
+    my $runString = "cd $dir; make $target; $prog";
+
+    for (my $i = 0; $i < 10; $i++) {
+	my $thisParam="param".$i;
+	my $thisValue = "value".$i;
+	if ($args{$thisParam}) {
+	    my $param = $args{$thisParam};
+	    $debug && print "Print Popupating $thisParam which is $param\n";
+	    my $value;
+	    if ($args{$thisValue}) {
+		$value = $args{"value".$i};
+	    }
+	    elsif ($args{$thisValue."_key"}) {
+		$value = $commandResults{$args{$thisValue."_key"}};
+	    }
+	    else {
+		die "Cannot populate value for parameter $i, name $param\n";
+	    }
+	    $runString .= " ${param}=${value}";
+	}
+    }
+	
+    $debug && print STDOUT "$runString\n";
+    system($runString);
     die "makeAndRun failed" unless ($? >> 8 == 0) ;
 }
 
+sub runCommand(%) {
+    my %args = @_;
+    $numRunCommand++;
+    my $command=$args{"command"};
+    my $resultKey=$args{"resultKey"};
+
+    my $results = `$command`;
+    chomp $results;
+    $debug && print "Result of command $command is $results, putting it in under $resultKey\n";
+    $commandResults{$resultKey}=$results;
+}
+
+
+
 sub diff(%) {
         my %args = @_;
+	$numDiff++;
 	my $expected = $args{"expected"};
 	my $actual= $args{"actual"};
-	print "Checking $actual\n";
-	system("diff $expected $actual");
+	my $replaceTS = exists $args{"replaceTimestamp"};
+	$debug && print "Checking $actual\n";
+	if ($replaceTS) {
+	    $debug && print "sed 's/13[0-9]*/TIMESTAMP/g' $actual |  diff $expected -\n";
+	    system("sed 's/13[0-9]*/TIMESTAMP/g' $actual | diff $expected -");
+	}
+	else {
+	    system("diff $expected $actual");
+	}
 	die "diff failed" unless ($? >> 8 == 0) ;
 }
 
@@ -64,11 +123,13 @@ sub tailAndDiff(%) {
 sub main() {
 my @tests = `ls *.cfg`;
 
+my $numTests =0;
+my $numPassed = 0;
 for my $testFile (@tests) {
     chomp($testFile);
     next unless (!$runPattern || $testFile =~/$runPattern/);
     open(INFILE,"<$testFile"); 
-
+    $numTests++;
     my %currentArgs; 
     my $command;
     while(<INFILE>) {
@@ -84,6 +145,9 @@ for my $testFile (@tests) {
 	    elsif ($command eq "MAKE_AND_RUN") {
 		makeAndRun(%currentArgs);
 	
+	    }
+	    elsif ($command eq "COMMAND") {
+		runCommand(%currentArgs);
 	    }
 	    elsif ($command eq "DIFF") {
 		diff(%currentArgs);
@@ -108,8 +172,16 @@ for my $testFile (@tests) {
 	}
     }
     close INFILE;
+    $numPassed++;
     print "Test $testFile passed!\n";
 }
+
+print "$numPassed out of $numTests passed\n";
+    print "\tDIFF: $numDiff\n";
+    print "\tMAKE_AND_RUN: $numMakeAndRun\n";
+    print "\tRUN_COMMAND: $numRunCommand\n";
+    print "\tCLEAR_TABLE: $numClearTable\n";
+
 }
 
 main();

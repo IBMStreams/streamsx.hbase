@@ -1,0 +1,83 @@
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::* ;
+
+/**
+ * This sample demonstrates how to return multiple versions with HBASEGet in Record mode.  
+ * 
+ * To run this sample, you must have created the table streamsSample_version.  In HBASE shell, do
+ * create 'streamsSample_version','all'
+ * 
+ * The first two operators just load the table, so then we can start doing the interesting queries.
+ * After loading, each cell in the table has three entries (this the default max per table.)
+ * 
+ * To see how maxVersions works, compile and run the the program.  
+ * * In getRecord_unlimitedA.out, you'll see three entries in the list for columnQualifier austen.
+ * * In getRecord_twoB.out, you'll see two entries in the list for columnQualifier Bronte.  Notice that 
+ * while the attribute name corrsponding ot the list of values matters, we can use any name we like for the
+ * attributes of the tuples that make up that list.
+ * * In getRecord_timestampC.out, you'll see three entries in the list for columnQualifier chaucer.
+ * 
+ * **Exploring the Timestamp**
+ * To see what the timestamp parameter can do, you can run this application again, setting the timestamp
+ * explicitly as an submission-time parameter.  Look in your getRecord_timestampC.out file, and pick the
+ * tuple_v2 timestamp out.
+ * Now run: 
+ * <code>output/bin/standalone populate=false minTimestamp=<timestamp></code>
+ * eg, if your getRecord_timestampC.out file is
+ * <code>"versionTest",3,{austen="entry_v3",bronte="entry_v3",chaucer=[{entry="entry_v3",time=1399407664460},{entry="entry_v2",time=1399407664452},{entry="entry_v1",time=1399407664445
+}]}</code>
+*  run  <code>output/bin/standalone  minTimestamp=1399407664452 populate=false</code>
+ *
+ *  If you are running from eclipse, it will probably be easier to change the 0 to that timestamp in:
+ * <code> expression<int64> $minTimestamp :(int64) getSubmissionTimeValue("minTimestamp", "0") ;</code>
+ *
+ * Now when you look at the readVersions_timestampC.out file, you'll see that only the versions 3 and 2 of the chaucer columnQualifier appear.
+ */
+composite MultipleVersions
+{
+	param
+	// We use these two parameters to try out the timestamp feature..
+		expression<int64> $minTimestamp :(int64)
+			getSubmissionTimeValue("minTimestamp", "0") ;
+		expression<boolean> $populate :(boolean) getSubmissionTimeValue("populate",
+			"true") ;
+		expression<rstring> $tableName : "streamsSample_version" ;
+		// We use a delay to ensure the write finishes before the population begins.  
+		expression<float64> $readDelay :  30.0;
+	graph
+
+/* The operators loads the table.
+ * It loads each of the columnFamilies with
+ * <code>entry_v1,entry_v2,entry_v3</code>.
+ *
+ */
+		() as populate = PopulateTable() {
+		param
+		qualifiers: [ "austen", "bronte", "chaucer" ] ;
+		tableName: $tableName;
+		row: "getRecord";
+		populate: $populate;
+		}
+
+	/*
+	 * Test reading muliple versions using HBASEScan
+	 */
+	() as ScanTest = ScanRecord() {
+	param
+	tableName: $tableName;
+	initDelay: $populate ? $readDelay : 1.0;
+	minTimestamp: $minTimestamp;
+	}
+	
+	/* Test reading multiple versions using HBASEGet
+	 * 
+	 */
+	() as GetTest = GetRecord() {
+	param
+	tableName: $tableName;
+	initDelay: $populate ? $readDelay : 1.0;
+	minTimestamp: $minTimestamp;
+	}
+
+}

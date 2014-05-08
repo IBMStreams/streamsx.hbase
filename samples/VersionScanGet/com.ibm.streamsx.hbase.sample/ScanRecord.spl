@@ -1,0 +1,76 @@
+namespace com.ibm.streamsx.hbase.sample;
+use com.ibm.streamsx.hbase::HBASEScan;
+composite ScanRecord {
+param
+expression<float64> $initDelay: 0.0;
+expression<int64> $minTimestamp:0l;
+expression<rstring> $tableName;
+graph
+
+		// Now, let's have three different gets.  The first HBASEGet will get all Austen entries.
+		// Recall that by default the table only keeps three. 
+		// We set maxVersions to 0 to get them all.  
+		stream<rstring row, int32 numResults, tuple<list<tuple<rstring austen,
+			int64 ts>> austen, rstring bronte, rstring chaucer> value> manyA =
+			HBASEScan()
+		{
+			param
+				initDelay: $initDelay;
+				tableName : $tableName ;
+				outAttrName : "value" ;
+				staticColumnFamily : "all" ;
+				outputCountAttr : "numResults" ;
+				maxVersions : 0 ;
+		}
+
+		() as getSink1 = FileSink(manyA)
+		{
+			param
+				file : "scanRecord_unlimitedA.out" ;
+		}
+
+		// Now let's try out getting just two entries.  This time, we'll demonstrate with columnFamily bronte.
+		stream<rstring row, int32 numResults, tuple<rstring austen,
+			list<tuple<rstring anyName, int64 anyName2>> bronte, rstring chaucer> value>
+			manyB = HBASEScan()
+		{
+			param
+				initDelay: $initDelay;
+				tableName : $tableName ;
+				outAttrName : "value" ;
+				staticColumnFamily : "all" ;
+				outputCountAttr : "numResults" ;
+				maxVersions : 2 ;
+		}
+
+		() as getSink2 = FileSink(manyB)
+		{
+			param
+				file : "scanRecord_twoB.out" ;
+		}
+
+		// Now we'll use the timestamp.  Running without changing the timestamp, this will get all entries for
+		// columnQualifier chaucer.  (Note that we had to set maxVersions--if we had left it unSet, we'd only get the most recent
+		// version.
+		//
+		// If you run again,setting the timestamp to a specific value, then you'll be able to control which set of entries you get.
+		stream<rstring row, int32 numResults, tuple<rstring austen, rstring bronte,
+			list<tuple<rstring entry, int64 time>> chaucer> value> manyC =
+			HBASEScan()
+		{
+			param
+				initDelay: $initDelay;
+				tableName : $tableName ;
+				outAttrName : "value" ;
+				staticColumnFamily : "all" ;
+				outputCountAttr : "numResults" ;
+				minTimestamp : $minTimestamp ;
+				maxVersions : 0 ;
+		}
+
+		() as getSink3 = FileSink(manyC)
+		{
+			param
+				file : "scanRecord_timestampC.out" ;
+		}
+}
