@@ -241,7 +241,7 @@ public class HBASEScan extends HBASEOperator{
     		}
     	}
     	// The actually number of threads is the minimum of the maxThreads and the number of regions
-    	actualNumThreads = numRegions < maxThreads ? numRegions: maxThreads;
+    	actualNumThreads = Math.min(numRegions, maxThreads);
     	logger.debug("MaxThreads = "+maxThreads+" numRegions = "+numRegions+" actualNumThreads "+actualNumThreads);
     	// we use this to determine when to send punctuation.
     	numFinishedThreads = 0;
@@ -258,6 +258,7 @@ public class HBASEScan extends HBASEOperator{
     							produceTuples();
     						} catch (Exception e) {
     							Logger.getLogger(this.getClass()).error("Operator error", e);
+    							throw new RuntimeException(e);
     						}                    
     					}
 
@@ -282,7 +283,7 @@ public class HBASEScan extends HBASEOperator{
 		return buff.toString();
 	}
 
-	/**
+	/**	
      * Notification that initialization is complete and all input and output ports 
      * are connected and ready to receive and submit tuples.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
@@ -313,6 +314,7 @@ public class HBASEScan extends HBASEOperator{
 				out.punctuate(Punctuation.WINDOW_MARKER);
 		  		out.punctuate(Punctuation.FINAL_MARKER);
 			} catch (Exception e) {
+				// we don't re-throw this exception because this operator is done anyway at this point.
 				logger.error("Cannot send punctation",e);
 			}
   
@@ -331,106 +333,100 @@ public class HBASEScan extends HBASEOperator{
     	}
     	logger.info("Done sleeping");
     	// First check to see if there are any regions left to scan.  If not, this thread is finished.
-    	while (!regionQueue.isEmpty()) {
-    		try {
-    		// the try-catch block is here because regionQueue.remove() could throw an exception if 
-    		// another thread removed the top element between the check above and now.
-    			Pair<byte[],byte[]> thisScan = regionQueue.remove();
-    			// Create the scan
-    			Scan myScan;
-    			byte startBytes[] = thisScan.getFirst();
-    			byte endBytes[] = thisScan.getSecond();
-    			if (startBytes != null && endBytes != null) {
-    				myScan = new Scan(startBytes,endBytes);
-    			}
-    			else if (startBytes != null)  {
-    				myScan = new Scan(startBytes);
-    			}
-    			else if (endRow != null) {
-    				myScan = new Scan(null,endBytes);
-    			}	
-    			else {
-    				myScan = new Scan();
-    			}
-    			// select column families and column qualifiers
-    			if (staticColumnFamilyList != null && staticColumnQualifierList != null) {
+    	Pair<byte[],byte[]> thisScan = regionQueue.poll();
+    	while (thisScan != null) {
+    		// Create the scan
+    		Scan myScan;
+    		byte startBytes[] = thisScan.getFirst();
+    		byte endBytes[] = thisScan.getSecond();
+    		if (startBytes != null && endBytes != null) {
+    			myScan = new Scan(startBytes,endBytes);
+    		}
+    		else if (startBytes != null)  {
+    			myScan = new Scan(startBytes);
+    		}
+    		else if (endRow != null) {
+    			myScan = new Scan(null,endBytes);
+    		}	
+    		else {
+    			myScan = new Scan();
+    		}
+    		// select column families and column qualifiers
+    		if (staticColumnFamilyList != null && staticColumnQualifierList != null) {
 
-    				for (String fam: staticColumnFamilyList) {
-    					for (String qual: staticColumnQualifierList) {
-    						myScan.addColumn(fam.getBytes(charset), qual.getBytes(charset));
-    					}
+    			for (String fam: staticColumnFamilyList) {
+    				for (String qual: staticColumnQualifierList) {
+    					myScan.addColumn(fam.getBytes(charset), qual.getBytes(charset));
     				}
     			}
-    			else if (staticColumnFamilyList != null) {
-    				for (String fam: staticColumnFamilyList) {
-    					myScan.addFamily(fam.getBytes(charset));
-    				}
+    		}
+    		else if (staticColumnFamilyList != null) {
+    			for (String fam: staticColumnFamilyList) {
+    				myScan.addFamily(fam.getBytes(charset));
     			}
-    			logger.info("Scan set, processing results");
-    			// Get a results scanner.
-    			ResultScanner results = myTable.getScanner(myScan);
-    			// Process results.
-    			Result currRow = results.next();
-    			while (currRow != null) {
-    				String row = new String(currRow.getRow(),charset);
-    				NavigableMap<byte[],NavigableMap<byte[],byte[]>> allValues = currRow.getNoVersionMap();
-    				if (OutputMode.TUPLES == outputMode) {
-    					for (byte[] family: allValues.keySet()) {
-    						for (byte [] qual: allValues.get(family).keySet()) {
-    							OutputTuple tuple = out.newTuple();
+    		}
+    		logger.info("Scan set, processing results");
+    		// Get a results scanner.
+    		ResultScanner results = myTable.getScanner(myScan);
+    		// Process results.
+    		Result currRow = results.next();
+    		while (currRow != null) {
+    			String row = new String(currRow.getRow(),charset);
+    			NavigableMap<byte[],NavigableMap<byte[],byte[]>> allValues = currRow.getNoVersionMap();
+    			if (OutputMode.TUPLES == outputMode) {
+    				for (byte[] family: allValues.keySet()) {
+    					for (byte [] qual: allValues.get(family).keySet()) {
+    						OutputTuple tuple = out.newTuple();
 
-    							if (outRow >= 0)
-    								tuple.setString(outRow,row);
-    							if (outColumnF >= 0)
-    								tuple.setString(outColumnF,new String(family,charset));
+    						if (outRow >= 0)
+    							tuple.setString(outRow,row);
+    						if (outColumnF >= 0)
+    							tuple.setString(outColumnF,new String(family,charset));
 
-    							if (outColumnQ >= 0)
-    								tuple.setString(outColumnQ,new String(qual,charset));
+    						if (outColumnQ >= 0)
+    							tuple.setString(outColumnQ,new String(qual,charset));
 
-    							outValue.populate(tuple,allValues.get(family).get(qual));
-    							if (resultCountIndex >=0) {
-    								tuple.setInt(resultCountIndex,1);
-    							}
-    							out.submit(tuple);
+    						outValue.populate(tuple,allValues.get(family).get(qual));
+    						if (resultCountIndex >=0) {
+    							tuple.setInt(resultCountIndex,1);
     						}
+    						out.submit(tuple);
     					}
     				}
-    				else if (OutputMode.RECORD == outputMode) {
-    					Map<String,RString> fields = null;
-    					for (byte[] family: allValues.keySet()) {
-    						Map<String,RString>	 tmpMap = extractRStrings(recordNames,allValues.get(family));
-    						if (fields == null) {
-    							fields = tmpMap;
-    						}
-    						else {
-    							fields.putAll(tmpMap);
-    						}
+    			}
+    			else if (OutputMode.RECORD == outputMode) {
+    				Map<String,RString> fields = null;
+    				for (byte[] family: allValues.keySet()) {
+    					Map<String,RString>	 tmpMap = extractRStrings(recordNames,allValues.get(family));
+    					if (fields == null) {
+    						fields = tmpMap;
     					}
-    					OutputTuple tuple = out.newTuple();
-    					tuple.setTuple(outAttrIndex, recordSchema.getTuple(fields));
-    					if (outRow >= 0)
-    						tuple.setString(outRow,row);
-    					if (resultCountIndex >=0) {
-    						tuple.setInt(resultCountIndex, fields.size());
+    					else {
+    						fields.putAll(tmpMap);
     					}
-    					out.submit(tuple);
     				}
-    				// commenting out for now, pending a discussion
-    				/*
+    				OutputTuple tuple = out.newTuple();
+    				tuple.setTuple(outAttrIndex, recordSchema.getTuple(fields));
+    				if (outRow >= 0)
+    					tuple.setString(outRow,row);
+    				if (resultCountIndex >=0) {
+    					tuple.setInt(resultCountIndex, fields.size());
+    				}
+    				out.submit(tuple);
+    			}
+    			// commenting out for now, pending a discussion
+    			/*
     				if (OutputMode.TUPLES == outputMode) {
     					out.punctuate(Punctuation.WINDOW_MARKER);
     				}
-    				*/
-    				currRow = results.next();
-    			}	
-    			// All done!
-    			results.close();
-    			logger.info("Close result set.");
-    		}
-    		catch (NoSuchElementException e ) {
-    			// nothing to do here, really--this just means that some other thread grabbed the last thing in the 
-    			// queue before we could get it.
-    		}
+    			 */
+    			currRow = results.next();
+    		}	
+    		// All done!
+    		results.close();
+    		logger.info("Close result set.");
+    		// See if there's any more work to do.
+    		thisScan = regionQueue.poll();
     	} // end while
     	
     	// This function decides whether to send punctation.  We send a window marker when all threads have finished. 
@@ -438,18 +434,4 @@ public class HBASEScan extends HBASEOperator{
     	logger.info("Thread finishing");
     }
 
-    /**
-     * Shutdown this operator, which will interrupt the thread
-     * executing the <code>produceTuples()</code> method.
-     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-     */
-    public synchronized void shutdown() throws Exception {
-    	for (Thread t: processThreadArray) {
-        if (t != null) {
-            t.interrupt();
-        }
-    	}
-        // Must call super.shutdown()
-        super.shutdown();
-    }
 }
