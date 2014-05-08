@@ -15,11 +15,12 @@ my $numRunCommand = 0;
 my $numClearTable = 0;
 my $runPattern;
 my $disableTableCreation;
+my $debug;
 GetOptions ("runPattern=s" => \$runPattern,
             "disableTableCreation" =>\$disableTableCreation,
             "debug" => \$debug);
 my %commandResults;
-my $debug;
+
 
 sub clearTable(%) {
     if ($disableTableCreation) {
