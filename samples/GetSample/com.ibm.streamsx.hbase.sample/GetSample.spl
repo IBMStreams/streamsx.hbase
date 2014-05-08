@@ -57,6 +57,29 @@ composite GetSample
 			param
 				file : "queryResults.out" ;
 		}
+		
+		/// Now get the most recent two versions
+		/// To do this, we make the type of value a list of rstring-int64 tuples
+		/// We don't really need numResults any more, because we can tell that no values
+		/// were returned when the list is empty.
+		
+	stream<rstring who, rstring infoType, rstring requestedDetail, list<tuple<rstring v, int64 ts>> value> queryResultsWithVersions = HBASEGet(queries)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "who" ;
+				columnFamilyAttrName : "infoType" ;
+				columnQualifierAttrName : "requestedDetail" ;
+				outAttrName : "value" ;
+				maxVersions: 2;
+		}
+
+		() as querySinkv2 = FileSink(queryResultsWithVersions)
+		{
+			param
+				file : "queryResultsTwoVersions.out" ;
+		}
+		
 		///////////////// Get all results for a row ////////////////
 		// Generate all rows
 		stream<rstring who> whoStream = Beacon()

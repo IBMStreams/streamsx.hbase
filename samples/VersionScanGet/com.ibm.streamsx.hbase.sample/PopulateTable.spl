@@ -1,0 +1,46 @@
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+/**
+ * Put some tuples in the table.
+ * For each of the columnQualifers in the list, it puts in entry_v1 up to entry_vk where k is numVersions.
+ * 
+ */
+composite PopulateTable()
+{
+	param
+		expression<rstring> $tableName ;
+		expression<int32> $numVersions : 3 ;
+		expression<boolean> $populate : true ;
+		expression<list<rstring>> $qualifiers ;
+		expression<rstring> $row ;
+	graph
+
+	/* The next two operators load the table.
+ * What we do is that we load each of the columnFamilies with
+ * <code>entry_v1,entry_v2,entry_v3</code>.
+ *
+ */
+		stream<rstring row, rstring colQ, rstring message> inputStream = Beacon()
+		{
+			param
+			// If we set populate to false, don't produce any tuples here, so HBASE doesn't change.
+				iterations : $populate ? $numVersions * size($qualifiers) : 0 ;
+			output
+				inputStream : row = $row, colQ = $qualifiers [ IterationCount() %(uint64)
+					size($qualifiers) ], message = "entry_v" +(rstring)((uint64) 1 +
+					IterationCount() /(uint64) size($qualifiers)) ;
+		}
+
+		() as loadTable = HBASEPut(inputStream)
+		{
+			param
+				staticColumnFamily : "all" ;
+				rowAttrName : "row" ;
+				columnQualifierAttrName : "colQ" ;
+				valueAttrName : "message" ;
+				tableName : $tableName ;
+		}
+		// End table loading.
+
+}
