@@ -38,7 +38,7 @@ import org.apache.hadoop.hbase.client.HTableInterface;
  * @author hildrum
  *
  */
-@Libraries({"opt/local_override/*","@HBASE_HOME@/lib/*","@HADOOP_HOME@/hadoop-core.jar","@HADOOP_HOME@/lib/*","@HBASE_HOME@/hbase.jar","@HBASE_HOME@/conf","opt/local_override/*"})
+@Libraries({"opt/downloaded/*","@HBASE_HOME@/conf"})
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
