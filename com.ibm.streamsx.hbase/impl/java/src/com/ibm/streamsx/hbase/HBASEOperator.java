@@ -31,7 +31,7 @@ import com.ibm.streams.operator.Type.MetaType;
  * @author hildrum
  *
  */
-@Libraries({"@HBASE_HOME@/lib/*","@HADOOP_HOME@/hadoop-core.jar","@HADOOP_HOME@/lib/*","@HBASE_HOME@/hbase.jar","@HBASE_HOME@/conf"})
+@Libraries({"opt/downloaded/*","@HBASE_HOME@/conf"})
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;

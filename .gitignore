@@ -10,6 +10,7 @@ impl/java/bin/
 
 samples/*/output
 samples/*/toolkit.xml
+/samples/*/doc
 $StreamsModel.java
 
 # begin streamsx.hbase excluded
