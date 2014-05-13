@@ -36,6 +36,25 @@ composite ScanString
 		param
 		file: "lotr.out";
 		}
+		
+		// Get all versions of entries in the LOTR table.
+		// The name of the attribute that is a list of tuples is what is referenced in the 
+		// operator (here it's value), but the first attribute of the tuple can be
+		// anything--here we use <code>yourchoice</code> to emphasize that point.  
+		// Likewise, the name of the timestamp attribute can be your choice.
+		
+		stream<rstring row, rstring columnFamily, rstring columnQualifier,
+			list<tuple<rstring yourchoice, int64 ts>> value> lotrTableWithVersions = HBASEScan()
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				maxVersions: 2;
+		}
+		
+		() as lotrSink_versions =  FileSink(lotrTableWithVersions) {
+		param
+		file: "lotr_versions.out";
+		}
 
 	// Read where value is an int64, also, no columnQualifier on the 
 	// output tuple. 

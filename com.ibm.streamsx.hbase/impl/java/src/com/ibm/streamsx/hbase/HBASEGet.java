@@ -69,29 +69,30 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	 * to determine what to do.  
 	 */
 	private enum OutputMode {
-		VALUE,
-		VALUE_LIST,
+		CELL,
 		RECORD,
 		QUAL_TO_VALUE,
-		QUAL_TO_LIST,
 		FAMILY_TO_VALUE,
-		FAMILY_TO_LIST,
 	}
 	
-	// The next two are used in Record mode only.
-	private Set<String> colQualifiers = null;
-	StreamSchema recordSchema = null;
-	
+	private OutputMapper outMapper;
+	private int maxVersions =-1;
+	private long minTimestamp = Long.MIN_VALUE;
 
 	Logger logger = Logger.getLogger(this.getClass());
 
 	
 	static final String OUT_PARAM_NAME ="outAttrName";
 	static final String SUCCESS_PARAM_NAME="outputCountAttr";
+	public static final String MIN_TIMESTAMP_PARAM_NAME="minTimestamp";
+	public static final String MIN_TIMESTAMP_DESC = "The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.";
+	public static final String MAX_VERSIONS_PARAM_NAME="maxVersions";
+	public static final String MAX_VERSIONS_DESC="The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.";
 	private OutputMode outputMode;
 	private String outAttrName;
 	private String successAttr = null;
-	private OutputMapper primativeOutputMapper = null;
+	private SingleOutputMapper primativeOutputMapper = null;
+
 	
 	@Parameter(name=SUCCESS_PARAM_NAME,description="Name of attribute of the output port in which to put the count of values populated.",optional=true)
 	public void setSuccessAttr(String name) {
@@ -100,6 +101,15 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	@Parameter(name=OUT_PARAM_NAME,description="Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional=true)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
+	}
+	@Parameter(name=MIN_TIMESTAMP_PARAM_NAME,optional=true,description=MIN_TIMESTAMP_DESC)
+	public void setMinTimestamp(long inTs) {
+		minTimestamp = inTs;
+	}
+	
+	@Parameter(name=MAX_VERSIONS_PARAM_NAME,optional=true,description=MAX_VERSIONS_DESC)
+	public void setMaxVersions(int inMax) {
+		maxVersions = inMax;
 	}
 	
 	
@@ -124,13 +134,21 @@ public class HBASEGet extends HBASEOperatorWithInput {
         Attribute outAttr = outSchema.getAttribute(outAttrName);
         Type outType = outAttr.getType();
         MetaType mType = outType.getMetaType();
-        if(MetaType.RSTRING == mType || MetaType.INT64 == mType) {
-        	outputMode = OutputMode.VALUE;
-        	if ((colFamBytes == null && columnFamilyAttr == null)
-        		|| (colQualBytes == null && columnQualifierAttr == null)) {
-        		throw new Exception("If output is of type rstring or long, both "+COL_FAM_PARAM_NAME+" and "+COL_QUAL_PARAM_NAME+" must be specified");
+        if(OutputMapper.isAllowedType(mType)) {
+        	outMapper = OutputMapper.createOutputMapper(outSchema,outAttrName,charset);
+        	if (outMapper.isCellPopulator()) {
+        		outputMode = OutputMode.CELL;	
+        		if ((colFamBytes == null && columnFamilyAttr == null)
+        				|| (colQualBytes == null && columnQualifierAttr == null)) {
+        			throw new Exception("If output is of type rstring or long, both "+COL_FAM_PARAM_NAME+" and "+COL_QUAL_PARAM_NAME+" must be specified");
+            	}
         	}
-        	primativeOutputMapper = new OutputMapper(outSchema,outAttrName,charset);
+        	else if (outMapper.isRecordPopulator()) {
+        		outputMode = OutputMode.RECORD;
+        	}
+        	else {
+        		throw new Exception("Output mapper is neither record populator or cell populator");
+        	}
         }
         else if (mType.isMap()) {
         	Type elementType = ((CollectionType)outType).getElementType();
@@ -150,26 +168,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
         		}
         	}
         }
-        else if (MetaType.TUPLE == mType){
-    		if (columnFamilyAttr == null  && colFamBytes == null)
-    			throw new Exception("If output is of type tuple, then "+COL_FAM_PARAM_NAME+" or "+STATIC_COLF_NAME+" must be set");
-        	outputMode = OutputMode.RECORD;
-        	
-        	// These two need to be populated.  Let's do it once during initialization.
-        	recordSchema = ((TupleType)outType).getTupleSchema();
-        	colQualifiers = recordSchema.getAttributeNames();
-        	if (logger.isInfoEnabled()) {
-        	logger.info("Expect to find the following columnQualifers: ");
-        	}
-        }
         else {
         	throw new Exception("Attribute "+outAttrName+" must be of type rstring, list<rstring>, or a map");
-        }
-        
-        if (outputMode == OutputMode.VALUE_LIST || 
-        		outputMode == OutputMode.FAMILY_TO_LIST || 
-        		outputMode == OutputMode.QUAL_TO_LIST) {
-        	throw new Exception("Not supported output type.");
         }
        	logger.info("outputMode="+outputMode);
 	}
@@ -214,6 +214,16 @@ public class HBASEGet extends HBASEOperatorWithInput {
         // Copy across all matching attributes.
         outTuple.assign(tuple);
         Get myGet = new Get(getRow(tuple));
+        if (maxVersions >0) {
+        	myGet.setMaxVersions(maxVersions);
+        }
+        else if (maxVersions == 0) {
+        	myGet.setMaxVersions();
+        }
+        if (minTimestamp != Long.MIN_VALUE) {
+        	if (logger.isInfoEnabled()) logger.info("Setting time range to ["+minTimestamp+", "+Long.MAX_VALUE+")");
+        	myGet.setTimeRange(minTimestamp, Long.MAX_VALUE);
+        }
         byte colF[] =null;
         byte colQ[] =null;
         if (colFamBytes != null || 
@@ -234,9 +244,16 @@ public class HBASEGet extends HBASEOperatorWithInput {
         int numResults = r.size();
 
         switch (outputMode) {
-        case VALUE:
+        case CELL:
         	if (numResults > 0)
-        		primativeOutputMapper.populate(outTuple,r.getValue(colF, colQ));
+        		outMapper.populate(outTuple,r.getMap().get(colF).get(colQ));
+        	break;
+        case RECORD:
+        	if (numResults > 0) {
+        		numResults = outMapper.populateRecord(outTuple,r.getMap());
+        		// In this case, we reset the number of results.  This way, a down stream operator can check that all were
+        		// populated.
+        	}
         	break;
         case QUAL_TO_VALUE:
         	outTuple.setMap(outAttrName, makeStringMap(r.getFamilyMap(colF)));
@@ -244,20 +261,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
         case FAMILY_TO_VALUE:
         		outTuple.setMap(outAttrName,makeMapOfMap(r.getNoVersionMap()));
         		break;
-        case RECORD:
-        	if (numResults > 0) {
-        		// use the family map to get the outTupleFields.
-        		Map<String,RString> outTupleFields =  extractRStrings(colQualifiers,r.getFamilyMap(colF));
-        		// In this case, we reset the number of results.  This way, a down stream operator can check that all were
-        		// populated.
-        		numResults = outTupleFields.size();
-        		outTuple.setTuple(outAttrName, recordSchema.getTuple(outTupleFields));
-        	}
-        	break;
-        case VALUE_LIST:
-        case QUAL_TO_LIST:
-        case FAMILY_TO_LIST:
-        				throw new Exception("Unsupported output type "+outputMode);
         }
         // Set the num results, if needed.
         if (successAttr != null) {
