@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.log4j.Logger;
 
+import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.Parameter;
@@ -44,6 +46,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String CHARSET_PARAM_NAME = "charset";
+	static final int BYTES_IN_LONG = 8;
 	
 	
 	@Parameter(name=CHARSET_PARAM_NAME, optional=true,description="Character set to be used for converting byte[] to Strings and Strings to byte[].  Defaults to UTF-8")
@@ -86,6 +89,32 @@ public abstract class HBASEOperator extends AbstractOperator {
 			throw new Exception("Expected attribute "+attrName+" to have type RSTRING, found "+attr.getType().getMetaType());
 		}
 		return attr.getIndex();
+	}
+	
+	protected static void isValidInputType(OperatorContextChecker checker, MetaType mType,String attrName) {
+		switch (mType) {
+		case USTRING:
+		case RSTRING:
+		case INT64:
+		case BLOB:
+			break;
+			default:
+				checker.setInvalidContext("Attribute "+attrName+" has invalid type "+mType, null);
+		}
+	}
+	
+	protected byte[] getBytes(Tuple tuple, int attrIndex, MetaType mType) throws Exception {
+		switch (mType) {
+		case USTRING:
+		case RSTRING:
+			return tuple.getString(attrIndex).getBytes(charset);
+		case INT64:
+			return ByteBuffer.allocate(BYTES_IN_LONG).putLong(tuple.getLong(attrIndex)).array();
+		case BLOB:
+			return tuple.getBlob(attrIndex).getByteBuffer().array();
+		default:
+		throw new Exception("Cannot get bytes for objects of type "+mType);
+		}	
 	}
 	
 	protected int checkAndGetIndex(StreamSchema schema, String attrName) throws Exception{
