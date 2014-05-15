@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -28,19 +29,25 @@ import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
+import org.apache.hadoop.hbase.client.HConnectionManager;
+import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HTableInterface;
+
 /**
  * Class for shared code between operators.
  * @author hildrum
  *
  */
-@Libraries({"@HBASE_HOME@/lib/*","@HADOOP_HOME@/hadoop-core.jar","@HADOOP_HOME@/lib/*","@HBASE_HOME@/hbase.jar","@HBASE_HOME@/conf"})
+@Libraries({"opt/local_override/*","@HBASE_HOME@/lib/*","@HADOOP_HOME@/hadoop-core.jar","@HADOOP_HOME@/lib/*","@HBASE_HOME@/hbase.jar","@HBASE_HOME@/conf","opt/local_override/*"})
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset DEFAULT_CHAR_SET = Charset.forName("UTF-8");
 	protected Charset charset = DEFAULT_CHAR_SET;
-	private String tableName;
-	protected HTable myTable;
+	private String tableName = null;
+	protected byte tableNameBytes[] = null;
+	protected HConnection connection;
+	private Configuration conf;
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
@@ -155,15 +162,32 @@ public abstract class HBASEOperator extends AbstractOperator {
 		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
        
-    	Configuration conf = new Configuration();
+    	conf = new Configuration();
     	conf.addResource("hbase-site.xml");
-    	myTable = new HTable(conf,tableName);
-    	if (null == myTable) {
+	HConnection connection = HConnectionManager.createConnection(conf);
+	tableNameBytes = tableName.getBytes(charset);
+	// Just check to see if the table exists.  Might as well fail on initialize instead of process.
+	HTableInterface tempTable = connection.getTable(tableNameBytes);
+    	if (null == tempTable) {
     		Logger.getLogger(this.getClass()).error("Cannot access table, failing.");
     		throw new Exception("Cannot access table.  Check configuration");
     	}
+	tempTable.close();
 	}
 	
+	/**
+	 * Subclasses should not generally use this.  The should instead create HTableInterface via 
+	 * connection.getTable(tableNameBytes).
+	 * 
+	 * However, HTableInterface doesn't have getStartEndKeys(), so that's why we need
+	 * an actual HTable.
+	 * 
+	 * @return HTable object.
+	 * @throws IOException
+	 */
+	protected HTable getHTable() throws  IOException {
+		return new HTable(conf,tableNameBytes);
+	}
 	/**
 	 * Close the table if a it's a final punctuation.
 	 * 
@@ -178,7 +202,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	public void processPunctuation(StreamingInput<Tuple> stream,
 			Punctuation mark) throws Exception {
 		if (Punctuation.FINAL_MARKER == mark) {
-			myTable.close();
+			connection.close();
 		}
 		super.processPunctuation(stream, mark);
 	}
