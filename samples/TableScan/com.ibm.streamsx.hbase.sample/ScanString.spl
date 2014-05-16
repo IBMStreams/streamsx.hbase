@@ -83,10 +83,35 @@ composite ScanString
 				startRow:"K";
 				endRow:"L";
 		}
+
+
 			
 		() as IliadPartialSink = FileSink(partialTable) {
 		param
 		file: "iliad_k.out";
+		}
+
+		// Read only the rows beginning with K.  This works 
+		// the same as the above operator.
+				stream<rstring row, rstring columnFamily, int64 value> prefixScan =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+				rowPrefix:"K";
+				
+		}
+
+
+			
+		() as IliadPartialSink2 = FileSink(prefixScan) {
+		param
+		file: "iliad_k2.out";
+		}
+
+		() as ScanWithInputSink = ScanWithInput() {
 		}
 
 }
