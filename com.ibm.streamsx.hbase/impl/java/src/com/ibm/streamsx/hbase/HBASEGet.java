@@ -11,6 +11,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 
@@ -238,7 +239,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         		myGet.addFamily(colF);
         	}
         }
-
+        HTableInterface myTable = connection.getTable(tableNameBytes);
         Result r = myTable.get(myGet);
         
         int numResults = r.size();
@@ -269,6 +270,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         
         // Submit new tuple to output port 0
         outStream.submit(outTuple);
+        myTable.close();
     }
     
 

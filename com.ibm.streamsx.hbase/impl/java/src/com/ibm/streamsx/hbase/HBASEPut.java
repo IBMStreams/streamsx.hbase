@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.log4j.Logger;
 
@@ -139,7 +140,7 @@ public class HBASEPut extends HBASEPutDelete {
     			// It should be impossible to get here.
     			throw new Exception("Unsupported Put type");
     	}
-    	
+		HTableInterface myTable = connection.getTable(tableNameBytes);
     	if (checkAttr != null) {
     		Tuple checkTuple = tuple.getTuple(checkAttrIndex);
     		
@@ -148,6 +149,7 @@ public class HBASEPut extends HBASEPutDelete {
     		byte checkColF[] = getCheckColF(checkTuple);
     		byte checkColQ[] = getCheckColQ(checkTuple);
     		byte checkValue[] = getCheckValue(checkTuple);
+
     		success = myTable.checkAndPut(checkRow,checkColF,checkColQ,checkValue,myPut);
     		logger.debug("Result is "+success);
     	}
@@ -164,6 +166,7 @@ public class HBASEPut extends HBASEPutDelete {
     	// Checks to see if an output tuple is necessary, and if so,
     	// submits it.
     	submitOutputTuple(tuple,success);
+    	myTable.close();
     }
     
         /**
@@ -174,9 +177,11 @@ public class HBASEPut extends HBASEPutDelete {
        public synchronized void shutdown() throws Exception {
             OperatorContext context = getOperatorContext();
            Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-            if (myTable != null && putList != null && putList.size() > 0) {
+   			HTableInterface myTable = connection.getTable(tableNameBytes);
+           if (myTable != null && putList != null && putList.size() > 0) {
                    myTable.put(putList);
             }
+           myTable.close();
            super.shutdown();
         }
 }

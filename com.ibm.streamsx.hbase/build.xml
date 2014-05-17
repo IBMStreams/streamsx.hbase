@@ -12,7 +12,7 @@
 	<!-- you must set HBASE_HOME and HADOOP_HOME in the environment -->
 	<!-- you do not need to have either running base or hdfs running -->
   <fail unless="env.HADOOP_HOME" message="HADOOP_HOME not set.  This toolkit requres Apache Hadoop, see  http://hadoop.apache.org/.  The toolkit was tested with 1.1.0 and may require modifications for other versions.  If you are running with IBM's BigInsights, sourcing the BIGINSIGHTS_HOME/conf/biginsights-env.sh will set the environment needed."/>
-  <fail unless="env.HBASE_HOME" message="HBASE_HOME not set.  This toolkit requires Apache HBASE, see https://hbase.apache.org/.  This toolkit was tested 0.94.3.  If you are running with IBM's BigInsights, sourcing the BIGINSIGHTS_HOME/conf/biginsights-env.sh will set the environment needed."/>
+<!--  <fail unless="env.HBASE_HOME" message="HBASE_HOME not set.  This toolkit requires Apache HBASE, see https://hbase.apache.org/.  This toolkit was tested 0.94.3.  If you are running with IBM's BigInsights, sourcing the BIGINSIGHTS_HOME/conf/biginsights-env.sh will set the environment needed."/> -->
 	<fail unless="env.STREAMS_INSTALL" message="STREAMS_INSTALL not set."/>
 	<property name="streams.install" value="${env.STREAMS_INSTALL}" />
 
@@ -52,6 +52,13 @@
 		<pathelement location="${hadoop_home}/hadoop-core.jar" />
 	</path>
 
+	<path id="cp.local">
+	  <fileset dir ="${basedir}/opt/local_override">
+	    <include name="*.jar"/>
+	    <include name="hbase-site.xml"/>
+	  </fileset>
+	</path>
+
 
 	<path id="cp.compile">
 		<path refid="cp.streams" />
@@ -66,9 +73,11 @@
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="true"
 			includeantruntime="no">
 			<classpath>
+			  <path refid="cp.local" />
 				<path refid="cp.streams" />
 				<path refid="cp.hbase" />
 				<path refid="cp.hadoop" />
+				<path refid="cp.local" />
 			</classpath>
 		</javac>
 	</target>
