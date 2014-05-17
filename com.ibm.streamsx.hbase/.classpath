@@ -3,7 +3,7 @@
 	<classpathentry kind="src" output="impl/java/bin" path="impl/java/src"/>
 	<classpathentry exported="true" kind="con" path="com.ibm.streams.java/com.ibm.streams.operator"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="HBASE_HOME/hbase.jar"/>
 	<classpathentry kind="var" path="HADOOP_HOME/hadoop-core.jar"/>
+	<classpathentry kind="lib" path="opt/local_override/hbase-0.94.16.jar"/>
 	<classpathentry kind="output" path="impl/java/bin"/>
 </classpath>

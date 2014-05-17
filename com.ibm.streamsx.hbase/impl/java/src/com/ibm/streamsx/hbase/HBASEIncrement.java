@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -116,7 +117,9 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
     			incr = tuple.getLong(incrAttrIndex);
     		}
     	}
+    	HTableInterface myTable = connection.getTable(tableNameBytes);
     	long newValue = myTable.incrementColumnValue(row, colF, colQ, incr);
+    	myTable.close();
     }
     
 }
