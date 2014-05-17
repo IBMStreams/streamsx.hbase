@@ -52,8 +52,15 @@ sub makeAndRun(%) {
     if (exists $args{"exec"}) {
 	$prog = $args{"exec"}."/bin/standalone";
     }
+    
+    # first make.
 
-    my $runString = "cd $dir; make $target; $prog";
+    my $makeString = "cd $dir; make $target";
+ 
+    system($makeString);
+    die "make failed" unless ($? >> 8 == 0) ;
+
+    my $runString = "cd $dir; $prog";
 
     for (my $i = 0; $i < 10; $i++) {
 	my $thisParam="param".$i;
@@ -102,13 +109,13 @@ sub diff(%) {
 	my $replaceTS = exists $args{"replaceTimestamp"};
 	$debug && print "Checking $actual\n";
 	if ($replaceTS) {
-	    $debug && print "sed 's/13[0-9]*/TIMESTAMP/g' $actual |  diff $expected -\n";
-	    system("sed 's/13[0-9]*/TIMESTAMP/g' $actual | diff $expected -");
+	    $debug && print "sed 's/=14[0-9]*/=TIMESTAMP/g' $actual |  diff $expected -\n";
+	    system("sed 's/=14[0-9]*/=TIMESTAMP/g' $actual | diff $expected -");
 	}
 	else {
 	    system("diff $expected $actual");
 	}
-	die "diff failed" unless ($? >> 8 == 0) ;
+	die "diff failed: $expected and $actual not the same" unless ($? >> 8 == 0) ;
 }
 
 
