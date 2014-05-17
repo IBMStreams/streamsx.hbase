@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -323,7 +325,10 @@ public class HBASEScan extends HBASEOperator {
 
 			// Need to get the start and end keys if these aren't part of the
 			// input.
+			
+    		HTable myTable = getHTable();
 			Pair<byte[][], byte[][]> startEndKeys = myTable.getStartEndKeys();
+			myTable.close();
 			if (startBytes == null) {
 				startBytes = startEndKeys.getFirst()[0];
 			}
@@ -421,6 +426,7 @@ public class HBASEScan extends HBASEOperator {
 				 */
 				processThreadArray[i].setDaemon(false);
 			}
+			myTable.close();
 		} else if (context.getNumberOfStreamingInputs() == 1) {
 			StreamSchema inputSchema = context.getStreamingInputs().get(0)
 					.getStreamSchema();
@@ -583,6 +589,7 @@ public class HBASEScan extends HBASEOperator {
 		if (logger.isInfoEnabled())
 			logger.info("Scan set, processing results");
 		// Get a results scanner.
+		HTableInterface myTable = connection.getTable(tableNameBytes);
 		ResultScanner results = myTable.getScanner(myScan);
 		// Process results.
 		Result currRow = results.next();
@@ -647,6 +654,7 @@ public class HBASEScan extends HBASEOperator {
 		}
 		// All done!
 		results.close();
+		myTable.close();
 		if (logger.isInfoEnabled())
 			logger.info("Close result set.");
 	}

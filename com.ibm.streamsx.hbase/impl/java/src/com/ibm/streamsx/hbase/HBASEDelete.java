@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.compile.OperatorContextChecker;
@@ -112,7 +113,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-
+		HTableInterface myTable = connection.getTable(tableNameBytes);
 		byte row[] = getRow(tuple);
 		Delete myDelete = new Delete(row);
 
@@ -157,6 +158,7 @@ public class HBASEDelete extends HBASEPutDelete {
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
 		submitOutputTuple(tuple, success);
+		myTable.close();
 	}
 	
 		/**
@@ -176,10 +178,14 @@ public class HBASEDelete extends HBASEPutDelete {
 				Punctuation mark) throws Exception {
 			if (Punctuation.FINAL_MARKER == mark) {
 				synchronized (listLock) {
-					if (batchSize > 0 && myTable != null && deleteList != null
+					if (batchSize > 0 && connection != null && deleteList != null
 							&& deleteList.size() > 0) {
+						HTableInterface myTable = connection.getTable(tableNameBytes);
+						if (myTable != null ) {
 						myTable.delete(deleteList);
+						}
 						deleteList = null;
+						myTable.close();
 					} else if (deleteList != null && deleteList.size() == 0) {
 						deleteList = null;
 					}
@@ -201,13 +207,17 @@ public class HBASEDelete extends HBASEPutDelete {
 	                               "Operator " + context.getName() + " shutting down in PE: "
 	                                               + context.getPE().getPEId() + " in Job: "
 	                                               + context.getPE().getJobId());
+	              if (connection != null ) {
+	            	  HTableInterface myTable = connection.getTable(tableNameBytes);
 	              if (myTable != null && deleteList != null && deleteList.size() > 0) {
 	            	  synchronized (listLock) {
 	            		  if (deleteList != null && deleteList.size() >0) { 
 	            			  myTable.delete(deleteList);
 	            		  }
 	            	  }
-	            }
+	              }
+	              myTable.close();
+	              }
 	
 	               // Must call super.shutdown()
 	               super.shutdown();
