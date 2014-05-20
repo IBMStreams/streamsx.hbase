@@ -164,7 +164,7 @@ public abstract class HBASEOperator extends AbstractOperator {
        
     	conf = new Configuration();
     	conf.addResource("hbase-site.xml");
-	HConnection connection = HConnectionManager.createConnection(conf);
+	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
 	// Just check to see if the table exists.  Might as well fail on initialize instead of process.
 	HTableInterface tempTable = connection.getTable(tableNameBytes);
