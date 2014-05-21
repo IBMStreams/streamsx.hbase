@@ -20,6 +20,7 @@
         <property name="hbase_home" value="${env.HBASE_HOME}" />
 	<property name="src.dir" value="impl/java/src" />
 	<property name="build.dir" value="impl/java/classes" />
+	<property name="override.dir" value="opt/local_override" />
 	<property name="impl.lib.dir" value="impl/lib" />
 	<property name="lib.dir" value="lib" />
 	<property name="test.run.dir" value="tests" />
@@ -27,6 +28,7 @@
 	
 	<target name="init">
 		<mkdir dir="${build.dir}" />
+		<mkdir dir="${override.dir}" />
 		<mkdir dir="${lib.dir}" />
 		<mkdir dir="${impl.lib.dir}" />
 	</target>
@@ -66,7 +68,13 @@
 		<path refid="cp.hadoop" />
 	</path>
 	
-	<target name="all" depends="jar"/>
+	<target name="all" depends="jar">
+	 <exec executable="${streams.install}/bin/spl-make-toolkit">
+           <arg value="--directory"/>
+           <arg value="${basedir}"/>
+	 </exec>
+	</target>
+
 	
 
 	<target name="compile" depends="init">
