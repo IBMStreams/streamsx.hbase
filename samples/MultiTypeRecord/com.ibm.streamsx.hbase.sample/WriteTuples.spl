@@ -6,8 +6,10 @@ namespace com.ibm.streamsx.hbase.sample;
 /**
  * This composite writes the binary blob of the compressed first chapter
  * to a file, and associates that filename with the metadata.
+ * 
+ * It's used to make the output of HBASEScan and HBASEGet easier to verify
+ * by a human.  
  */
- 
 composite WriteTuples(input inStream) {
 param 
 	expression<rstring> $blobFileName;

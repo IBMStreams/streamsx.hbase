@@ -1,76 +1,106 @@
+
 /* Copyright (C) 2014, International Business Machines Corporation  */
 /* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
 
+use com.ibm.streamsx.hbase::HBASEGet ;
 
-namespace com.ibm.streamsx.hbase.sample;
-use com.ibm.streamsx.hbase::HBASEGet;
+/**
+ * Demonstrate HBASEGet when multiple entries are being pulled into a 
+ * streams tuple with attributes of different types.
+ * 
+ * Here we use the book example.  The test assumes that the books have
+ * already been entered into HBASE and that for every key queried, there 
+ * will be an entry.  
+ * 
+ * The input stream checkStream is only used to verify output, and so you
+ * would haven't that in a real example of this type.  
+ * 
+ * @param queryKeys a list of keys to query
+ * @param initDelay time to wait before starting queries
+ * @param maxEntries This should be greater than the number of entries on checkStream
+ */
+composite MultiTypeGet(input checkStream )
+{
+	param
+		expression<list<rstring>> $queryKeys ;
+		expression<float64> $initDelay : 10.0 ;
+		// This is how we test resutls.  
+		expression<int32> $maxEntries : 5 ;
+		expression<rstring> $tableName : "streamsSample_recordWithTypes" ;
+	graph
+	// Generate queries.  We wait initDelay seconds, and use the queryKeys 
+	// parameter
+		stream<rstring key> queryStream = Beacon()
+		{
+			param
+				iterations : size($queryKeys) ;
+				initDelay : $initDelay ;
+			output
+				queryStream : key = $queryKeys [ IterationCount() ] ;
+		}
 
-composite MultiTypeGet (input checkStream) {
+		// Send the queries to HBASE.
+		stream<rstring key, BookType value> resultStream = HBASEGet(queryStream)
+		{
+			param
+				tableName : $tableName ;
+				outAttrName : "value" ;
+				rowAttrName : "key" ;
+		}
 
-param 
-expression<list<rstring>> $queryKeys;
-expression<float64> $initDelay: 10.0;
-// This is how we test resutls.  
-expression<int32> $maxEntries: 5;
-expression<rstring> $tableName: "streamsSample_recordWithTypes";
+		// Write the results to a file for a human to read
+		// compare get_metaData.out to books.csv 
+		() as getWrite = WriteTuples(resultStream)
+		{
+			param
+				blobFileName : "get{id}.gz" ;
+				finalFileName : "get_metaData.out" ;
+		}
 
-graph
-stream<rstring key> queryStream = Beacon() {
-param
-iterations: size($queryKeys);
-initDelay: $initDelay;
-output queryStream: 
-key = $queryKeys[IterationCount()];
-}
+		// Now for automated test check
+		// First we join the query results with the checkStream (the stream of puts inot HBASE)
+		stream<rstring keyIn, BookType bookIn, rstring keyOut, BookType bookOut>
+			joined = Join(checkStream ; resultStream)
+		{
+			window
+				resultStream : sliding, count($maxEntries) ;
+				checkStream : sliding, count($maxEntries) ;
+			param
+				match : checkStream.key == resultStream.key ;
+				// If this were a bigger join, and we wanted a hash join, we'd
+				// need to specify equalityLHS and equalityRHS, but as we are joining
+				// three tuples, it doesn't matter.
 
-stream<rstring key, BookType value> resultStream = HBASEGet(queryStream) {
-param
-tableName: $tableName;
-outAttrName: "value";
-rowAttrName: "key";
-}
+			output
+				joined : keyIn = checkStream.key, keyOut = resultStream.key, bookIn =
+					checkStream.book, bookOut = resultStream.value ;
+		}
 
-// compare get_metaData.out to books.csv 
-() as getWrite = WriteTuples(resultStream) {
-param
-blobFileName: "get{id}.gz";
-finalFileName: "get_metaData.out";
-}
+	// Now we check that
+	// * the tuple we got out was what we put in
+	// * we got the right number of tuples out
+		() as GetCheck = Custom(joined)
+		{
+			logic
+				state : mutable int32 numChecked = 0 ;
+				onTuple joined :
+				{
+					assert(bookIn == bookOut) ;
+					numChecked ++ ;
+				}
 
-// Now for automated test check
+				onPunct joined :
+				{
+					if(currentPunct() == Sys.FinalMarker)
+					{
+						assert((int32) numChecked ==(int32) size($queryKeys)) ;
+						println("GetTest: Successfully checked " +(rstring) numChecked +
+							" tuples") ;
+					}
 
-stream<rstring keyIn, BookType bookIn, rstring keyOut, BookType bookOut> joined = Join(checkStream;resultStream) {
-window resultStream: sliding, count($maxEntries);
-  	   checkStream: sliding, count($maxEntries);
-  	   param
- match: checkStream.key == resultStream.key;
- // If this were a bigger join, and we wanted a hash join, we'd
- // need to specify equalityLHS and equalityRHS, but as we are joining
- // three tuples, it doesn't matter.
- output joined:
- keyIn = checkStream.key,
- keyOut= resultStream.key,
- bookIn = checkStream.book,
- bookOut = resultStream.value;
-}
+				}
 
-() as GetCheck = Custom( joined) {
-logic state: mutable int32 numChecked = 0;
-onTuple joined: {
-
-assert(bookIn==bookOut);
-numChecked ++;
-}
-onPunct joined: {
-if (currentPunct() == Sys.FinalMarker) {
-assert((int32)numChecked == (int32)size($queryKeys));
-println("GetTest: Successfully checked "+(rstring)numChecked+" tuples");
-}
-
-}
-
-}
-
-
+		}
 
 }

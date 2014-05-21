@@ -5,7 +5,27 @@
 
 namespace com.ibm.streamsx.hbase.sample;
 
+/**
+ * Type representing a book in our simple example. 
+ */
 type BookType = tuple<rstring title, ustring author, int64 year, blob firstChapter>;
+
+/**
+ * This composite is both a sample and a self-verifying tests.
+ * 
+ * Tere's nothing much of interest here, you have to look in other other composites for details.
+ * 
+ * What this composite does:
+ * * Invokes PutBookRecord to put the books into HBASE.  
+ * * Invokes ScanTableWithBlob to verify that the HBASEScan correctly reads the tuples PutBookRecord put in
+ * * Invokes MultiTypeGet to verify that HBASEGet correctly reads the tuples that PutBookRecords put in
+ * 
+ * To help with the verification, PutBookRecord has an output stream, but it only exists to give the
+ * ScanTableWithBlobm and MultiTypeGet something to check against.
+ * 
+ * The example needs the table to have been created: 
+ * <code> create 'streamsSample_recordWithTypes', 'all</code>
+ */
 composite MultiTypeRecord {
 graph
 

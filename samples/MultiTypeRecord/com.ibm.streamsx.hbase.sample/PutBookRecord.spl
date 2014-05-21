@@ -1,9 +1,13 @@
+
 /* Copyright (C) 2014, International Business Machines Corporation  */
 /* All Rights Reserved                                	                 */
-
 namespace com.ibm.streamsx.hbase.sample ;
-use com.ibm.streamsx.hbase::HBASEPut;
 
+use com.ibm.streamsx.hbase::HBASEPut ;
+
+/**
+ * Read the contents of a file into a blob.
+ */
 stateful blob getFileContents(rstring filename)
 {
 	mutable int32 error = 0 ;
@@ -15,9 +19,24 @@ stateful blob getFileContents(rstring filename)
 	return toReturn ;
 }
 
-composite PutBookRecord (output checkStream)
+/**
+ * Put a record representing a book into HBASE.
+ * 
+ * Reads a file with the book metadata, including title, author, year, and
+ * the filename containing the first chapter.
+ * 
+ * Then, converts that to a tuple with a title, author, year, and a spl blob
+ * actually containing the entire first chapter.
+ * 
+ * It then puts that tuple into HBASE.  
+ * 
+ * It's output stream is a sorted version of the tuples placed in HBASE.  This is useful
+ * for HBASEScan and HBASEGet verification.
+ */
+composite PutBookRecord(output checkStream )
 {
 	graph
+	// read the book data.
 		stream<rstring title, ustring author, int64 year, rstring firstChapterFile>
 			bookDetails = FileSource()
 		{
@@ -25,6 +44,7 @@ composite PutBookRecord (output checkStream)
 				file : "books.csv" ;
 		}
 
+		// Change format, get the contents of the file into the the tuple
 		stream<rstring key, tuple<rstring title, ustring author, int64 year,
 			blob firstChapter> book> putStream = Functor(bookDetails)
 		{
@@ -35,16 +55,19 @@ composite PutBookRecord (output checkStream)
 						getFileContents(firstChapterFile)
 				} ;
 		}
-	
-			stream<rstring key, tuple<rstring title, ustring author, int64 year,
-			blob firstChapter> book> checkStream = Sort(putStream) {
-			window putStream: tumbling,punct();
-			param 
-			sortBy: key;
-			
-			}
 
+		// sort the stream going into HBASE--that way verifying agains the results
+		// of HBASE scan is a little easier.
+		stream<rstring key, tuple<rstring title, ustring author, int64 year,
+			blob firstChapter> book> checkStream = Sort(putStream)
+		{
+			window
+				putStream : tumbling, punct() ;
+			param
+				sortBy : key ;
+		}
 
+		// Now we put stuff into HBASE
 		() as PutSink = HBASEPut(putStream)
 		{
 			param
