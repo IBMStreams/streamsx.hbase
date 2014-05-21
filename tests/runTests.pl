@@ -31,10 +31,18 @@ sub clearTable(%) {
     my $tableName = $args{"tableName"};
     my $colFam1 = $args{"firstColumnFamily"};
     my $colFam2 = $args{"secondColumnFamily"};
+    my $colFam3 = $args{"thirdColumnFamily"};
+    my $colFam4 = $args{"fourthColumnFamily"};
 
     my $createCommand = "create '$tableName', '$colFam1'";
     if (defined $colFam2 && $colFam2 =~ /\w/) {
 	$createCommand .= ", \'$colFam2\'";
+    }
+    if (defined $colFam3 && $colFam3 =~ /\w/) {
+	$createCommand .= ", \'$colFam3\'";
+    }
+    if (defined $colFam4 && $colFam4 =~ /\w/) {
+	$createCommand .= ", \'$colFam4\'";
     }
     system("echo \"disable '$tableName'; drop '$tableName'\; ${createCommand}\" | \$HBASE_HOME/bin/hbase shell > shellResults");
    die "Problems creating table" unless ($? >> 8 == 0) ;
