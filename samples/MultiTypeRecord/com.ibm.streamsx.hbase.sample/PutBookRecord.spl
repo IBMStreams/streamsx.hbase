@@ -1,0 +1,54 @@
+namespace com.ibm.streamsx.hbase.sample ;
+use com.ibm.streamsx.hbase::HBASEPut;
+
+stateful blob getFileContents(rstring filename)
+{
+	mutable int32 error = 0 ;
+	uint64 file = spl.file::fopen(filename, "r", error) ;
+	assert(error == 0) ;
+	mutable blob toReturn = [ ] ;
+	spl.file::freadfile(toReturn, file, error) ;
+	assert(error == 0) ;
+	return toReturn ;
+}
+
+composite PutBookRecord (output checkStream)
+{
+	graph
+		stream<rstring title, ustring author, int64 year, rstring firstChapterFile>
+			bookDetails = FileSource()
+		{
+			param
+				file : "books.csv" ;
+		}
+
+		stream<rstring key, tuple<rstring title, ustring author, int64 year,
+			blob firstChapter> book> putStream = Functor(bookDetails)
+		{
+			output
+				putStream : key = title + "|" +(rstring) year, book =
+				{
+					title = title, author = author, year = year, firstChapter =
+						getFileContents(firstChapterFile)
+				} ;
+		}
+	
+			stream<rstring key, tuple<rstring title, ustring author, int64 year,
+			blob firstChapter> book> checkStream = Sort(putStream) {
+			window putStream: tumbling,punct();
+			param 
+			sortBy: key;
+			
+			}
+
+
+		() as PutSink = HBASEPut(putStream)
+		{
+			param
+				tableName : "streamsSample_recordWithTypes" ;
+				valueAttrName : "book" ;
+				rowAttrName : "key" ;
+				staticColumnFamily : "all" ;
+		}
+
+}

@@ -1,0 +1,54 @@
+namespace com.ibm.streamsx.hbase.sample;
+
+/**
+ * This composite writes the binary blob of the compressed first chapter
+ * to a file, and associates that filename with the metadata.
+ */
+ 
+composite WriteTuples(input inStream) {
+param 
+	expression<rstring> $blobFileName;
+	expression<rstring> $finalFileName;
+	graph
+	
+		// Let's just get the metadata
+		stream<rstring title, ustring author, int64 year> metaData =
+			Functor(inStream)
+		{
+			output
+				metaData : title = value.title, author = value.author, year = value.year ;
+		}
+
+		// Now just get the binary blob that we need to write to a file.
+		stream<blob toWrite> fileout = Functor(inStream)
+		{
+			output
+				fileout :
+				toWrite = value.firstChapter ;
+		}
+
+		// Write that binary blob to a file.
+		stream<rstring filename> outFiles = FileSink(fileout)
+		{
+			param
+				file : $blobFileName ;
+				closeMode : count ;
+				format : block ;
+				tuplesPerFile : 1u ;
+		}
+
+		// re-unite that written filename with the metaData for the book
+		stream<rstring title, ustring author, int64 year, rstring filename>
+			metaDataWithFile = Barrier(metaData ; outFiles)
+		{
+		}
+
+		// Write that stuff out!  
+		// Compare to books.csv -- the filenames are different, but the data 
+		// is the same.
+		() as metaSink = FileSink(metaDataWithFile)
+		{
+			param
+				file : $finalFileName ;
+		}
+		}

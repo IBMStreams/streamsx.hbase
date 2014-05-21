@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -68,6 +69,10 @@ public class HBASEPut extends HBASEPutDelete {
 	protected String valueAttr=null;
 	final static String VALUE_NAME = "valueAttrName";
 	protected byte[][] qualifierArray = null;
+	protected MetaType[] attrType = null;
+	private int valueAttrIndex = -1;
+	private MetaType valueAttrType = null;
+	
 	
 	@Parameter(name=VALUE_NAME,optional=false,description="Name of the attribute containing the value to put into the table")
 	public void setValueAttr(String val) {
@@ -91,17 +96,22 @@ public class HBASEPut extends HBASEPutDelete {
 		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
 		StreamSchema schema = inputPort.getStreamSchema();
 		Attribute attr = schema.getAttribute(valueAttr);
+		
 		if (attr.getType().getMetaType() == MetaType.TUPLE) {
 			// In this mode, we treat the attribute name as the column qualifer.
 			putMode = PutMode.RECORD;
 			// Let's get all the attribute names, and store them in the qualifier array.
 			StreamSchema valueSchema = ((TupleType)attr.getType()).getTupleSchema();
 			qualifierArray = new byte[valueSchema.getAttributeCount()][];
+			attrType = new MetaType[valueSchema.getAttributeCount()];
 			for (int i = 0; i < valueSchema.getAttributeCount(); i++) {
 				qualifierArray[i] = valueSchema.getAttribute(i).getName().getBytes(charset);
+				attrType[i] = valueSchema.getAttribute(i).getType().getMetaType();
 			}
 		}
 		else {
+			valueAttrIndex = attr.getIndex();
+			valueAttrType = attr.getType().getMetaType();
 			putMode = PutMode.ENTRY;
 		}
 	}
@@ -127,13 +137,13 @@ public class HBASEPut extends HBASEPutDelete {
     
     	case ENTRY:
         	byte colQ[] = getColumnQualifier(tuple);
-        	byte value[] = tuple.getString(valueAttr).getBytes();
+        	byte value[] = getBytes(tuple,valueAttrIndex,valueAttrType); 
         	myPut.add(colF, colQ, value);
     	break;
     	case RECORD:
     		Tuple values = tuple.getTuple(valueAttr);
     	for (int i = 0; i < qualifierArray.length; i++) {
-    		myPut.add(colF,qualifierArray[i],values.getString(i).getBytes(charset));
+    		myPut.add(colF,qualifierArray[i],getBytes(values,i,attrType[i]));
     	}
     		break;
     		default:
@@ -144,10 +154,11 @@ public class HBASEPut extends HBASEPutDelete {
     	if (checkAttr != null) {
     		Tuple checkTuple = tuple.getTuple(checkAttrIndex);
     		
-    		// the row attribute and the check row attribute have to match, so don't even use it.
+    		// the row attribute and the check row attribute have to match, so don't even look
+    		// in the check attribute for hte row.
     		byte checkRow[] = getRow(tuple);
-    		byte checkColF[] = getCheckColF(checkTuple);
-    		byte checkColQ[] = getCheckColQ(checkTuple);
+    		byte checkColF[] = getBytes(checkTuple,checkColFIndex,checkColFType);
+    		byte checkColQ[] = getBytes(checkTuple,checkColQIndex,checkColQType);
     		byte checkValue[] = getCheckValue(checkTuple);
 
     		success = myTable.checkAndPut(checkRow,checkColF,checkColQ,checkValue,myPut);
@@ -169,19 +180,20 @@ public class HBASEPut extends HBASEPutDelete {
     	myTable.close();
     }
     
-        /**
-         * Shutdown this operator.
-         * @throws Exception Operator failure, will cause the enclosing PE to terminate.
-         */
-       @Override
-       public synchronized void shutdown() throws Exception {
-            OperatorContext context = getOperatorContext();
-           Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-   			HTableInterface myTable = connection.getTable(tableNameBytes);
-           if (myTable != null && putList != null && putList.size() > 0) {
-                   myTable.put(putList);
+	/**
+	 * Empty the buffer.
+	 * Called by shutdown and processPunctuation.
+	 */
+    @Override
+	protected synchronized void emptyBuffer() throws IOException{
+    	if (connection != null && !connection.isClosed()) {
+            HTableInterface myTable = connection.getTable(tableNameBytes);
+            if (myTable != null && putList != null && putList.size() > 0) {
+                    myTable.put(putList);
+             }
+            myTable.close();
             }
-           myTable.close();
-           super.shutdown();
-        }
+	}
+    
+ 
 }

@@ -1,0 +1,72 @@
+namespace com.ibm.streamsx.hbase.sample;
+use com.ibm.streamsx.hbase::HBASEGet;
+
+composite MultiTypeGet (input checkStream) {
+
+param 
+expression<list<rstring>> $queryKeys;
+expression<float64> $initDelay: 10.0;
+// This is how we test resutls.  
+expression<int32> $maxEntries: 5;
+expression<rstring> $tableName: "streamsSample_recordWithTypes";
+
+graph
+stream<rstring key> queryStream = Beacon() {
+param
+iterations: size($queryKeys);
+initDelay: $initDelay;
+output queryStream: 
+key = $queryKeys[IterationCount()];
+}
+
+stream<rstring key, BookType value> resultStream = HBASEGet(queryStream) {
+param
+tableName: $tableName;
+outAttrName: "value";
+rowAttrName: "key";
+}
+
+// compare get_metaData.out to books.csv 
+() as getWrite = WriteTuples(resultStream) {
+param
+blobFileName: "get{id}.gz";
+finalFileName: "get_metaData.out";
+}
+
+// Now for automated test check
+
+stream<rstring keyIn, BookType bookIn, rstring keyOut, BookType bookOut> joined = Join(checkStream;resultStream) {
+window resultStream: sliding, count($maxEntries);
+  	   checkStream: sliding, count($maxEntries);
+  	   param
+ match: checkStream.key == resultStream.key;
+ // If this were a bigger join, and we wanted a hash join, we'd
+ // need to specify equalityLHS and equalityRHS, but as we are joining
+ // three tuples, it doesn't matter.
+ output joined:
+ keyIn = checkStream.key,
+ keyOut= resultStream.key,
+ bookIn = checkStream.book,
+ bookOut = resultStream.value;
+}
+
+() as GetCheck = Custom( joined) {
+logic state: mutable int32 numChecked = 0;
+onTuple joined: {
+
+assert(bookIn==bookOut);
+numChecked ++;
+}
+onPunct joined: {
+if (currentPunct() == Sys.FinalMarker) {
+assert((int32)numChecked == (int32)size($queryKeys));
+println("GetTest: Successfully checked "+(rstring)numChecked+" tuples");
+}
+
+}
+
+}
+
+
+
+}

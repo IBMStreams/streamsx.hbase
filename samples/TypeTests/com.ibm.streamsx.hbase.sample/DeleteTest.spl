@@ -1,0 +1,120 @@
+namespace com.ibm.streamsx.hbase.sample ;
+use com.ibm.streamsx.hbase::HBASEPut;
+use com.ibm.streamsx.hbase::HBASEDelete;
+
+
+blob getBlob(blob myBlob, uint64 long)
+{
+	return myBlob ;
+}
+
+int64 getLong(blob myBlob, uint64 long) {
+	return (int64)long;
+}
+
+ustring getUstring(blob myBlob, uint64 long) {
+	return (ustring)long;
+}
+
+rstring getRstring(blob myBlob, uint64 long) {
+	return (rstring)long;
+}
+
+composite DeleteTest
+{
+	param
+		type $RowType : int64 ;
+		type $ColumnQualifierType : int64 ;
+		type $ValueType : int64 ;
+		function $rowFunc: getLong;
+		function $colQFunc: getLong;
+		function $valueFunc: getLong;
+		expression<float64> $initDelay : 0.0 ;
+		expression<int32> $numTuples: 10;
+		expression<rstring> $tableName : "streamsSample_typeTest" ;
+		expression<rstring> $columnFamily: "deleteTest";
+	graph
+	
+		stream<uint64 count> beaconStream = Beacon()
+		{
+			param
+				initDelay : $initDelay ;
+				
+				iterations: $numTuples;
+			output beaconStream:
+				count = IterationCount();
+		}
+
+		stream<blob myBlob, uint64 count> withBlob = Format(beaconStream)
+		{
+			output
+				withBlob : myBlob = Output() ;
+		}
+
+		stream<$RowType row, rstring colF, $ColumnQualifierType colQ,
+			$ValueType value> putStream = Functor(withBlob)
+		{
+			output
+				putStream : row = $rowFunc(myBlob,count), colF =
+					$columnFamily, colQ = $colQFunc(myBlob,count),
+					value = $valueFunc(myBlob,count) ;
+		}
+
+		() as putSink = HBASEPut(putStream)
+		{
+			param
+				tableName : $tableName ;
+				rowAttrName : "row";
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ";
+				valueAttrName : "value" ;
+		}
+
+		stream<I> delayed = Delay(putStream as I)
+		{
+			param
+				delay : 10.0 ;
+		}
+
+		stream<tuple<tuple<rstring columnFamily,
+			$ColumnQualifierType columnQualifier, $ValueType value> checkTuple>, I>
+			deleteStream = Functor(delayed as I)
+		{
+			output
+				deleteStream : checkTuple =
+				{
+					columnFamily = colF, columnQualifier = colQ, value = value
+				} ;
+		}
+
+		stream<boolean success> deleteResult = HBASEDelete(deleteStream)
+		{
+			param
+				tableName : $tableName ;
+				rowAttrName : "row" ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				checkAttrName: "checkTuple";
+				successAttr: "success";
+		}
+
+// Finally, check the result.
+// First, every delete should be successful.
+// Second, the number of deletes is the number of initial tuples. 
+		() as check = Custom(deleteResult)
+		{
+			logic
+				onTuple deleteResult : assert(success) ;
+				onPunct deleteResult :
+				{
+					if(currentPunct() == Sys.FinalMarker)
+					{
+						mutable int64 numTuples = - 1 ;
+						getInputPortMetricValue(0u, Sys.nTuplesProcessed, numTuples) ;
+						assert((int32)numTuples == $numTuples) ;
+						println("Delete test complete: "+(rstring)numTuples+" tuples deleted");
+					}
+				}
+		}
+
+}

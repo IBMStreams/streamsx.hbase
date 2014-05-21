@@ -1,0 +1,16 @@
+namespace com.ibm.streamsx.hbase.sample;
+
+type BookType = tuple<rstring title, ustring author, int64 year, blob firstChapter>;
+composite MultiTypeRecord {
+graph
+
+		stream<rstring key, BookType book> checkStream = PutBookRecord() {}
+
+() as scanTable = ScanTableWithBlob(checkStream) {}
+
+() as getTable = MultiTypeGet(checkStream) {
+param
+queryKeys: ["Pride and Prejudice|1813"];
+}
+
+}

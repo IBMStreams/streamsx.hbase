@@ -1,0 +1,79 @@
+namespace com.ibm.streamsx.hbase.sample;
+use com.ibm.streamsx.hbase::HBASEPut;
+use com.ibm.streamsx.hbase::HBASEGet;
+
+composite PutGetTest {
+param
+operator $TupleProducer;
+type $getType;
+type $valueType;
+expression<rstring> $tableName: "streamsSample_typeTest";
+graph
+
+stream<$getType,tuple<$valueType value>> inputTuples = $TupleProducer() {
+
+
+
+}
+
+() as put = HBASEPut(inputTuples) {
+param
+tableName: $tableName;
+columnFamilyAttrName: "colF";
+columnQualifierAttrName: "colQ";
+rowAttrName: "row";
+valueAttrName: "value";
+}
+
+stream<$getType,tuple<$valueType value>> delayed = Delay(inputTuples){
+param
+delay: 30.0;
+}
+
+stream<$getType> getInput = Functor(delayed) {
+
+}
+
+stream<$getType,tuple<$valueType value>> fromHBASE = HBASEGet(getInput) {
+param
+tableName: $tableName;
+columnFamilyAttrName: "colF";
+columnQualifierAttrName: "colQ";
+rowAttrName: "row";
+outAttrName: "value";
+}
+
+stream<$getType, tuple<list<tuple<$valueType val, int64 ts>> value>> fromHBASEList = HBASEGet(getInput) {
+param
+tableName: $tableName;
+columnFamilyAttrName: "colF";
+columnQualifierAttrName: "colQ";
+rowAttrName: "row";
+outAttrName: "value";
+}
+
+stream<tuple<tuple<$getType,tuple<$valueType value>> inTuple,
+       tuple<$getType,tuple<$valueType value>> outTuple>,
+       tuple<$valueType listValue>
+       > checkStream = Barrier(fromHBASE;inputTuples;fromHBASEList) {
+output checkStream:
+inTuple=inputTuples,
+outTuple= fromHBASE,
+listValue = fromHBASEList.value[0].val;
+}
+
+() as check = Custom(checkStream) {
+
+	logic 
+	onTuple checkStream: {
+		assert(inTuple==outTuple,"Error: "+(rstring)inTuple+" not identical to "+(rstring)outTuple);
+		assert(inTuple.value == listValue);
+		}
+	onPunct checkStream: {
+		mutable int64 value =-1;
+		getInputPortMetricValue(0u, Sys.nTuplesProcessed, value);
+		println("Test complete. "+(rstring)value+" tuples evaluated");
+	}
+	}
+
+}
