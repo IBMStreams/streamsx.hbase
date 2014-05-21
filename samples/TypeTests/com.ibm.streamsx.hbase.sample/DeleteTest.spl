@@ -7,23 +7,61 @@ use com.ibm.streamsx.hbase::HBASEPut;
 use com.ibm.streamsx.hbase::HBASEDelete;
 
 
+/**
+ * Given a blob and a long, return the blob.  This function is passed
+ * as an argument into a composite, and all the functions so passed 
+ * have to take as arguments a blob and a uint64, which is why this one
+ * does.  
+ */
 blob getBlob(blob myBlob, uint64 long)
 {
 	return myBlob ;
 }
-
+/**
+ * Given a blob and a uint64, return a int64. This function is passed
+ * as an argument into a composite, and all the functions so passed 
+ * have to take as arguments a blob and a uint64, which is why this one
+ * does.  
+ */
 int64 getLong(blob myBlob, uint64 long) {
 	return (int64)long;
 }
 
+
+/**
+ * Given a blob and a uint64, return a ustring. This function is passed
+ * as an argument into a composite, and all the functions so passed 
+ * have to take as arguments a blob and a uint64, which is why this one
+ * does.  
+ */
 ustring getUstring(blob myBlob, uint64 long) {
 	return (ustring)long;
 }
 
+/**
+ * Given a blob and a uint64, return a rstring. This function is passed
+ * as an argument into a composite, and all the functions so passed 
+ * have to take as arguments a blob and a uint64, which is why this one
+ * does.  
+ */
 rstring getRstring(blob myBlob, uint64 long) {
 	return (rstring)long;
 }
 
+/**
+ * Tests the delete operation with a variety of types (not a basic sample).
+ * 
+ * The composite takes the RowType, ColumnQualifierType, and ValueType as arguments.
+ * (the columnFamily is assumed to be rstring--it's difficult to create tables that
+ * use non-rstring values as columnFamily names, so that is not well-tested).  
+ * 
+ * It also takes a getter function for the row, columnqualifier, and value.
+ * 
+ * Then, it produces tuples with those types, puts the tuples in HBASE, and 
+ * then deletes them using a conditional delete that will only succeed if the the 
+ * tuple is there. 
+ * 
+ */
 composite DeleteTest
 {
 	param
@@ -39,22 +77,24 @@ composite DeleteTest
 		expression<rstring> $columnFamily: "deleteTest";
 	graph
 	
+	// Create some tuples.
 		stream<uint64 count> beaconStream = Beacon()
 		{
 			param
-				initDelay : $initDelay ;
-				
 				iterations: $numTuples;
 			output beaconStream:
 				count = IterationCount();
 		}
 
+	// Add a blob element to the stream.
 		stream<blob myBlob, uint64 count> withBlob = Format(beaconStream)
 		{
 			output
 				withBlob : myBlob = Output() ;
 		}
 
+	// Now create a row, colF, colQ, value stream with the right types,
+	// using the functions passed as input.  
 		stream<$RowType row, rstring colF, $ColumnQualifierType colQ,
 			$ValueType value> putStream = Functor(withBlob)
 		{
@@ -64,6 +104,7 @@ composite DeleteTest
 					value = $valueFunc(myBlob,count) ;
 		}
 
+// Add tuples to HBASE.
 		() as putSink = HBASEPut(putStream)
 		{
 			param
@@ -74,12 +115,16 @@ composite DeleteTest
 				valueAttrName : "value" ;
 		}
 
+	// Delay the putStream, since we want to be sure all the puts have
+	// happened before we start deletes.  
 		stream<I> delayed = Delay(putStream as I)
 		{
 			param
 				delay : 10.0 ;
 		}
 
+//Add a checkTuple to the input, so we can check the entry exists before
+// deleting. 
 		stream<tuple<tuple<rstring columnFamily,
 			$ColumnQualifierType columnQualifier, $ValueType value> checkTuple>, I>
 			deleteStream = Functor(delayed as I)
@@ -91,6 +136,7 @@ composite DeleteTest
 				} ;
 		}
 
+// Invoke  the conditional HBASEDelete 
 		stream<boolean success> deleteResult = HBASEDelete(deleteStream)
 		{
 			param

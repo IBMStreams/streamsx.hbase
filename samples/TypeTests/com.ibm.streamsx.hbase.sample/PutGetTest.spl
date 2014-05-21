@@ -1,83 +1,117 @@
+
 /* Copyright (C) 2014, International Business Machines Corporation  */
 /* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
 
+use com.ibm.streamsx.hbase::HBASEPut ;
+use com.ibm.streamsx.hbase::HBASEGet ;
 
-namespace com.ibm.streamsx.hbase.sample;
-use com.ibm.streamsx.hbase::HBASEPut;
-use com.ibm.streamsx.hbase::HBASEGet;
+/**
+ * Tests a Put and Get with multiple types (not a beginner sample).  
+ * 
+ * This composite exists to test HBASEPut and HBASEGet with the
+ * variety of types the HBASE operator supports.  It's called from
+ * the TestTypes composite.
+ * 
+ * It uses the passed-in TupleProducer to produce tuples, and puts those
+ * tuples in HBASE.  
+ * 
+ * Then it uses those tuples to produce queries, which it sends to HBASEGet.  Then
+ * it compares the output to those input tuples and makes sure it matches.  
+ * 
+ */
+composite PutGetTest
+{
+	param
+		operator $TupleProducer ;
+		type $getType ;
+		type $valueType ;
+		expression<rstring> $tableName : "streamsSample_typeTest" ;
+	graph
 
-composite PutGetTest {
-param
-operator $TupleProducer;
-type $getType;
-type $valueType;
-expression<rstring> $tableName: "streamsSample_typeTest";
-graph
-
-stream<$getType,tuple<$valueType value>> inputTuples = $TupleProducer() {
-
-
-
-}
-
-() as put = HBASEPut(inputTuples) {
-param
-tableName: $tableName;
-columnFamilyAttrName: "colF";
-columnQualifierAttrName: "colQ";
-rowAttrName: "row";
-valueAttrName: "value";
-}
-
-stream<$getType,tuple<$valueType value>> delayed = Delay(inputTuples){
-param
-delay: 30.0;
-}
-
-stream<$getType> getInput = Functor(delayed) {
-
-}
-
-stream<$getType,tuple<$valueType value>> fromHBASE = HBASEGet(getInput) {
-param
-tableName: $tableName;
-columnFamilyAttrName: "colF";
-columnQualifierAttrName: "colQ";
-rowAttrName: "row";
-outAttrName: "value";
-}
-
-stream<$getType, tuple<list<tuple<$valueType val, int64 ts>> value>> fromHBASEList = HBASEGet(getInput) {
-param
-tableName: $tableName;
-columnFamilyAttrName: "colF";
-columnQualifierAttrName: "colQ";
-rowAttrName: "row";
-outAttrName: "value";
-}
-
-stream<tuple<tuple<$getType,tuple<$valueType value>> inTuple,
-       tuple<$getType,tuple<$valueType value>> outTuple>,
-       tuple<$valueType listValue>
-       > checkStream = Barrier(fromHBASE;inputTuples;fromHBASEList) {
-output checkStream:
-inTuple=inputTuples,
-outTuple= fromHBASE,
-listValue = fromHBASEList.value[0].val;
-}
-
-() as check = Custom(checkStream) {
-
-	logic 
-	onTuple checkStream: {
-		assert(inTuple==outTuple,"Error: "+(rstring)inTuple+" not identical to "+(rstring)outTuple);
-		assert(inTuple.value == listValue);
+	// Generate some tuples. 
+		stream<$getType, tuple<$valueType value>> inputTuples = $TupleProducer()
+		{
 		}
-	onPunct checkStream: {
-		mutable int64 value =-1;
-		getInputPortMetricValue(0u, Sys.nTuplesProcessed, value);
-		println("Test complete. "+(rstring)value+" tuples evaluated");
-	}
-	}
+
+		// Put them in HBASE.
+		() as put = HBASEPut(inputTuples)
+		{
+			param
+				tableName : $tableName ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				rowAttrName : "row" ;
+				valueAttrName : "value" ;
+		}
+
+		// We want to make sure the Put has finished before we start the get,
+		// so we delay the PutStream before turning it into a query streams.
+		stream<$getType, tuple<$valueType value>> delayed = Delay(inputTuples)
+		{
+			param
+				delay : 10.0 ;
+		}
+
+		// All that happens here is a type change; we drop the value before
+		// using the put tuple as a query tuple.
+		stream<$getType> getInput = Functor(delayed)
+		{
+		}
+
+		// NOw issue an HBASE Query.
+		stream<$getType, tuple<$valueType value>> fromHBASE = HBASEGet(getInput)
+		{
+			param
+				tableName : $tableName ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				rowAttrName : "row" ;
+				outAttrName : "value" ;
+		}
+
+		// Issue another query, but this time we're getting a list of values.
+		stream<$getType, tuple<list<tuple<$valueType val, int64 ts>> value>>
+			fromHBASEList = HBASEGet(getInput)
+		{
+			param
+				tableName : $tableName ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				rowAttrName : "row" ;
+				outAttrName : "value" ;
+		}
+
+		////////////////////  Check section ////////////////////////////////////////////////////
+
+		// Combine the putStream (inputTuples) with the results from the single-value get and the list-HBASEGet
+		stream<tuple<tuple<$getType, tuple<$valueType value>> inTuple, tuple<$getType,
+			tuple<$valueType value>> outTuple>, tuple<$valueType listValue>>
+			checkStream = Barrier(fromHBASE ; inputTuples ; fromHBASEList)
+		{
+			output
+				checkStream : inTuple = inputTuples, outTuple = fromHBASE, listValue =
+					fromHBASEList.value [ 0 ].val ;
+		}
+
+		// Now, we check the results.  We'll exit with an error if there's a problem.
+		() as check = Custom(checkStream)
+		{
+			logic
+				onTuple checkStream :
+				{
+					assert(inTuple == outTuple, "Error: " +(rstring) inTuple +
+						" not identical to " +(rstring) outTuple) ;
+					assert(inTuple.value == listValue) ;
+				}
+
+				onPunct checkStream :
+				{
+					mutable int64 value = - 1 ;
+					getInputPortMetricValue(0u, Sys.nTuplesProcessed, value) ;
+					println("Test complete. " +(rstring) value + " tuples evaluated") ;
+				}
+
+		}
 
 }
