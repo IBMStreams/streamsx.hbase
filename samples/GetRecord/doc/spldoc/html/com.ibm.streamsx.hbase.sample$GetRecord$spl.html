@@ -98,13 +98,18 @@ GetRecord
 <p class="p">We have two HBASEGet, below.  The first works fine, populating the book tuple based on what's in HBASE.  See the enriched stream, and the books.out file after running. Because there is no "Dracula:1897" in the database, all strings are empty. 
 </p>
 
-<p class="p">&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""} "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""} "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""} "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""} &lt;/code&gt; 
+<p class="p">&lt;code&gt; "War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""} "Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""} "Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""} "Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""} &lt;/code&gt; 
 </p>
 
 <p class="p">In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type has the "fiction" attribute, and there is no corresponding column qualifier, so all the fiction attributes are empty. In this case, we made use of the outputCountAttr, so it's possible to check notice that only four attributes of the five were populated.  Also, for the case of Dracula, numResults is zero because we not able to populate title, author_fname,  author_lname, year, or fiction.   
 </p>
 
-<p class="p">&lt;code&gt; "War and Peace:1869",{file:title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4 "Jane Eyre:1847",{file:title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4 "Twilight:2005",{file:title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4 "Dracula:1897",{file:title="",author_fname="",author_lname="",year="",fiction=""},0 &lt;/code&gt; 
+<p class="p">&lt;code&gt; "War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4
+"Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4
+"Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4
+"Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""},0
+&lt;/code&gt;
+
 </p>
 
 </div>

@@ -1,12 +1,12 @@
-#Thu May 01 00:12:23 EDT 2014
+#Fri May 23 23:07:45 EDT 2014
 copytosourcelist=
-hreftargetslist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/toolkit.xml
+hreftargetslist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$ScanWithInput$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/com.ibm.streamsx.hbase.sample$ScanTester$spl.xml,dita/toolkit.xml
 fullditatopicfile=fullditatopic.list
 fullditamapandtopicfile=fullditamapandtopic.list
-fullditatopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/toolkit.xml
-fullditamapandtopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/toolkit.ditamap,dita/toolkit.xml
+fullditatopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$ScanWithInput$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/com.ibm.streamsx.hbase.sample$ScanTester$spl.xml,dita/toolkit.xml
+fullditamapandtopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$ScanWithInput$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/com.ibm.streamsx.hbase.sample$ScanTester$spl.xml,dita/toolkit.ditamap,dita/toolkit.xml
 hrefditatopicfile=hrefditatopic.list
-hrefditatopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/toolkit.xml
+hrefditatopiclist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$ScanWithInput$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/com.ibm.streamsx.hbase.sample$ScanTester$spl.xml,dita/toolkit.xml
 user.input.file=dita/toolkit.ditamap
 subtargetsfile=subtargets.list
 fullditamapfile=fullditamap.list
@@ -23,11 +23,11 @@ conreflist=
 resourceonlyfile=resourceonly.list
 imagefile=image.list
 resourceonlylist=
-imagelist=image/com.ibm.streamsx.hbase.sample$ScanString.svg
+imagelist=image/com.ibm.streamsx.hbase.sample$ScanWithInput.svg,image/com.ibm.streamsx.hbase.sample$ScanAndWrite.svg,image/com.ibm.streamsx.hbase.sample$ScanString.svg
 htmlfile=html.list
 htmllist=
 canditopicsfile=canditopics.list
-canditopicslist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/toolkit.xml
+canditopicslist=dita/com.ibm.streamsx.hbase.sample$ScanString$spl.xml,dita/com.ibm.streamsx.hbase.sample$ScanWithInput$spl.xml,dita/com.ibm.streamsx.hbase.sample$.xml,dita/com.ibm.streamsx.hbase.sample$ScanTester$spl.xml,dita/toolkit.xml
 keyreffile=keyref.list
 subjectschemefile=subjectscheme.list
 keyreflist=

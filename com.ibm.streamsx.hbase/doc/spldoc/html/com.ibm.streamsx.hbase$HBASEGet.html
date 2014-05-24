@@ -61,7 +61,7 @@ com.ibm.streamsx.hbase
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 8 parameters. (<tt class="ph tt">columnFamilyAttrName, columnQualifierAttrName, outAttrName, rowAttrName, staticColumnFamily, staticColumnQualifier, outputCountAttr, tableName</tt>)
+  <dd class="dd">This operator supports 10 parameters. (<tt class="ph tt">columnFamilyAttrName, columnQualifierAttrName, maxVersions, minTimestamp, outAttrName, rowAttrName, staticColumnFamily, staticColumnQualifier, outputCountAttr, tableName</tt>)
 </dd>
 
  
@@ -192,7 +192,7 @@ com.ibm.streamsx.hbase
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 8 parameters.<dl class="dl">
+This operator supports 10 parameters.<dl class="dl">
 
 <dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_columnFamilyAttrName"><tt class="ph tt">columnFamilyAttrName</tt></dt>
 
@@ -237,6 +237,68 @@ This operator supports 8 parameters.<dl class="dl">
  <dd class="dd">
   <ul class="sl simple">
   <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_maxVersions"><tt class="ph tt">maxVersions</tt></dt>
+
+<dd class="dd">
+<p class="p">The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm" id="spldoc_operator__com.ibm.streamsx.hbase__HBASEGet__parameter_minTimestamp"><tt class="ph tt">minTimestamp</tt></dt>
+
+<dd class="dd">
+<p class="p">The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int64
   </li>
 
      <li class="sli"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
@@ -449,7 +511,7 @@ This operator supports 8 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, @HBASE_HOME@/lib/*, @HADOOP_HOME@/hadoop-core.jar, @HADOOP_HOME@/lib/*, @HBASE_HOME@/hbase.jar, @HBASE_HOME@/conf</tt></dd>
+  <dd class="dd"><a class="xref" href="OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/local_override/*, @HBASE_HOME@/lib/*, @HADOOP_HOME@/hadoop-core.jar, @HADOOP_HOME@/lib/*, @HBASE_HOME@/hbase.jar, @HBASE_HOME@/conf, ../../opt/local_override/*</tt></dd>
 
  
  </dl>
