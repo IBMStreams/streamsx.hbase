@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -54,9 +55,11 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 
 	// These are used by Put and Delete for checkAndPut and checkAndDelete
-	private int checkColFIndex = -1;
-	private int checkColQIndex = -1;
-	private int checkValueIndex = -1;
+	protected int checkColFIndex = -1;
+	protected int checkColQIndex = -1;
+	protected int checkValueIndex = -1;
+	
+	protected MetaType checkColFType = null, checkColQType = null, checkValueType = null;
 
 	final protected Object listLock = new Object();
 	protected int batchSize = 0;
@@ -119,23 +122,18 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 							+ ".row is ignored, as the row for the check must be the same as the row of the put.");
 		}
 		checkColQIndex = checkAndGetIndex(checkSchema, "columnQualifier");
+		checkColQType=checkSchema.getAttribute(checkColQIndex).getType().getMetaType();
 		checkColFIndex = checkAndGetIndex(checkSchema, "columnFamily");
+		checkColFType=checkSchema.getAttribute(checkColFIndex).getType().getMetaType();
 		if (checkSchema.getAttribute("value") != null) {
 			checkValueIndex = checkAndGetIndex(checkSchema, "value");
+			checkValueType=checkSchema.getAttribute(checkValueIndex).getType().getMetaType();
 		}
 	}
 
-	byte[] getCheckColF(Tuple tuple) {
-		return tuple.getString(checkColFIndex).getBytes(charset);
-	}
-
-	byte[] getCheckColQ(Tuple tuple) {
-		return tuple.getString(checkColQIndex).getBytes(charset);
-	}
-
-	byte[] getCheckValue(Tuple tuple) {
+	byte[] getCheckValue(Tuple tuple) throws Exception {
 		if (checkValueIndex > 0) {
-			return tuple.getString(checkValueIndex).getBytes(charset);
+			return getBytes(tuple,checkValueIndex,checkValueType);
 		} else
 			return null;
 	}
@@ -201,6 +199,32 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 		}
 	}
 
+	/**
+	 * Empty the buffer.
+	 * Called by shutdown and processPunctuation.
+	 */
+	protected void emptyBuffer() throws IOException {
+		
+	}
+	
+	   
+    /**
+     * Shutdown this operator.
+     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
+     */
+   @Override
+   public void shutdown() throws Exception{
+	   emptyBuffer();
+       super.shutdown();
+    }
+	
+	@Override
+	public void processPunctuation(StreamingInput<Tuple> stream,
+			Punctuation mark) throws Exception {
+		if (Punctuation.FINAL_MARKER == mark) {
+			emptyBuffer();
+		}
+	}
 
 	/**
 	 * Populate and submit an output tuple. If the operator is configured with

@@ -1,0 +1,129 @@
+
+/* Copyright (C) 2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+use com.ibm.streamsx.hbase::HBASEGet ;
+
+/**
+ * Checks that checkAndPut works properly for all supported types (not a beginner sample).
+ * 
+ * This takes an argument a TupleProducer and the types it's supposed to use.
+ * The TupleProducer should make items of type EntryType, and the row in EntryType
+ * must be RowType.
+ */
+composite CheckTest
+{
+	param
+		operator $TupleProducer ;
+		type $EntryType ;
+		type $RowType ;
+		type $CheckType ;
+		function $getColumnQualifier ;
+		expression<rstring> $tableName : "streamsSample_typeTest" ;
+		expression<float64> $putDelay : 10.0 ;
+		expression<float64> $readDelay : 10.0 ;
+	graph
+
+	// Make some tuples. 
+		stream<$EntryType> entryStream = $TupleProducer()
+		{
+			param
+				initDelay : $putDelay ;
+		}
+
+		// Convert those tuples into two things:
+		// (1) a put stream with a CheckTuple
+		// (2) a getStream to query.
+		(stream<tuple<$RowType row>, tuple<$CheckType checkTuple, rstring value>,
+			tuple<rstring colF, rstring colQ>> putStream ; stream<tuple<$RowType row>,
+			tuple<rstring colF, rstring colQ>> getStream) = Functor(entryStream)
+		{
+			output
+				putStream : row = row, colQ = "check_test" +(rstring)
+					$getColumnQualifier(entryStream), value = ".", checkTuple =
+				{
+					columnQualifier = entryStream.colQ, columnFamily = entryStream.colF,
+						value = entryStream.value
+				} ;
+				getStream : row = row, colQ = "check_test" +(rstring)
+					$getColumnQualifier(entryStream) ;
+		}
+
+		// Put tuples into HBASE.
+		stream<boolean success> resultStream = HBASEPut(putStream)
+		{
+			param
+				tableName : $tableName ;
+				checkAttrName : "checkTuple" ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				rowAttrName : "row" ;
+				valueAttrName : "value" ;
+				successAttr : "success" ;
+		}
+
+		// Delay the getStream to make sure all tuples are in.
+		stream<tuple<$RowType row>, tuple<rstring colF, rstring colQ>> delayed =
+			Delay(getStream)
+		{
+			param
+				delay : $readDelay ;
+		}
+
+		// Get tuples from HBASE
+		stream<tuple<$RowType row>, tuple<rstring colF, rstring colQ, rstring value>>
+			getResults = HBASEGet(delayed)
+		{
+			param
+				tableName : $tableName ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				outAttrName : "value" ;
+				rowAttrName : "row" ;
+		}
+
+		// Compre the results of the put with the results of the get.
+		// All puts should be successful, and there should be a get result for
+		// every put. 
+		() as sink = Custom(resultStream ; getResults)
+		{
+			logic
+				state :
+				{
+					mutable int32 numSuccess = 0 ;
+				}
+
+				onTuple resultStream : if(success)
+				{
+					numSuccess ++ ;
+				}
+
+				onPunct resultStream :
+				{
+					mutable int64 value = - 1 ;
+					getInputPortMetricValue(0u, Sys.nTuplesProcessed, value) ;
+					assert((int32) value == numSuccess) ;
+				}
+
+				onTuple getResults : assert(getResults.value == ".") ;
+				onPunct getResults :
+				{
+					if(currentPunct() == Sys.FinalMarker)
+					{
+						mutable int64 streamOne = - 1 ;
+						mutable int64 streamTwo = - 1 ;
+						getInputPortMetricValue(0u, Sys.nTuplesProcessed, streamOne) ;
+						getInputPortMetricValue(1u, Sys.nTuplesProcessed, streamTwo) ;
+						assert(streamOne == streamTwo) ;
+						println("Check test complete. " +(rstring) streamOne +
+							" tuples evaluated") ;
+					}
+
+				}
+
+		}
+
+}
+

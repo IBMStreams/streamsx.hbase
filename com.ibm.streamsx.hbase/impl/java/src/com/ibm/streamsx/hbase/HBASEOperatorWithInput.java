@@ -33,6 +33,10 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	protected int rowAttrIndex = -1;
 	protected int colFamilyIndex =-1;
 	protected int colQualifierIndex=-1;
+	
+	protected MetaType rowAttrType = null;
+	
+	protected MetaType colQualifierType  = null, colFamilyType = null;
 
 	static final String COL_FAM_PARAM_NAME = "columnFamilyAttrName";
 	static final String COL_QUAL_PARAM_NAME = "columnQualifierAttrName";
@@ -77,22 +81,22 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	}
     }
 
-	protected byte[] getRow(Tuple tuple) {
-        return tuple.getString(rowAttrIndex).getBytes(charset);
+	protected byte[] getRow(Tuple tuple) throws Exception{
+        return getBytes(tuple,rowAttrIndex,rowAttrType);
 	}
 	
-	protected byte[] getColumnFamily(Tuple tuple) {
+	protected byte[] getColumnFamily(Tuple tuple) throws Exception {
 		if (colFamBytes == null ) {
-			return tuple.getString(colFamilyIndex).getBytes(charset);
+			return getBytes(tuple, colFamilyIndex,colFamilyType);
 		}
 		else {
 			return colFamBytes;
 		}
 	}
-	protected byte[] getColumnQualifier(Tuple tuple) {
+	protected byte[] getColumnQualifier(Tuple tuple) throws Exception {
 		
 		if (colQualBytes == null)
-			return tuple.getString(colQualifierIndex).getBytes(charset);
+			return getBytes(tuple, colQualifierIndex, colQualifierType);
 		else {
 			return colQualBytes;
 		}
@@ -116,12 +120,15 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
         StreamSchema inputSchema = input.getStreamSchema();
         if (rowAttr != null) {
         	rowAttrIndex = checkAndGetIndex(inputSchema, rowAttr);
+        	rowAttrType = inputSchema.getAttribute(rowAttrIndex).getType().getMetaType();
         }
         if (columnFamilyAttr != null) {
         	colFamilyIndex = checkAndGetIndex(inputSchema,columnFamilyAttr);
+        	colFamilyType = inputSchema.getAttribute(colFamilyIndex).getType().getMetaType();
         }
         if (columnQualifierAttr != null) {
         	colQualifierIndex = checkAndGetIndex(inputSchema,columnQualifierAttr);
+        	colQualifierType = inputSchema.getAttribute(colQualifierIndex).getType().getMetaType();
         }
         
         if (staticColumnQualifierList != null) {

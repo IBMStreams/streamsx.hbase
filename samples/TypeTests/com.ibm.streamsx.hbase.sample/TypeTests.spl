@@ -1,0 +1,231 @@
+
+/* Copyright (C) 2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
+
+/**
+ * Passed into a composite--basically, we want to get the rstring attribute.
+ */
+rstring getStringCount(tuple<int64 row, rstring colF, rstring colQ,
+	blob value> inTuple)
+{
+	return inTuple.colQ ;
+}
+
+/**
+ * Passed into a composite--basically, we want to get the ustring attribute.
+ */
+ustring getStringCount(tuple<ustring row, rstring colF, blob colQ,
+	int64 value> inTuple)
+{
+	return inTuple.row ;
+}
+
+/**
+ * Passed into a composite--basically, we ant to get the ustring attribute.
+ */
+ustring getStringCount(tuple<blob row, rstring colF, int64 colQ,
+	ustring value> inTuple)
+{
+	return inTuple.value ;
+}
+
+/**
+ * Produces tuples with
+ * * row an int64
+ * * columnFamily a rstring
+ * * value a blob
+ */
+composite longStringBlob(output outStream )
+{
+	param
+		expression<float64> $initDelay : 0.0 ;
+	graph
+		stream<int64 row, rstring colF, rstring colQ> intermed = Beacon()
+		{
+			param
+				iterations : 100 ;
+				initDelay : $initDelay ;
+			output
+				intermed : row =(int64) IterationCount(), colF = "longStringBlob",
+					colQ =(rstring) IterationCount() ;
+		}
+
+		stream<I, tuple<blob value>> outStream = Format(intermed as I)
+		{
+			output
+				outStream : value = Output() ;
+		}
+
+}
+
+/**
+ * row is a string, columnQualifier is a blob, value is a long
+ */
+composite stringBlobLong(output outStream )
+{
+	param
+		expression<float64> $initDelay : 0.0 ;
+	graph
+		stream<ustring row, rstring colF, int64 value> intermed = Beacon()
+		{
+			param
+				iterations : 100 ;
+				initDelay : $initDelay ;
+			output
+				intermed : row =(ustring) IterationCount(), value =(int64)
+					IterationCount(), colF = "stringBlobLong" ;
+		}
+
+		stream<ustring row, rstring colF, blob colQ, int64 value> outStream =
+			Format(intermed as I)
+		{
+			output
+				outStream : colQ = Output() ;
+		}
+
+}
+
+/**
+ * row is a blob, columnQualifier is a long, value is a string
+ */
+composite blobLongString(output outStream )
+{
+	param
+		expression<float64> $initDelay : 0.0 ;
+	graph
+		stream<rstring colF, int64 colQ, ustring value> intermed = Beacon()
+		{
+			param
+				iterations : 100 ;
+				initDelay : $initDelay ;
+			output
+				intermed : colF = "blobLongString", colQ =(int64) IterationCount(),
+					value =(ustring) IterationCount() ;
+		}
+
+		stream<tuple<blob row>, I> outStream = Format(intermed as I)
+		{
+			output
+				outStream : row = Output() ;
+		}
+
+}
+
+/**
+ * A collection of tests of the type handling for row, columnQualifier, and value
+ * for HBASEPut, HBASEGet.
+ * 
+ * In consists of three sections:
+ * * PutGetTest (three of them, with different type for row, columnQualifier, and value) for testing put and get
+ * * Checktest (three of them, again with row, columnQualifier, and value rotating types) for testing conditional put (checkandPut)
+ * * DeleteText (three of them, again with row, columnQualifier, and value rotating types) for testing conditional delete
+ * 
+ * Each of those is their own independent test, with no connections between them. 
+ * 
+ * Before running, a table needs to be created:
+ * create 'streamsSample_typeTest','longStringBlob','stringBlobLong','blobLongString','deleteTest'
+ */
+composite TypeTests
+{
+	graph
+		() as longStringBlog = PutGetTest()
+		{
+			param
+				TupleProducer : longStringBlob ;
+				getType : tuple<int64 row, rstring colF, rstring colQ> ;
+				valueType : blob ;
+		}
+
+		() as stringBlogLong = PutGetTest()
+		{
+			param
+				TupleProducer : stringBlobLong ;
+				getType : tuple<ustring row, rstring colF, blob colQ> ;
+				valueType : int64 ;
+		}
+
+		() as blogLongString = PutGetTest()
+		{
+			param
+				TupleProducer : blobLongString ;
+				getType : tuple<blob row, rstring colF, int64 colQ> ;
+				valueType : ustring ;
+		}
+
+		() as longStringBlogCheck = CheckTest()
+		{
+			param
+				TupleProducer : longStringBlob ;
+				EntryType : tuple<int64 row, rstring colF, rstring colQ, blob value> ;
+				RowType : int64 ;
+				CheckType : tuple<rstring columnQualifier, rstring columnFamily,
+					blob value> ;
+				getColumnQualifier : getStringCount ;
+		}
+
+		() as stringBlogLongCheck = CheckTest()
+		{
+			param
+				TupleProducer : stringBlobLong ;
+				EntryType : tuple<ustring row, rstring colF, blob colQ, int64 value> ;
+				RowType : ustring ;
+				CheckType : tuple<blob columnQualifier, rstring columnFamily,
+					int64 value> ;
+				getColumnQualifier : getStringCount ;
+		}
+
+		() as blobLongStringCheck = CheckTest()
+		{
+			param
+				TupleProducer : blobLongString ;
+				EntryType : tuple<blob row, rstring colF, int64 colQ, ustring value> ;
+				RowType : blob ;
+				CheckType : tuple<int64 columnQualifier, rstring columnFamily,
+					ustring value> ;
+				getColumnQualifier : getStringCount ;
+		}
+
+		// Row: long
+		// ColumnQualifier: rstring
+		// Value: blob
+		() as deleteCheckLSB = DeleteTest()
+		{
+			param
+				RowType : int64 ;
+				ColumnQualifierType : rstring ;
+				ValueType : blob ;
+				rowFunc : getLong ;
+				colQFunc : getRstring ;
+				valueFunc : getBlob ;
+		}
+
+		// Row: ustring
+		// ColumnQualifier: blob
+		// value: long
+		() as deleteCheckSBL = DeleteTest()
+		{
+			param
+				RowType : ustring ;
+				ColumnQualifierType : blob ;
+				ValueType : int64 ;
+				rowFunc : getUstring ;
+				colQFunc : getBlob ;
+				valueFunc : getLong ;
+		}
+
+		// Row: blob
+		// columnQualifier: 
+		// value: rstring 
+		() as deleteCheckBLS = DeleteTest()
+		{
+			param
+				RowType : blob ;
+				ColumnQualifierType : int64 ;
+				ValueType : rstring ;
+				rowFunc : getBlob ;
+				colQFunc : getLong ;
+				valueFunc : getRstring ;
+		}
+
+}

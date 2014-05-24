@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -137,8 +138,8 @@ public class HBASEDelete extends HBASEPutDelete {
 			// the check row and the row have to match, so don't use the
 			// checkRow.
 			byte checkRow[] = getRow(tuple);
-			byte checkColF[] = getCheckColF(checkTuple);
-			byte checkColQ[] = getCheckColQ(checkTuple);
+			byte checkColF[] = getBytes(checkTuple,checkColFIndex,checkColFType);
+			byte checkColQ[] = getBytes(checkTuple,checkColQIndex,checkColQType);
 			byte checkValue[] = getCheckValue(checkTuple);
 			success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
 					checkValue, myDelete);
@@ -160,68 +161,22 @@ public class HBASEDelete extends HBASEPutDelete {
 		submitOutputTuple(tuple, success);
 		myTable.close();
 	}
-	
-		/**
-		 * Process an incoming punctuation that arrived on the specified port.
-		 * 
-		 * @param stream
-		 *            Port the punctuation is arriving on.
-		 * @param mark
-		 *            The punctuation mark
-		 * @throws Exception
-		 *             Operator failure, will cause the enclosing PE to terminate.
-		 */
-
+			
+	/**
+	 * WE do not synchronize this method, because we already have a lock on the accesses to the delete list.
+	 * 
+	 */
 		@Override
-
-		public void processPunctuation(StreamingInput<Tuple> stream,
-				Punctuation mark) throws Exception {
-			if (Punctuation.FINAL_MARKER == mark) {
-				synchronized (listLock) {
-					if (batchSize > 0 && connection != null && deleteList != null
-							&& deleteList.size() > 0) {
-						HTableInterface myTable = connection.getTable(tableNameBytes);
-						if (myTable != null ) {
-						myTable.delete(deleteList);
-						}
-						deleteList = null;
-						myTable.close();
-					} else if (deleteList != null && deleteList.size() == 0) {
-						deleteList = null;
-					}
-				}
-			}
-			super.processPunctuation(stream, mark);
+		protected void emptyBuffer() throws IOException {
+            if (connection != null && !connection.isClosed()) {
+          	  HTableInterface myTable = connection.getTable(tableNameBytes);
+            if (myTable != null && deleteList != null && deleteList.size() > 0) {
+          	  synchronized (listLock) {
+          		  if (deleteList != null && deleteList.size() >0) { 
+          			  myTable.delete(deleteList);
+          		  }
+          	  }
+            }
+            }
 		}
-	
-	       /**
-	 		* Shutdown this operator.
-	        * 
-	        * @throws Exception
-	        *             Operator failure, will cause the enclosing PE to terminate.
-	        */
-	      @Override
-	      public synchronized void shutdown() throws Exception {
-	              OperatorContext context = getOperatorContext();
-	              Logger.getLogger(this.getClass()).trace(
-	                               "Operator " + context.getName() + " shutting down in PE: "
-	                                               + context.getPE().getPEId() + " in Job: "
-	                                               + context.getPE().getJobId());
-	              if (connection != null ) {
-	            	  HTableInterface myTable = connection.getTable(tableNameBytes);
-	              if (myTable != null && deleteList != null && deleteList.size() > 0) {
-	            	  synchronized (listLock) {
-	            		  if (deleteList != null && deleteList.size() >0) { 
-	            			  myTable.delete(deleteList);
-	            		  }
-	            	  }
-	              }
-	              myTable.close();
-	              }
-	
-	               // Must call super.shutdown()
-	               super.shutdown();
-	       }
-	
-
 }

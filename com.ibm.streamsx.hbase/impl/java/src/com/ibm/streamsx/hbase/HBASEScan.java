@@ -328,7 +328,7 @@ public class HBASEScan extends HBASEOperator {
 			
     		HTable myTable = getHTable();
 			Pair<byte[][], byte[][]> startEndKeys = myTable.getStartEndKeys();
-			myTable.close();
+
 			if (startBytes == null) {
 				startBytes = startEndKeys.getFirst()[0];
 			}
@@ -345,7 +345,7 @@ public class HBASEScan extends HBASEOperator {
 			// Get a list of regions. We assume the list is always the same.
 			List<HRegionLocation> regionList = myTable.getRegionsInRange(
 					startBytes, endBytes);
-
+			myTable.close();
 			// Check that the combinatin of channel and maxChannels makes sense
 			assert ((channel == -1 && maxChannels == 0) || // it's the default
 			// or maxChannels is positive, and channel is between 0 and
