@@ -12,7 +12,7 @@ It uses the operator parameter values to determine what's a row, columnFamily, c
 
 It includes at least one sample for each of those operators.
 
-This is tested with HBase 0.94.3 and Hadoop 1.1.0.  
+This is tested with HBase 0.94.11 and Hadoop 1.1.0.  
 
 ## Setup
 
@@ -26,6 +26,8 @@ Please see the individual product pages for instructions on installation.
 
 To run these operators, you must set `HBASE_HOME` and `HADOOP_HOME` in your environment.  Furthermore, `HBASE_HOME/conf/hbase-site.xml` should be correspond to a running hbase instance (eg, the zookeeper referenced there should be running) since that is what the operator uses to configure itself.   The operator does not need to run on the same host as HBASE.  If you are running Streams on an HBASE host, just set HBASE_HOME to point the the directory for HBASE (ie, the directory that is the parent of the bin directory the conf directory).  
 
-If you are running Streams on a different host than where you ran HBASE, copy that whole directory to the Streams host.  
+If you are running Streams on a different host than where you ran HBASE, copy that whole directory to the Streams host. 
+
+The toolkit uses a call first found in HBASE 0.94.11; if your HBASE version is less than than that, download a hbase 0.94.16 jar, and put it in toolkit in com.ibm.streamsx.hbase/opt/local_override.  
 ##Contributing
 This repository is using the fork-and-pull model (https://help.github.com/articles/using-pull-requests).  If you'd like to contribute code, fork a copy of the repository, make changes, and when ready, issue a pull request.  For more details, see the wiki in the IBMStreams/toolkits repository.
