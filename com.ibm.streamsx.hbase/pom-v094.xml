@@ -31,7 +31,7 @@
     <dependency>
 	<groupId>org.apache.hbase</groupId>
 	<artifactId>hbase</artifactId>
-	<version>0.94.0</version>
+	<version>0.94.16</version>
     </dependency>
     </dependencies>
     <build>
