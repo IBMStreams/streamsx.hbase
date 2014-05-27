@@ -11,7 +11,6 @@
 	<property environment="env" />
 	<fail unless="env.STREAMS_INSTALL" message="STREAMS_INSTALL not set."/>
 	<available file="${basedir}/pom.xml" property="pomset"/>
-
 	<property name="streams.install" value="${env.STREAMS_INSTALL}" />
 
 	<property name="hadoop_home" value="${env.HADOOP_HOME}" />
@@ -30,7 +29,6 @@
 		<mkdir dir="${lib.dir}" />
 		<mkdir dir="${impl.lib.dir}" />
 		<mkdir dir="${ext.downloads.dir}" />
-
 	</target>
 
 	<target name="clean">
@@ -89,19 +87,17 @@
 	<!-- Downloads libraries using maven -->
 	<target name="maven-deps" depends="init,nomaven" if="env.M2_HOME">
 		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.hbase in order to use maven to download necessary dependencies.  Three sample pom files are included: pom-v094.xml (hbase 0.94, hadoop 1),pom-v096-hadoop1.xml (hbase 0.96, hadoop 1), and  pom-v096-hadoop2.xml (hbase 0.96, hadoop 2).  Please rename the correct one for your install to pom.xml"/> 
-
 		<exec executable="${maven.bin}"  failonerror="true">
 			<arg value="dependency:copy-dependencies"/>
 			<arg value="-DoutputDirectory=${ext.downloads.dir}"/>
 	    </exec>
 	</target>
 
+
 	<!-- Prints a message if no maven is found. -->
 	<target name="nomaven" unless="env.M2_HOME">
 	  <echo message="M2_HOME not found in environment; expect to find all needed libraries in /opt/downloaded already"/>
 	</target>
-
-	
 
         <!-- assumes Junit 4.3 (or later) is in $HOME/.ant/lib -->
 	<target name="test" depends="jar">
