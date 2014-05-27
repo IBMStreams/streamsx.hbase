@@ -20,6 +20,7 @@ import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.types.Blob;
 import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
@@ -42,18 +43,19 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
-	public final static Charset DEFAULT_CHAR_SET = Charset.forName("UTF-8");
-	protected Charset charset = DEFAULT_CHAR_SET;
+	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
+	protected Charset charset = RSTRING_CHAR_SET;
 	private String tableName = null;
 	protected byte tableNameBytes[] = null;
-	protected HConnection connection;
+	protected HConnection connection =null;
 	private Configuration conf;
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String CHARSET_PARAM_NAME = "charset";
-	static final int BYTES_IN_LONG = 8;
+	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
+	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
 	
 	
 	@Parameter(name=CHARSET_PARAM_NAME, optional=true,description="Character set to be used for converting byte[] to Strings and Strings to byte[].  Defaults to UTF-8")
@@ -92,33 +94,54 @@ public abstract class HBASEOperator extends AbstractOperator {
 			else 
 				return -1;
 		}
-		if (attr.getType().getMetaType() != MetaType.RSTRING) {
-			throw new Exception("Expected attribute "+attrName+" to have type RSTRING, found "+attr.getType().getMetaType());
+		if (!isValidInputType(attr.getType().getMetaType())) {
+			throw new Exception("Expected attribute "+attrName+" to be one of "+VALID_TYPE_STRING+", found "+attr.getType().getMetaType());
 		}
 		return attr.getIndex();
 	}
 	
-	protected static void isValidInputType(OperatorContextChecker checker, MetaType mType,String attrName) {
+	protected static boolean isValidInputType(MetaType mType) {
 		switch (mType) {
 		case USTRING:
 		case RSTRING:
 		case INT64:
 		case BLOB:
-			break;
+			return true;
 			default:
+				return false;
+		}
+	}
+	
+	protected static void isValidInputType(OperatorContextChecker checker, MetaType mType,String attrName) {
+		if (isValidInputType(mType)) {
+			return;
+		}
+		else {
 				checker.setInvalidContext("Attribute "+attrName+" has invalid type "+mType, null);
 		}
 	}
 	
+	/**
+	 * Subclasses should generally use this function to get a byte[] to send to HBASE from a tuple.
+	 * @param tuple  The tuple containing the attribute
+	 * @param attrIndex  the index of the attribute for which we are getting bytes
+	 * @param mType  The attribute's meta type.
+	 * @return byte[] represented the attribute
+	 * @throws Exception  Throws an exception if the metaType is not one of the allowed types.
+	 */
 	protected byte[] getBytes(Tuple tuple, int attrIndex, MetaType mType) throws Exception {
 		switch (mType) {
 		case USTRING:
-		case RSTRING:
 			return tuple.getString(attrIndex).getBytes(charset);
+		case RSTRING:
+			return tuple.getString(attrIndex).getBytes(RSTRING_CHAR_SET);
 		case INT64:
 			return ByteBuffer.allocate(BYTES_IN_LONG).putLong(tuple.getLong(attrIndex)).array();
 		case BLOB:
-			return tuple.getBlob(attrIndex).getByteBuffer().array();
+			Blob myBlob= tuple.getBlob(attrIndex);
+			byte toReturn[]=new byte[(int)myBlob.getLength()];
+			myBlob.getInputStream().read(toReturn,0,(int)myBlob.getLength());
+			return toReturn;
 		default:
 		throw new Exception("Cannot get bytes for objects of type "+mType);
 		}	
@@ -164,7 +187,7 @@ public abstract class HBASEOperator extends AbstractOperator {
        
     	conf = new Configuration();
     	conf.addResource("hbase-site.xml");
-	HConnection connection = HConnectionManager.createConnection(conf);
+	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
 	// Just check to see if the table exists.  Might as well fail on initialize instead of process.
 	HTableInterface tempTable = connection.getTable(tableNameBytes);
@@ -188,24 +211,19 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected HTable getHTable() throws  IOException {
 		return new HTable(conf,tableNameBytes);
 	}
-	/**
-	 * Close the table if a it's a final punctuation.
-	 * 
-	 * @param stream
-	 *            Port the punctuation is arriving on.
-	 * @param mark
-	 *            The punctuation mark
-	 * @throws Exception
-	 *             Operator failure, will cause the enclosing PE to terminate.
-	 */
-	@Override
-	public void processPunctuation(StreamingInput<Tuple> stream,
-			Punctuation mark) throws Exception {
-		if (Punctuation.FINAL_MARKER == mark) {
-			connection.close();
-		}
-		super.processPunctuation(stream, mark);
-	}
+	
+	 /**
+     * Shutdown this operator.
+     * @throws Exception Operator failure, will cause the enclosing PE to terminate.
+     */
+   @Override
+   public synchronized void shutdown() throws Exception {
+        OperatorContext context = getOperatorContext();
+       Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
+       if (connection != null && !connection.isClosed()) {
+    	   connection.close();
+       }
+    }
 	
 	/**
 	 * Used in HBASEGet and HBASEScan to figure out which fields need to be looked for in the results.

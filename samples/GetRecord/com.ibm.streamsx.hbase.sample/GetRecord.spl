@@ -33,10 +33,10 @@ type GetBookPlusType = rstring title,rstring author_fname, rstring author_lname,
  * stream, and the books.out file after running. Because there is no "Dracula:1897" in the database, all strings are empty.
  * 
  * <code>
- * "War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""}
- * "Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""}
- * "Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""}
- * "Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""}
+ * "War and Peace:1869",\{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""\}
+ * "Jane Eyre:1847",\{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""\}
+ * "Twilight:2005",\{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""\}
+ * "Dracula:1897",\{title="",author_fname="",author_lname="",year="",fiction=""\}
  * </code>
  * 
  * In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type
@@ -46,10 +46,10 @@ type GetBookPlusType = rstring title,rstring author_fname, rstring author_lname,
  * author_lname, year, or fiction.  
  * 
  * <code>
- * "War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""},4
- * "Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""},4
- * "Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""},4
- * "Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""},0
+ * "War and Peace:1869",{title="War and Peace",author_fname="Leo",author_lname="Tolstoy",year="1869",fiction=""\},4
+ * "Jane Eyre:1847",{title="Jane Eyre",author_fname="Charlotte",author_lname="Brontë",year="1847",fiction=""\},4
+ * "Twilight:2005",{title="Twilight",author_fname="Stephenie",author_lname="Meyer",year="2005",fiction=""\},4
+ * "Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""\},0
  * </code>
  */
 composite GetRecord {

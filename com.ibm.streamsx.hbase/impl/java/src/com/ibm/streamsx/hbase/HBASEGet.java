@@ -90,7 +90,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	public static final String MAX_VERSIONS_PARAM_NAME="maxVersions";
 	public static final String MAX_VERSIONS_DESC="The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.";
 	private OutputMode outputMode;
-	private String outAttrName;
+	private String outAttrName = "value";
 	private String successAttr = null;
 	private SingleOutputMapper primativeOutputMapper = null;
 

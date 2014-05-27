@@ -25,8 +25,7 @@ use com.ibm.streamsx.hbase::* ;
  * Now run: 
  * <code>output/bin/standalone populate=false minTimestamp=<timestamp></code>
  * eg, if your getRecord_timestampC.out file is
- * <code>"versionTest",3,{austen="entry_v3",bronte="entry_v3",chaucer=[{entry="entry_v3",time=1399407664460},{entry="entry_v2",time=1399407664452},{entry="entry_v1",time=1399407664445
-}]}</code>
+ * <code>"versionTest",3,\{austen="entry_v3",bronte="entry_v3",chaucer=\[\{entry="entry_v3",time=1399407664460\},\{entry="entry_v2",time=1399407664452\},\{entry="entry_v1",time=1399407664445\}\]\}</code>
 *  run  <code>output/bin/standalone  minTimestamp=1399407664452 populate=false</code>
  *
  *  If you are running from eclipse, it will probably be easier to change the 0 to that timestamp in:

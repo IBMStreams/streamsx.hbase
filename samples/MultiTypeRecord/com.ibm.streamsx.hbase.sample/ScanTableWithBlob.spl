@@ -1,0 +1,72 @@
+
+/* Copyright (C) 2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEScan ;
+
+/**
+ * Scan the table.  
+ * 
+ * We check the result is correct in two ways.  First, we write the 
+ * table scan results out to a file for a human to verify them, and
+ * second, we use a custom operator to check.
+ * @input checkStream the sorted stream of items put into HBASE.
+ */
+composite ScanTableWithBlob(input checkStream )
+{
+	param
+	// Give time for the put to finish before running the scan.
+		expression<float64> $initDelay : 5.0 ;
+		// Table name.
+		expression<rstring> $tableName : "streamsSample_recordWithTypes" ;
+	graph
+
+	// Here's the actual table scan.  We'll check bookStream in two ways.
+		stream<rstring row, tuple<rstring title, ustring author, int64 year,
+			blob firstChapter> value> bookStream = HBASEScan()
+		{
+			param
+				initDelay : $initDelay ;
+				tableName : $tableName ;
+		}
+
+		// writes the blob to a file.
+		// compare scan_metaData.out to books.csv
+		() as writeScanOut = WriteTuples(bookStream)
+		{
+			param
+				blobFileName : "scan{id}.gz" ;
+				finalFileName : "scan_metaData.out" ;
+		}
+
+		// now do a in-spl check of the results
+		// First, combine teh tuples that are supposed to match...
+		stream<IN wentIn, OUT cameOut> inOut = Barrier(checkStream as IN ; bookStream
+			as OUT)
+		{
+			output
+				inOut : wentIn = checkStream, cameOut = bookStream ;
+		}
+
+		// Now compare them and count matches.  
+		() as checkSink = Custom(inOut)
+		{
+			logic
+				state : mutable int32 numTuples = 0 ;
+				onTuple inOut :
+				{
+					assert(wentIn.key == cameOut.row) ;
+					assert(wentIn.book == cameOut.value) ;
+					numTuples ++ ;
+				}
+
+				onPunct inOut :
+				{
+					if(currentPunct() == Sys.FinalMarker) println("All " +(rstring) numTuples
+						+ " tuples passed") ;
+				}
+
+			}
+
+	}
