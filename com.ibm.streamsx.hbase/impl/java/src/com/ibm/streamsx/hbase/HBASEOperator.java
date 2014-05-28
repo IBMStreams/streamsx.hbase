@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.fs.Path;
 import java.io.File;
+import java.net.URI;
 
 /**
  * Class for shared code between operators.
@@ -198,9 +199,17 @@ public abstract class HBASEOperator extends AbstractOperator {
 	    conf.addResource("hbase-site.xml");
 	}
 	else {
-	    File dataDir = File(getDataDirectory());
-	    Path hdfsSitePath = new Path(dataDir.toURI,hdfsSite);
-	    conf.addResource(hdfsSitePath);
+        // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.
+        // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
+        // file:/// to a string.
+        // First get a URI for the data directory.
+	    URI dataDir = context.getPE().getDataDirectory().toURI();
+        // now, resolve the hbase site against the data directory.
+        URI hbaseSiteURI = dataDir.resolve(hbaseSite);
+        // make a path out of it.
+	    Path hbaseSitePath = new Path(hbaseSiteURI);
+        // add the resource.  finally.
+	    conf.addResource(hbaseSitePath);
 	}
 	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
