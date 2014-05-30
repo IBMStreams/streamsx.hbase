@@ -35,9 +35,9 @@ The toolkit uses maven (http://maven.apache.org/). Maven will d
 
 ##Configuration
 
-To run these operators in an SPL application, you must set `HBASE_HOME`.  The operator will look under `HBASE_HOME/conf/hbase-site.xml` for HBASE configuration information, so that file should correspond to a running HBASE instance.  The operator does not need to run on the same host as HBASE.  If you are running Streams on an HBASE host, just set HBASE_HOME to point the the directory for HBASE (ie, the directory that is the parent of the bin directory the conf directory).  
-
-If you are running Streams on a different host than where you ran HBASE, copy that whole directory to the Streams host. 
+These operators need HBASE configuration information in order to run.  It uses `hbase-site.xml` to do that.   You can supply that in two ways:
+* You can set `HBASE_HOME`, the operator will look under `HBASE_HOME/conf/hbase-site.xml` for HBASE configuration information.  This is probably the easiest thing to do if the operator is running on the HBASE host.  
+* You can copy hbase-site.xml from your HBASE install's conf directory and then use `hbaseSite` parameter to point to `hbase-site.xml`.  You still need to set `HBASE_HOME`, but it need not point to anything, ie, `export HBASE_HOME=/dev/null`.
 
 ## Getting started
 
