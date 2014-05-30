@@ -33,6 +33,9 @@ import com.ibm.streams.operator.Type.MetaType;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.fs.Path;
+import java.io.File;
+import java.net.URI;
 
 /**
  * Class for shared code between operators.
@@ -47,8 +50,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected Charset charset = RSTRING_CHAR_SET;
 	private String tableName = null;
 	protected byte tableNameBytes[] = null;
+        private String hbaseSite =null;
 	protected HConnection connection =null;
 	private Configuration conf;
+        static final String HBASE_SITE_PARAM_NAME="hbaseSite";
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
@@ -57,6 +62,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
 	
+    @Parameter(name=HBASE_SITE_PARAM_NAME, optional=true,description="The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the data directory of the operator.")
+	public void setHbaseSite(String name) {
+	hbaseSite = name;
+    }
 	
 	@Parameter(name=CHARSET_PARAM_NAME, optional=true,description="Character set to be used for converting byte[] to Strings and Strings to byte[].  Defaults to UTF-8")
 	public void getCharset(String _name) {
@@ -186,7 +195,22 @@ public abstract class HBASEOperator extends AbstractOperator {
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
        
     	conf = new Configuration();
-    	conf.addResource("hbase-site.xml");
+	if (hbaseSite == null) {
+	    conf.addResource("hbase-site.xml");
+	}
+	else {
+        // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.
+        // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
+        // file:/// to a string.
+        // First get a URI for the data directory.
+	    URI dataDir = context.getPE().getDataDirectory().toURI();
+        // now, resolve the hbase site against the data directory.
+        URI hbaseSiteURI = dataDir.resolve(hbaseSite);
+        // make a path out of it.
+	    Path hbaseSitePath = new Path(hbaseSiteURI);
+        // add the resource.  finally.
+	    conf.addResource(hbaseSitePath);
+	}
 	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
 	// Just check to see if the table exists.  Might as well fail on initialize instead of process.
