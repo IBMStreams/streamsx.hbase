@@ -203,9 +203,9 @@ public abstract class HBASEOperator extends AbstractOperator {
         // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
         // file:/// to a string.
         // First get a URI for the data directory.
-	    URI dataDir = context.getPE().getDataDirectory().toURI();
+	    URI toolkitRoot = context.getPE().getApplicationDirectory().toURI();
         // now, resolve the hbase site against the data directory.
-        URI hbaseSiteURI = dataDir.resolve(hbaseSite);
+        URI hbaseSiteURI = toolkitRoot.resolve(hbaseSite);
         // make a path out of it.
 	    Path hbaseSitePath = new Path(hbaseSiteURI);
         // add the resource.  finally.
