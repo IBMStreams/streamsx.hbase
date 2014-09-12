@@ -17,6 +17,9 @@ composite ConfigTest
 {
     // You must supply this to run the composite.
     param expression<rstring> $hbaseSite: getSubmissionTimeValue("hbaseSite"); 
+
+    // this is optional
+    expression<rstring> $tableName: getSubmissionTimeValue("tableName","streamsSample_lotr");
 	graph
         stream<rstring character, rstring colF, rstring colQ, rstring value> full = Beacon() {
             param
@@ -31,7 +34,7 @@ composite ConfigTest
 		() as allSink = HBASEPut(full)
 		{
 			param
-				tableName : "streamsSample_lotr" ;
+				tableName : $tableName ;
 				rowAttrName : "character" ;
 				columnFamilyAttrName : "colF" ;
 				columnQualifierAttrName : "colQ" ;
