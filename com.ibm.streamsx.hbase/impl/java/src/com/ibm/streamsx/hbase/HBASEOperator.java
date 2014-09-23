@@ -62,7 +62,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
 	
-    @Parameter(name=HBASE_SITE_PARAM_NAME, optional=true,description="The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the data directory of the operator.")
+    @Parameter(name=HBASE_SITE_PARAM_NAME, optional=true,description="The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the application directory.")
 	public void setHbaseSite(String name) {
 	hbaseSite = name;
     }
@@ -203,9 +203,9 @@ public abstract class HBASEOperator extends AbstractOperator {
         // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
         // file:/// to a string.
         // First get a URI for the data directory.
-	    URI dataDir = context.getPE().getDataDirectory().toURI();
+	    URI toolkitRoot = context.getPE().getApplicationDirectory().toURI();
         // now, resolve the hbase site against the data directory.
-        URI hbaseSiteURI = dataDir.resolve(hbaseSite);
+        URI hbaseSiteURI = toolkitRoot.resolve(hbaseSite);
         // make a path out of it.
 	    Path hbaseSitePath = new Path(hbaseSiteURI);
         // add the resource.  finally.
