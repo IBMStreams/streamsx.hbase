@@ -35,6 +35,7 @@ stateful blob getFileContents(rstring filename)
  */
 composite PutBookRecord(output checkStream )
 {
+	param expression<rstring> $tableName: "streamsSample_recordWithTypes" ;
 	graph
 	// read the book data.
 		stream<rstring title, ustring author, int64 year, rstring firstChapterFile>
@@ -71,7 +72,7 @@ composite PutBookRecord(output checkStream )
 		() as PutSink = HBASEPut(putStream)
 		{
 			param
-				tableName : "streamsSample_recordWithTypes" ;
+				tableName : $tableName ;
 				valueAttrName : "book" ;
 				rowAttrName : "key" ;
 				staticColumnFamily : "all" ;
