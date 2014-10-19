@@ -11,7 +11,7 @@
 # Fill in HBASE_TOOLKIT location here.
 STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 
-SPLC_FLAGS = -a 
+SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
@@ -19,10 +19,13 @@ SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::ScanString
 
 all: standalone
 
-standalone:
+data:
+	mkdir data
+
+standalone: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
 
-distributed:
+distributed: data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
 
 clean: 

@@ -9,7 +9,7 @@
 # Fill in HBASE_TOOLKIT location here.
 STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 
-SPLC_FLAGS = -a 
+SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
@@ -19,16 +19,19 @@ SPL_MAIN_COMPOSITE_VERSIONDEL = com.ibm.streamsx.hbase.sample::DeleteAll
 
 all: standalone_delete standalone_check standalone_version
 
-standalone_delete:
+data:
+	mkdir data
+
+standalone_delete: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_DELETE) $(SPL_CMD_ARGS) --output-dir output_plain
 
-standalone_check:
+standalone_check: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_CHECK) $(SPL_CMD_ARGS) --output-dir output_check
 
-standalone_version:
+standalone_version: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_VERSIONDEL) $(SPL_CMD_ARGS) --output-dir output_version
 
-distributed:
+distributed: data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_DELETE) $(SPL_CMD_ARGS)
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_CHECK) $(SPL_CMD_ARGS)
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_VERSIONDEL) $(SPL_CMD_ARGS)

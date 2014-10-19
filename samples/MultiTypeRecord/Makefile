@@ -9,7 +9,7 @@
 # Fill in HBASE_TOOLKIT location here.
 STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 SOURCES = com.ibm.streamsx.hbase.sample/MultiTypeGet.spl com.ibm.streamsx.hbase.sample/MultiTypeRecord.spl com.ibm.streamsx.hbase.sample/PutBookRecord.spl com.ibm.streamsx.hbase.sample/ScanTableWithBlob.spl com.ibm.streamsx.hbase.sample/WriteTuples.spl
-SPLC_FLAGS = -a 
+SPLC_FLAGS ?= --data-directory data -a 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
@@ -17,10 +17,13 @@ SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::MultiTypeRecord
 
 all: standalone
 
-output/bin/standalone: $(SOURCES)
+data:
+	mkdir data
+
+output/bin/standalone: $(SOURCES) data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS) 
 
-output/com.ibm.streamsx.hbase.sample.MultiTypeRecord.adl: $(SOURCES)
+output/com.ibm.streamsx.hbase.sample.MultiTypeRecord.adl: $(SOURCES) data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
 
 standalone: output/bin/standalone

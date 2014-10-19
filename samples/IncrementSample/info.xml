@@ -7,7 +7,7 @@ All Rights Reserved
   <info:identity>
     <info:name>IncrementSample</info:name>
     <info:description>Demonstrates the use of com.ibm.streamsx.HBASEIncrement by using it to count word mentions in the Iliad</info:description>
-    <info:version>1.0.0</info:version>
+    <info:version>1.0.1</info:version>
     <info:requiredProductVersion>3.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies>

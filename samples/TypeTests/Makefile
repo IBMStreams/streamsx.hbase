@@ -9,7 +9,7 @@
 # Fill in HBASE_TOOLKIT location here.
 STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 SOURCES = com.ibm.streamsx.hbase.sample/CheckTest.spl com.ibm.streamsx.hbase.sample/DeleteTest.spl com.ibm.streamsx.hbase.sample/PutGetTest.spl com.ibm.streamsx.hbase.sample/TypeTests.spl
-SPLC_FLAGS = -a 
+SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
@@ -17,10 +17,13 @@ SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::TypeTests
 
 all: standalone
 
-output/bin/standalone: $(SOURCES)
+data:
+	mkdir data
+
+output/bin/standalone: $(SOURCES) data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS) 
 
-output/com.ibm.streamsx.hbase.sample.TypeTests.adl: $(SOURCES)
+output/com.ibm.streamsx.hbase.sample.TypeTests.adl: $(SOURCES) data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
 
 standalone: output/bin/standalone

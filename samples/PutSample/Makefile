@@ -9,7 +9,7 @@
 # Fill in STREAMS_HBASE_TOOLKIT location here.
 STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
 
-SPLC_FLAGS = -a 
+SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc
 
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
@@ -21,20 +21,23 @@ SPL_MAIN_PUT=com.ibm.streamsx.hbase.sample::PutSample
 
 all: standalone_update standalone_check standalone_exist standalone_put
 
-standalone_update:
+data:
+	mkdir data
+
+standalone_update: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS) --output-dir output_update
 
-standalone_check:
+standalone_check: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS) --output-dir output_check
 
-standalone_exist:
+standalone_exist: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS) --output-dir output_check_exist
 
-standalone_put:
+standalone_put: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS) --output-dir output_put
 
 
-distributed:
+distributed: data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS)
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS)
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS)

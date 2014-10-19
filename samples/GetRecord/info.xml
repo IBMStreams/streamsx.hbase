@@ -8,7 +8,7 @@
  <info:identity>
    <info:name>GetRecord</info:name>
    <info:description>Demonstrate how to populate a tuple using HBASEGet</info:description>
-   <info:version>1.0.0</info:version>
+   <info:version>1.0.1</info:version>
    <info:requiredProductVersion>3.2.1.0</info:requiredProductVersion>
  </info:identity>
  <info:dependencies>

@@ -7,7 +7,7 @@
  <info:identity>
    <info:name>VersionScanGet</info:name>
    <info:description>Show how Scan and Get can be used to get multiple versions of an HBASE entry</info:description>
-   <info:version>1.0.0</info:version>
+   <info:version>1.0.1</info:version>
    <info:requiredProductVersion>3.2.1.0</info:requiredProductVersion>
  </info:identity>
  <info:dependencies>

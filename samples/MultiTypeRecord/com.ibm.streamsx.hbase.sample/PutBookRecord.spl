@@ -11,11 +11,14 @@ use com.ibm.streamsx.hbase::HBASEPut ;
 stateful blob getFileContents(rstring filename)
 {
 	mutable int32 error = 0 ;
-	uint64 file = spl.file::fopen(filename, "r", error) ;
-	assert(error == 0) ;
+	rstring absFile = dataDirectory()+"/"+filename;	
+	appTrc(Trace.info,"Absolute path for file "+filename+" is "+absFile);
+	uint64 file = spl.file::fopen(absFile, "r", error) ;
+	assert(error == 0,"File "+filename+" (absolute path: "+absFile+") failed to open with code "+(rstring)error) ;
 	mutable blob toReturn = [ ] ;
 	spl.file::freadfile(toReturn, file, error) ;
-	assert(error == 0) ;
+	assert(error == 0,"File "+filename+" (absolute path: "+absFile+") could not be read, error code "+(rstring)error) ;
+	spl.file::fclose(file,error);
 	return toReturn ;
 }
 
