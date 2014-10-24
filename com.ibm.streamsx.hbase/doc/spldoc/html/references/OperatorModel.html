@@ -77,7 +77,7 @@ It is structured as a list of metric elements, where each metric element contain
 
   
   
-    <dt class="dt dlterm"><a name="spldoc_reference_operator_model__context__customliterals"><!-- --></a>Custom Literals (C++ only)</dt>
+    <dt class="dt dlterm"><a name="spldoc_reference_operator_model__context__customliterals"><!-- --></a>Custom Literals</dt>
 
     <dd class="dd">The customLiterals element, which is optional, captures the identifiers that may appear in parameter 
 configurations of an operator. It is structured as a list of enumeration elements. For instance, a Source
@@ -698,7 +698,7 @@ rewrite should be turned off.</dd>
 
        
        
-         <dt class="dt dlterm"><a name="spldoc_reference_operator_model__parameters__parameter__expressionmode"><!-- --></a>Expression Mode (C++ only)</dt>
+         <dt class="dt dlterm"><a name="spldoc_reference_operator_model__parameters__parameter__expressionmode"><!-- --></a>Expression Mode</dt>
 
          <dd class="dd">
            <ul class="ul">
@@ -707,12 +707,12 @@ rewrite should be turned off.</dd>
              <li class="li"><tt class="ph tt">AttributeFree</tt> - The parameter value is an expression that does not 
 contain a reference to a stream attribute.</li>
 
-             <li class="li"><tt class="ph tt">Constant</tt> - The parameter values need to be compile-time evaluatable to a constant.</li>
+             <li class="li"><tt class="ph tt">Constant (C++ only)</tt> - The parameter values need to be compile-time evaluatable to a constant.</li>
 
              <li class="li"><tt class="ph tt">CustomLiteral</tt> - Restricts the parameter values to valid values from one of the custom
 literal enumerations defined in the context section of the model</li>
 
-             <li class="li"><tt class="ph tt">Expression</tt> - The most flexible expression mode, where any SPL expression of correct type
+             <li class="li"><tt class="ph tt">Expression (C++ only)</tt> - The most flexible expression mode, where any SPL expression of correct type
 can appear as a parameter value. </li>
 
            </ul>

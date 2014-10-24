@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="SPL File DeleteTest.spl"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_compilationunit"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>SPL File DeleteTest.spl</title>
+</head>
+<body id="spldoc_compilationunit">
+
+
+<h1 class="title topictitle1">SPL File <tt class="ph tt">DeleteTest.spl</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">Toolkits</a> &gt; <a class="xref" href="tk$TypeTests.html">TypeTests 1.0.1</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.sample.html">com.ibm.streamsx.hbase.sample</a> &gt; DeleteTest.spl</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
+  
+    <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    
+      <dt class="dt dlterm splhead-2">Composite Operators</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__DeleteTest">composite DeleteTest</a></strong>: Tests the delete operation with a variety of types (not a basic sample).
+</li>
+
+     </ul>
+</dd>
+
+    
+    
+      <dt class="dt dlterm splhead-2">Functions</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__function__getBlob.blob.uint64">blob getBlob(blob myBlob, uint64 long)</a></strong>: Given a blob and a long, return the blob.
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__function__getLong.blob.uint64">int64 getLong(blob myBlob, uint64 long)</a></strong>: Given a blob and a uint64, return a int64.
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__function__getRstring.blob.uint64">rstring getRstring(blob myBlob, uint64 long)</a></strong>: Given a blob and a uint64, return a rstring.
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__function__getUstring.blob.uint64">ustring getUstring(blob myBlob, uint64 long)</a></strong>: Given a blob and a uint64, return a ustring.
+</li>
+
+     </ul>
+</dd>
+
+    
+     </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Composite Operators</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__DeleteTest"><h2 class="title sectiontitle splpart">composite DeleteTest</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">Tests the delete operation with a variety of types (not a basic sample).
+</p>
+
+<p class="p">The composite takes the RowType, ColumnQualifierType, and ValueType as arguments. (the columnFamily is assumed to be rstring--it's difficult to create tables that use non-rstring values as columnFamily names, so that is not well-tested).  
+</p>
+
+<p class="p">It also takes a getter function for the row, columnqualifier, and value.
+</p>
+
+<p class="p">Then, it produces tuples with those types, puts the tuples in HBASE, and  then deletes them using a conditional delete that will only succeed if the the  tuple is there. 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">RowType</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">ColumnQualifierType</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">ValueType</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">rowFunc</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">colQFunc</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">valueFunc</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">initDelay</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">numTuples</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">tableName</strong>: 
+</li>
+
+<li class="sli"><strong class="ph b">columnFamily</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$DeleteTest.svg" width="640" height="154">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$DeleteTest.svg
+</span>
+</object>
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Functions</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getBlob.blob.uint64"><h2 class="title sectiontitle splpart">blob getBlob(blob myBlob, uint64 long)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Given a blob and a long, return the blob.  This function is passed as an argument into a composite, and all the functions so passed  have to take as arguments a blob and a uint64, which is why this one does.   
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">myBlob</strong>: 
+   </li>
+
+   <li class="sli">
+<strong class="ph b">long</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">blob</tt>
+</li>
+</ul>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getLong.blob.uint64"><h2 class="title sectiontitle splpart">int64 getLong(blob myBlob, uint64 long)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Given a blob and a uint64, return a int64. This function is passed as an argument into a composite, and all the functions so passed  have to take as arguments a blob and a uint64, which is why this one does.   
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">myBlob</strong>: 
+   </li>
+
+   <li class="sli">
+<strong class="ph b">long</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">int64</tt>
+</li>
+</ul>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getUstring.blob.uint64"><h2 class="title sectiontitle splpart">ustring getUstring(blob myBlob, uint64 long)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Given a blob and a uint64, return a ustring. This function is passed as an argument into a composite, and all the functions so passed  have to take as arguments a blob and a uint64, which is why this one does.   
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">myBlob</strong>: 
+   </li>
+
+   <li class="sli">
+<strong class="ph b">long</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">ustring</tt>
+</li>
+</ul>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getRstring.blob.uint64"><h2 class="title sectiontitle splpart">rstring getRstring(blob myBlob, uint64 long)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Given a blob and a uint64, return a rstring. This function is passed as an argument into a composite, and all the functions so passed  have to take as arguments a blob and a uint64, which is why this one does.   
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">myBlob</strong>: 
+   </li>
+
+   <li class="sli">
+<strong class="ph b">long</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">rstring</tt>
+</li>
+</ul>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="SPL File TypeTests.spl"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_compilationunit"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>SPL File TypeTests.spl</title>
+</head>
+<body id="spldoc_compilationunit">
+
+
+<h1 class="title topictitle1">SPL File <tt class="ph tt">TypeTests.spl</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">Toolkits</a> &gt; <a class="xref" href="tk$TypeTests.html">TypeTests 1.0.1</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.sample.html">com.ibm.streamsx.hbase.sample</a> &gt; TypeTests.spl</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
+  
+    <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    
+      <dt class="dt dlterm splhead-2">Composite Operators</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__TypeTests">composite TypeTests</a></strong>: A collection of tests of the type handling for row, columnQualifier, and value for HBASEPut, HBASEGet.
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__blobLongString">composite blobLongString(output outStream)</a></strong>: row is a blob, columnQualifier is a long, value is a string 
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__longStringBlob">composite longStringBlob(output outStream)</a></strong>: Produces tuples with row an int64 columnFamily a rstring value a blob 
+</li>
+
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__stringBlobLong">composite stringBlobLong(output outStream)</a></strong>: row is a string, columnQualifier is a blob, value is a long 
+</li>
+
+     </ul>
+</dd>
+
+    
+    
+      <dt class="dt dlterm splhead-2">Functions</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__function__getStringCount.tuple:.:blobrow.rstringcolF.int64colQ.ustringvalue:.:">ustring getStringCount(tuple&lt;blob row, rstring colF, int64 colQ, ustring value&gt; inTuple)</a></strong>: Passed into a composite--basically, we ant to get the ustring attribute.
+</li>
+
+     </ul>
+</dd>
+
+    
+     </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Composite Operators</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__longStringBlob"><h2 class="title sectiontitle splpart">composite longStringBlob(output outStream)</h2>
+  
+</div>
+
+<div class="section">
+
+<div class="p">Produces tuples with
+<ul class="ul">
+<li class="li"> row an int64</li>
+
+<li class="li"> columnFamily a rstring</li>
+
+<li class="li"> value a blob </li>
+
+</ul>
+
+</div>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">initDelay</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Output Ports</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">outStream</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$longStringBlob.svg" width="248" height="109">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$longStringBlob.svg
+</span>
+</object>
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__stringBlobLong"><h2 class="title sectiontitle splpart">composite stringBlobLong(output outStream)</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">row is a string, columnQualifier is a blob, value is a long 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">initDelay</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Output Ports</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">outStream</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$stringBlobLong.svg" width="248" height="109">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$stringBlobLong.svg
+</span>
+</object>
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__blobLongString"><h2 class="title sectiontitle splpart">composite blobLongString(output outStream)</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">row is a blob, columnQualifier is a long, value is a string 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">initDelay</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Output Ports</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">outStream</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$blobLongString.svg" width="248" height="109">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$blobLongString.svg
+</span>
+</object>
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__TypeTests"><h2 class="title sectiontitle splpart">composite TypeTests</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">A collection of tests of the type handling for row, columnQualifier, and value for HBASEPut, HBASEGet.
+</p>
+
+<div class="p">In consists of three sections:
+<ul class="ul">
+<li class="li"> PutGetTest (three of them, with different type for row, columnQualifier, and value) for testing put and get</li>
+
+<li class="li"> Checktest (three of them, again with row, columnQualifier, and value rotating types) for testing conditional put (checkandPut)</li>
+
+<li class="li"> DeleteText (three of them, again with row, columnQualifier, and value rotating types) for testing conditional delete</li>
+
+</ul>
+
+</div>
+
+<p class="p">Each of those is their own independent test, with no connections between them. 
+</p>
+
+<p class="p">Before running, a table needs to be created: create 'streamsSample_typeTest','longStringBlob','stringBlobLong','blobLongString','deleteTest' 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">tableName</strong>: 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$TypeTests.svg" width="118" height="469">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$TypeTests/op$com.ibm.streamsx.hbase.sample$TypeTests.svg
+</span>
+</object>
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Functions</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getStringCount.tuple:.:int64row.rstringcolF.rstringcolQ.blobvalue:.:"><h2 class="title sectiontitle splpart">rstring getStringCount(tuple&lt;int64 row, rstring colF, rstring colQ, blob value&gt; inTuple)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Passed into a composite--basically, we want to get the rstring attribute. 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">inTuple</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">rstring</tt>
+</li>
+</ul>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getStringCount.tuple:.:ustringrow.rstringcolF.blobcolQ.int64value:.:"><h2 class="title sectiontitle splpart">ustring getStringCount(tuple&lt;ustring row, rstring colF, blob colQ, int64 value&gt; inTuple)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Passed into a composite--basically, we want to get the ustring attribute. 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">inTuple</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">ustring</tt>
+</li>
+</ul>
+
+</div>
+
+<div class="section" id="spldoc_compilationunit__function__getStringCount.tuple:.:blobrow.rstringcolF.int64colQ.ustringvalue:.:"><h2 class="title sectiontitle splpart">ustring getStringCount(tuple&lt;blob row, rstring colF, int64 colQ, ustring value&gt; inTuple)</h2>
+  
+</div>
+<div class="section">
+
+<p class="p">Passed into a composite--basically, we ant to get the ustring attribute. 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+ <ul class="sl simple">
+   <li class="sli">
+<strong class="ph b">inTuple</strong>: 
+   </li>
+
+ </ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Returns</h2>
+
+<ul class="sl simple"><li class="sli">
+<tt class="ph tt">ustring</tt>
+</li>
+</ul>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="SPL File PutExistCheck.spl"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_compilationunit"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>SPL File PutExistCheck.spl</title>
+</head>
+<body id="spldoc_compilationunit">
+
+
+<h1 class="title topictitle1">SPL File <tt class="ph tt">PutExistCheck.spl</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">Toolkits</a> &gt; <a class="xref" href="tk$PutSample.html">PutSample 1.0.1</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.sample.html">com.ibm.streamsx.hbase.sample</a> &gt; PutExistCheck.spl</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
+  
+    <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    
+      <dt class="dt dlterm splhead-2">Composite Operators</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__PutExistCheck">composite PutExistCheck</a></strong>: Use putAndCheck to put an entry only if another entry doesn't exist This demonstrates the put and check interface, where the check is for the non-existence of a column.
+</li>
+
+     </ul>
+</dd>
+
+    
+    
+      <dt class="dt dlterm splhead-2">Types</dt>
+
+      <dd class="dd"><ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__type__ExistCheckType">ExistCheckType</a></strong>: 
+</li>
+
+     </ul>
+</dd>
+
+    
+     </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Composite Operators</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__PutExistCheck"><h2 class="title sectiontitle splpart">composite PutExistCheck</h2>
+  
+</div>
+
+<div class="section">
+
+<p class="p">Use putAndCheck to put an entry only if another entry doesn't exist
+</p>
+
+<p class="p">This demonstrates the put and check interface, where the check is for the non-existence of a column.  
+</p>
+
+<p class="p">In this mode, the operator has an optional output port with  a success attribute for saying whether the put succeeded or failed.
+</p>
+
+<p class="p">First run, the checkExist.out file is:
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+"Gandalf","beard","bushy",false
+"Gandalf","eyebrows","bushy",true
+"Frodo","hairy",false
+</pre>
+
+
+</div>
+
+<p class="p">The second time, all are false, because &lt;pre&gt;Gandalf appearance:eyebrows&lt;/pre&gt; has already been added to the table.   
+</p>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section">
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
+  
+</div>
+
+<div class="section splgraph">
+<object type="image/svg+xml" data="../../image/tk$PutSample/op$com.ibm.streamsx.hbase.sample$PutExistCheck.svg" width="337" height="109">
+<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$PutSample/op$com.ibm.streamsx.hbase.sample$PutExistCheck.svg
+</span>
+</object>
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Types</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__type__ExistCheckType"><h2 class="title sectiontitle splpart">ExistCheckType</h2>
+  
+</div>
+<div class="section">
+   <p class="p">
+<tt class="ph tt">ExistCheckType = rstring columnFamily, rstring columnQualifier;</tt>
+   </p>
+
+</div>
+
+</div>
+
+
+</body>
+</html>
