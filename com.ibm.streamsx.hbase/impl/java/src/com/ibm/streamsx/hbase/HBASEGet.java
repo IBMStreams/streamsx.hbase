@@ -36,6 +36,7 @@ import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.types.RString;
 
 /**
@@ -63,6 +64,7 @@ import com.ibm.streams.operator.types.RString;
 description="Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "+HBASEGet.OUT_PARAM_NAME+"  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnQualifiers to values."+" If columnFamily is also left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "+HBASEGet.SUCCESS_PARAM_NAME+" exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.")
     @InputPorts({@InputPortSet(description="Description of which tuples to get", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 @OutputPorts({@OutputPortSet(description="Input tuple with value or values from HBASE", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
+    @Icons(location32="impl/java/icons/HBASEGet_32.gif",location16="impl/java/icons/HBASEGet_16.gif")
 public class HBASEGet extends HBASEOperatorWithInput {
 
 	/*

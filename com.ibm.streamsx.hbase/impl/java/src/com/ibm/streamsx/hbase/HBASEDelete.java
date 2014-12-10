@@ -29,6 +29,7 @@ import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streams.operator.model.Icons;
 
 /**
  * Accepts tuples on input stream and makes the corresponding delete in the 
@@ -38,6 +39,7 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 @PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE, with optional checkAndDelete.  The mode in which the operator is working depends on the parameters.  To delete an entire row, specify only the row.  To delete a columnFamily, specify the row and the columnFamily (either via the staticColumnFamily parameter or the columnFamilyAttrName parameter), and to delete just a single entry, specify the row, columnFamily, and columnQualifier (either via the staticColumnQualifer or the columnQualiferAttrName parameter).  To support locking, HBASE allows for a conditional delete.  To use the conditional delete, you must set "+HBASEPutDelete.CHECK_ATTR_PARAM+" which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true if the delete succeeded, and false otherwise.")
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Copies tuple from input, setting "+HBASEPutDelete.SUCCESS_PARAM+" if "+HBASEPutDelete.CHECK_ATTR_PARAM+" is specified", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+    @Icons(location32="impl/java/icons/HBASEDelete_32.gif",location16="impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {
 
 	private enum DeleteMode {

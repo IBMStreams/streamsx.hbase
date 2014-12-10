@@ -22,6 +22,7 @@ import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streams.operator.model.Icons;
 /**
  * Increment a particular HBASE entry.  The row, columnFamily, and columnQualifier must all
  * be specified, either as parameters or they must come from the tuples.
@@ -30,6 +31,7 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 @PrimitiveOperator(name="HBASEIncrement", namespace="com.ibm.streamsx.hbase",
 description="Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple.")
     @InputPorts({@InputPortSet(description="Tuples describing entry to increment", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
+    @Icons(location32="impl/java/icons/HBASEIncrement_32.gif", location16="impl/java/icons/HBASEIncrement_16.gif")
 public class HBASEIncrement extends HBASEOperatorWithInput {
 	
 	String incrAttr = null;
