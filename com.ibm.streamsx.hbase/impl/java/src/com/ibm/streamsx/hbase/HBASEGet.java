@@ -137,6 +137,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	if (params.contains(OUT_PARAM_NAME)) {
 	    outName = context.getParameterValues(OUT_PARAM_NAME).get(0);
 	}
+	
 	StreamingOutput<OutputTuple> outStream= context.getStreamingOutputs().get(0);
 	checker.checkRequiredAttributes(outStream,outName);
 	//	StreamSchema outSchema = outStream.getStreamSchema();
