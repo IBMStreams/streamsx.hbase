@@ -7,7 +7,7 @@
  <info:identity>
    <info:name>ScanRecord</info:name>
    <info:description>Demonstrate how to use HBASEScan to populate a tuple</info:description>
-   <info:version>1.0.0</info:version>
+   <info:version>1.0.1</info:version>
    <info:requiredProductVersion>3.2.1.0</info:requiredProductVersion>
  </info:identity>
  <info:dependencies>

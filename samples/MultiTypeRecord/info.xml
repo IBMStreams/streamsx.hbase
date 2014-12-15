@@ -7,7 +7,7 @@
  <info:identity>
    <info:name>MultiTypeRecord</info:name>
    <info:description>This sample demonstrates the HBASE operators handling a variety of data types.  It is the next iteration of the PutRecord,GetRecord, and ScanRecord sample. This sample shows how to Put, Get, and Scan an HBASE table.  The objects being added are books, with a columnQualifier for title, author, year, and compressed data representing the first chapter.  </info:description>
-   <info:version>1.0.0</info:version>
+   <info:version>1.0.1</info:version>
    <info:requiredProductVersion>3.2.1.0</info:requiredProductVersion>
  </info:identity>
  <info:dependencies>

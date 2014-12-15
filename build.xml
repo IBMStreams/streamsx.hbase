@@ -66,6 +66,7 @@
        <param name="tkdir" value="${toolkit}"/>
        <param name="tktitle" value="IBMStreams ${tkinfo.info:identity.info:name} Toolkit"/>
     </antcall>
+    <touch file="${tkinfo.info:identity.info:name}/toolkit.xml"/>
     <subant target="spldoctoolkit" genericantfile="${basedir}/build.xml">
        <dirset dir="samples" includes="*"/>
     </subant>
@@ -117,16 +118,17 @@
         <arg value="--directory"/>
         <arg value="${tkdir}"/>
      </exec>
+   <touch file="${tkdir}/toolkit.xml"/>
   </target>
 
   <!-- Targets to build releases -->
   <target name="release"  depends="clean,all,spldoc">
 	<mkdir dir="${tmp}" />
-        <property name="releasefilename" value="${tmp}/streamx.hbase.toolkits-${tkinfo.identity.version}-${DSTAMP}-${TSTAMP}.tgz"/>
+        <property name="releasefilename" value="${tmp}/streamsx.hbase.toolkits-${tkinfo.info:identity.info:version}-${DSTAMP}-${TSTAMP}.tgz"/>
     	<tar compression="gzip" longfile="gnu"
              destfile="${releasefilename}"
     	     basedir="${basedir}"
-             includes="${tkinfo.identity.name}/** samples/**"
+             includes="${tkinfo.info:identity.info:name}/** samples/**"
              excludes="**/.gitignore **/.settings/** **/.settings **/.project **/.classpath"
     	/>
         <checksum file="${releasefilename}"/>

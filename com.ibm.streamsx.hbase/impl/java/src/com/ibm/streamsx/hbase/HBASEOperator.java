@@ -202,9 +202,9 @@ public abstract class HBASEOperator extends AbstractOperator {
         // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.
         // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
         // file:/// to a string.
-        // First get a URI for the data directory.
+        // First get a URI for the application directory
 	    URI toolkitRoot = context.getPE().getApplicationDirectory().toURI();
-        // now, resolve the hbase site against the data directory.
+        // now, resolve the hbase site against that
         URI hbaseSiteURI = toolkitRoot.resolve(hbaseSite);
         // make a path out of it.
 	    Path hbaseSitePath = new Path(hbaseSiteURI);

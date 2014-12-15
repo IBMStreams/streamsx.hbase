@@ -7,7 +7,7 @@
  <info:identity>
    <info:name>PutSample</info:name>
    <info:description>Demonstrates the use of HBASEPut for both ordinary put and checkAndPut.</info:description>
-   <info:version>1.0.0</info:version>
+   <info:version>1.0.1</info:version>
    <info:requiredProductVersion>3.2.0</info:requiredProductVersion>
  </info:identity>
  <info:dependencies>
