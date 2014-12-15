@@ -37,6 +37,8 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.types.RString;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
 
 /**
  * Gets a tuple or set of tuples from HBASE.
@@ -90,7 +92,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	public static final String MAX_VERSIONS_PARAM_NAME="maxVersions";
 	public static final String MAX_VERSIONS_DESC="The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.";
 	private OutputMode outputMode;
-	private String outAttrName = "value";
+    private static final String defaultOutAttrName = "value";
+    private String outAttrName = defaultOutAttrName;;
 	private String successAttr = null;
 	private SingleOutputMapper primativeOutputMapper = null;
 
@@ -113,7 +116,32 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		maxVersions = inMax;
 	}
 	
-	
+
+    @ContextCheck(compile=true) 
+       public static void compileChecks(OperatorContextChecker checker) {
+	OperatorContext context = checker.getOperatorContext();
+	int numOut = context.getNumberOfStreamingOutputs();
+        if (numOut != 1) {
+	    checker.setInvalidContext("Wrong number of outputs; expected 1 found "+numOut,new Object[0]);
+        }
+
+       }
+
+    @ContextCheck(compile=false) 
+       public static void runtimeChecks(OperatorContextChecker checker) {
+	OperatorContext context = checker.getOperatorContext();
+	Set<String> params = context.getParameterNames();
+	String outName = defaultOutAttrName;
+	if (params.contains(OUT_PARAM_NAME)) {
+	    outName = context.getParameterValues(OUT_PARAM_NAME).get(0);
+	}
+	StreamingOutput<OutputTuple> outStream= context.getStreamingOutputs().get(0);
+	checker.checkRequiredAttributes(outStream,outName);
+	//	StreamSchema outSchema = outStream.getStreamSchema();
+	//       Attribute outAttr = outSchema.getAttribute(outAttrName);
+	    }
+ 
+
     /**
      * Initialize this operator. Establishes that the input tuple type is valid.
      * @param context OperatorContext for this operator.
@@ -127,9 +155,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
         
         List<StreamingOutput<OutputTuple>> outputs = context.getStreamingOutputs();
-        if (outputs.size() != 1) {
-        	throw new Exception ("Wrong number of outputs; expected 1 found "+outputs.size());
-        }
+	// we already checked that the number of outputs is correct.
         StreamingOutput<OutputTuple> output = outputs.get(0);
         StreamSchema outSchema = output.getStreamSchema();
         Attribute outAttr = outSchema.getAttribute(outAttrName);
