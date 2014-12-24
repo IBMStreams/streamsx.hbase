@@ -20,11 +20,13 @@ import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.state.ConsistentRegionContext;
 import com.ibm.streams.operator.types.Blob;
 import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
@@ -42,8 +44,9 @@ import java.net.URI;
  * @author hildrum
  *
  */
-@Libraries({"opt/downloaded/*","@HBASE_HOME@/conf"})
+@Libraries({"opt/downloaded/*"})
 public abstract class HBASEOperator extends AbstractOperator {
+	public static final String consistentCutIntroducer="\\n**Consistent Region**\\n";
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
@@ -85,6 +88,33 @@ public abstract class HBASEOperator extends AbstractOperator {
 	@Parameter(name=STATIC_COLQ_NAME, optional = true,description="If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.") 
 	public void setStaticColumnQualifier(List<String> name) {
 		staticColumnQualifierList = name;
+	}
+	
+	protected static void checkConsistentRegionSource(OperatorContextChecker checker,String operatorName) {
+	// Now we check whether we're in a consistent region.  
+	ConsistentRegionContext ccContext = checker.getOperatorContext()
+			.getOptionalContext(ConsistentRegionContext.class);
+	if (ccContext != null && ccContext.isStartOfRegion()) {
+		checker.setInvalidContext(
+				"{0} operator may not be the start of a consistent region",
+				new Object[]{operatorName});
+	}
+	}
+	
+	/**
+	 * Function for runtime context checks.  
+	 * @param checker
+	 */
+	@ContextCheck(compile=false)
+	public static void runtimeHBaseOperatorChecks(OperatorContextChecker checker) {
+		OperatorContext context = checker.getOperatorContext();
+		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
+		if (!context.getParameterNames().contains(HBASE_SITE_PARAM_NAME)) {
+			String hbaseHome = System.getenv("HBASE_HOME");
+			if (hbaseHome == null) {
+				checker.setInvalidContext("If "+HBASE_SITE_PARAM_NAME+" not specified, then HBASE_HOME must be set in runtime environment",new Object[0]);
+			}
+		}
 	}
 	
 	/**
@@ -196,7 +226,8 @@ public abstract class HBASEOperator extends AbstractOperator {
        
     	conf = new Configuration();
 	if (hbaseSite == null) {
-	    conf.addResource("hbase-site.xml");
+		String hbaseHome = System.getenv("HBASE_HOME");
+	    conf.addResource(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
 	}
 	else {
         // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.

@@ -48,6 +48,14 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.types.RString;
 
+/*
+ * TODO
+ * * update documentation
+ * * add resetToInitialState to test
+ * * implement resetToInitialState, reset, drain, checkpoint
+ * * figure out tiggering.
+ * 
+ */
 /**
  * Scan an HBASE table and output the specified tuples.
  * 
@@ -214,6 +222,10 @@ public class HBASEScan extends HBASEOperator {
 			checker.setInvalidContext("Expected 0 or 1 inputs, found {0}",
 					error);
 		}
+		else if (numInput == 1) {
+			// cannot be a consistent region source if we have an input
+			checkConsistentRegionSource(checker,"HBASEScan");
+		}
 	}
 
 	private static void checkNotSpecified(OperatorContextChecker checker,
@@ -283,7 +295,7 @@ public class HBASEScan extends HBASEOperator {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 
-		// Now check that the output is hte proper format.
+		// Now check that the output is the proper format.
 		StreamingOutput<OutputTuple> output = getOutput(0);
 		StreamSchema outSchema = output.getStreamSchema();
 
@@ -561,6 +573,8 @@ public class HBASEScan extends HBASEOperator {
 		out.punctuate(Punctuation.WINDOW_MARKER);
 	}
 
+	// TODO: Divide this into two functions, once that creates the scan, the second that processes the results.
+	
 	private void doScan(Scan myScan, Tuple inputTuple) throws Exception {
 
 		// Set scan attributes
