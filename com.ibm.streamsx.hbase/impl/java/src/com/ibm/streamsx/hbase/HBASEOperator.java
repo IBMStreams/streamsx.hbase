@@ -46,7 +46,8 @@ import java.net.URI;
  */
 @Libraries({"opt/downloaded/*"})
 public abstract class HBASEOperator extends AbstractOperator {
-	public static final String consistentCutIntroducer="\\n**Consistent Region**\\n";
+	public static final String consistentCutIntroducer="\\n\\n**Consistent Region**\\n\\n";
+	public static final String DOC_BLANKLINE = "\\n\\n";
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
