@@ -79,10 +79,16 @@ import com.ibm.streams.operator.types.RString;
 		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating) })
 @Icons(location32 = "impl/java/icons/HBASEScan_32.gif", location16 = "impl/java/icons/HBASEScan_16.gif")
 public class HBASEScan extends HBASEOperator implements StateHandler {
+	static final String TRIGGER_PARAM = "triggerCount";
 	static final String consistentCutDesc = HBASEOperator.consistentCutIntroducer
 			+ "If the operator has an input port, it may not be the source of a consistent region."
 			+ " If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or "
-			+ "trigger based." + HBASEOperator.DOC_BLANKLINE;
+			+ "trigger based."
+			+ HBASEOperator.DOC_BLANKLINE
+			+ "When in a trigger-based consistent region, the "
+			+ TRIGGER_PARAM
+			+ " must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain."
+			+ " and maxThreads must be one";
 	static final String operatorDescription = "Scan an HBASE table.  Like FileSource, it has an optional input port.  If no input port is"
 			+ " specifed, then the operator will scan the table according to the parameters, and then send final punctuation.  If an input "
 			+ " port is given, then the operator will not start a scan until a tuple is received.  Once a tuple is received, the operator will"
@@ -128,10 +134,13 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		final HTableInterface myTable;
 		boolean hasMore;
 		HBASEScan operator;
+		long rowsScanned;
+		long outstandingRows;
 
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
 				byte[] lastRow) throws IOException {
-			operator.logger.debug("Creating a region scan for "+rawStartBytes+" to "+endBytes+" lastRow "+lastRow);
+			operator.logger.debug("Creating a region scan for " + rawStartBytes
+					+ " to " + endBytes + " lastRow " + lastRow);
 			this.operator = operator;
 			Scan myScan;
 			byte[] startBytes;
@@ -143,7 +152,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				for (int i = 0; i < lastRow.length; i++) {
 					startBytes[i] = lastRow[i];
 				}
-				startBytes[lastRow.length - 1] = 0;
+				startBytes[lastRow.length] = 0;
 			} else {
 				startBytes = rawStartBytes;
 			}
@@ -169,13 +178,19 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			} else {
 				hasMore = false;
 			}
+			rowsScanned = 0;
 		}
 
-		byte[] submitRows(long numRows) throws IOException, Exception{
+		byte[] submitRows(long numRows) throws IOException, Exception {
 			byte[] lastRow = operator.submitResults(null, resultScanner,
 					numRows);
+			
 			if (lastRow == null) {
 				hasMore = false;
+			}
+			else {
+				rowsScanned = rowsScanned+numRows;
+				outstandingRows = outstandingRows+numRows;
 			}
 			return lastRow;
 		}
@@ -184,6 +199,19 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			return hasMore;
 		}
 
+		void resetRowsSinceConsistent() {
+			outstandingRows = 0;
+		}
+		
+		long rowsSinceConsistent() {
+			return outstandingRows;
+		}
+		
+		// This is not entirely accurate, as it miscounts at the end. 
+		public long rowCount() {
+			return rowsScanned;
+		}
+		
 		public void close() throws IOException {
 			hasMore = false;
 			resultScanner.close();
@@ -198,19 +226,22 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		boolean reset = false;
 		final boolean useDelay;
 		ScanRegion currentRegion = null;
-
+		final long rowsPerTrigger;
+		
 		ScanThread(HBASEScan parent, int index, boolean useDelay) {
 			this.parent = parent;
 			this.index = index;
 			this.ccContext = parent.ccContext;
 			this.useDelay = useDelay;
 			if (ccContext == null) {
-				parent.logger.info("ScanThread index "+index+" is not in a consistent region");
-			}
-			else {
-				parent.logger.info("ScanThread index "+index+" is in a consistent region");
+				parent.logger.info("ScanThread index " + index
+						+ " is not in a consistent region");
+			} else {
+				parent.logger.info("ScanThread index " + index
+						+ " is in a consistent region");
 			}
 			reset = true;
+			rowsPerTrigger = parent.triggerCount;
 		}
 
 		private void reset() {
@@ -246,7 +277,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 							parent.logger.info(index
 									+ ": interruptedexception acquring permit");
 						}
-					} 
+					}
 
 					// If we've reset, our current resultScanner isn't useful
 					// anymore.
@@ -273,16 +304,19 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 							parent.logger.info("No more work for this thread.");
 						} else {
 							byte[] lastRow = parent.lastRow[index];
-							
+
 							parent.logger.info(index
 									+ ": regions starts at "
 									+ thisScan.getFirst()
 									+ " "
-									+ (thisScan.getFirst()==null?"null":new String(thisScan.getFirst(),
-											parent.charset))
+									+ (thisScan.getFirst() == null ? "null"
+											: new String(thisScan.getFirst(),
+													parent.charset))
 									+ " but we will instead fast-forward to "
-									+ lastRow + " "
-									+ (lastRow==null?"null": new String(lastRow, parent.charset)));
+									+ lastRow
+									+ " "
+									+ (lastRow == null ? "null" : new String(
+											lastRow, parent.charset)));
 
 							currentRegion = new ScanRegion(parent,
 									thisScan.getFirst(), thisScan.getSecond(),
@@ -292,12 +326,33 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					} // end attempt to make a new region.
 
 					if (currentRegion != null && currentRegion.hasMore()) {
+						long maxRows;
+						if (parent.trigger) {
+							maxRows = Math.min(rowsPerPermit,rowsPerTrigger - currentRegion.rowsSinceConsistent());
+						}
+						else {
+							maxRows = rowsPerPermit;
+						}
 						byte[] lastRow = currentRegion
-								.submitRows(rowsPerPermit);
+								.submitRows(maxRows);
 						parent.lastRow[index] = lastRow;
-						if (lastRow == null) {
-							// mark nothing is progess
-							parent.currentScan.set(index,null);
+						if (!currentRegion.hasMore()) {
+							// mark nothing in progress
+							parent.currentScan.set(index, null);
+						}
+						
+						// It's important we do the hasMore test, since rowsSinceConsistent() will not increase if there's no more
+						// stuff in the region.
+						if (parent.trigger && (!currentRegion.hasMore() || currentRegion.rowsSinceConsistent() >= rowsPerTrigger)) {
+							boolean res = ccContext.makeConsistent();
+							// if there's been a reset, this is harmless, since currentRegion will be discarded next time through
+							// the loop
+							currentRegion.resetRowsSinceConsistent();
+							if (parent.logger.isInfoEnabled()) {
+								String oldRowString = lastRow == null? "null": new String(lastRow,parent.charset);
+								String lastRowString = parent.lastRow[index] == null? "null": new String(parent.lastRow[index],parent.charset);
+								parent.logger.info("Make consistent returned "+res+" row count "+currentRegion.rowCount()+" lastRow "+lastRow+" lastRow as string "+lastRowString+ " (was "+oldRowString+") rows per trigger "+rowsPerTrigger);
+							}		
 						}
 					}
 					// release the permit, if needed.
@@ -316,7 +371,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					parent.logger.info(index + ": Thread finishing");
 			} catch (Exception e) {
 				e.printStackTrace();
-				parent.logger.error("Unexpected exception: "+e,e);
+				parent.logger.error("Unexpected exception: " + e, e);
 			}
 		}
 	}
@@ -358,6 +413,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private long minTimestamp = Long.MIN_VALUE;
 	private int maxVersions = -1;
 	static final long rowsPerPermit = 1;
+	private long triggerCount;
+	boolean trigger = false;
 
 	ConsistentRegionContext ccContext;
 	// / Needs to be checkpointed.
@@ -425,6 +482,11 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		endRow = row;
 	}
 
+	@Parameter(name = TRIGGER_PARAM, optional = true, description = "Number of rows to process before triggering a drain.  Only valid in a operator-driven consistent region")
+	public void setTriggerCount(long val) {
+		triggerCount = val;
+	}
+
 	@Parameter(name = HBASEGet.OUT_PARAM_NAME, optional = true, description = "Name of the attribute in which to put the value."
 			+ "Defaults to value.  If it is a tuple type, the attribute names are used as columnQualifiers"
 			+ "if multiple families are included in the scan, and they have the ame columnQualifiers, there is no "
@@ -450,6 +512,40 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			// cannot be a consistent region source if we have an input
 			checkConsistentRegionSource(checker, "HBASEScan");
 		}
+		ConsistentRegionContext ccContext = checker.getOperatorContext()
+				.getOptionalContext(ConsistentRegionContext.class);
+		Set<String> params = checker.getOperatorContext().getParameterNames();
+		if (params.contains(TRIGGER_PARAM)
+				&& (ccContext == null || !ccContext.isTriggerOperator())) {
+			checker.setInvalidContext(
+					"Parameter {0} cannot be used except in an operator-driven consistent region",
+					new Object[] { TRIGGER_PARAM });
+		}
+		if (ccContext != null && ccContext.isTriggerOperator()
+				&& !params.contains(TRIGGER_PARAM)) {
+			checker.setInvalidContext(
+					"Parameter {0} must be used when this operator triggers a consistent region",
+					new Object[] { TRIGGER_PARAM });
+		}
+	}
+
+	// Context checks that apply in all cases.
+	@ContextCheck(compile = false)
+	public static void runtimeScanCheck(OperatorContextChecker checker) {
+		Set<String> params = checker.getOperatorContext().getParameterNames();
+		ConsistentRegionContext ccContext = checker.getOperatorContext()
+				.getOptionalContext(ConsistentRegionContext.class);
+		if (ccContext != null && ccContext.isTriggerOperator()
+				&& params.contains(MAXIMUM_SCAN_THREADS)) {
+			int numThreads = Integer.parseInt(checker.getOperatorContext()
+					.getParameterValues(MAXIMUM_SCAN_THREADS).get(0));
+			if (numThreads != 1) {
+				checker.setInvalidContext(
+						"{0} must be 1 (found {1}) when this operator triggers a consistent region",
+						new Object[] { MAXIMUM_SCAN_THREADS, numThreads });
+			}
+		}
+
 	}
 
 	private static void checkNotSpecified(OperatorContextChecker checker,
@@ -556,7 +652,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		}
 		out = getOutput(0);
 		if (context.getNumberOfStreamingInputs() == 0) {
-			ccContext = context.getOptionalContext(ConsistentRegionContext.class);
+			ccContext = context
+					.getOptionalContext(ConsistentRegionContext.class);
 			createRegionQueue();
 			// we use this to determine when to send punctuation.
 			numFinishedThreads = 0;
@@ -566,7 +663,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			scanThreads = new ScanThread[actualNumThreads];
 			lastRow = new byte[actualNumThreads][];
 			currentScan = new ArrayList<Pair<byte[], byte[]>>(actualNumThreads);
-			
+
 			for (int i = 0; i < actualNumThreads; i++) {
 				scanThreads[i] = new ScanThread(this, i, true);
 				processThreadArray[i] = getOperatorContext().getThreadFactory()
@@ -616,7 +713,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					+ context.getNumberOfStreamingInputs());
 		}
 
-		
+		if (ccContext != null && ccContext.isTriggerOperator()) {
+			trigger = true;
+		}
+
 	}
 
 	private String printBytes(byte[] endBytes) {
@@ -864,7 +964,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			numRows++;
 			byte[] row = currRow.getRow();
 			if (logger.isDebugEnabled()) {
-				logger.debug("Creating tuples for row "+row);
+				logger.debug("Creating tuples for row " + row);
 			}
 			NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> allValues = currRow
 					.getMap();
@@ -956,20 +1056,20 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		outStream.writeObject(lastRow);
 		outStream.writeObject(currentScan);
 		outStream.writeObject(regionQueue);
-		
+
 		if (logger.isDebugEnabled()) {
 			StringBuilder myString = new StringBuilder("LastRows: ");
 			for (byte[] row : lastRow) {
 				if (row == null) {
 					myString.append("null");
-				}
-				else {
-					myString.append("byte: "+row+" String "+new String(row,charset));
+				} else {
+					myString.append("byte: " + row + " String "
+							+ new String(row, charset));
 				}
 			}
 			logger.debug(myString);
 			int size = regionQueue.size();
-			logger.debug("Untouched regions: "+size);
+			logger.debug("Untouched regions: " + size);
 		}
 	}
 
@@ -1007,14 +1107,14 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			for (byte[] row : lastRow) {
 				if (row == null) {
 					myString.append("null");
-				}
-				else {
-					myString.append("byte: "+row+" String "+new String(row,charset));
+				} else {
+					myString.append("byte: " + row + " String "
+							+ new String(row, charset));
 				}
 			}
 			logger.debug(myString);
 			int size = regionQueue.size();
-			logger.debug("Untouched regions: "+size);
+			logger.debug("Untouched regions: " + size);
 		}
 		currentScan = (List<Pair<byte[], byte[]>>) inStream.readObject();
 		regionQueue = (ConcurrentLinkedQueue<Pair<byte[], byte[]>>) inStream
@@ -1045,14 +1145,14 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			for (byte[] row : lastRow) {
 				if (row == null) {
 					myString.append("null");
-				}
-				else {
-					myString.append("byte: "+row+" String "+new String(row,charset));
+				} else {
+					myString.append("byte: " + row + " String "
+							+ new String(row, charset));
 				}
 			}
 			logger.debug(myString);
 			int size = regionQueue.size();
-			logger.debug("Untouched regions: "+size);
+			logger.debug("Untouched regions: " + size);
 		}
 		reviveThreads();
 		logger.info("Leaving resetToInitial");
