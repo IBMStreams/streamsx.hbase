@@ -228,7 +228,8 @@ public abstract class HBASEOperator extends AbstractOperator {
     	conf = new Configuration();
 	if (hbaseSite == null) {
 		String hbaseHome = System.getenv("HBASE_HOME");
-	    conf.addResource(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
+		File hbaseConfig = new File(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
+       		conf.addResource(new Path(hbaseConfig.toURI()));
 	}
 	else {
         // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.

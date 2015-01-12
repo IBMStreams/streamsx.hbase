@@ -14,7 +14,7 @@
  <info:dependencies>
    <info:toolkit>
      <common:name>com.ibm.streamsx.hbase</common:name>
-     <common:version>1.0.0.__dev__</common:version>
+     <common:version>1.0.0</common:version>
    </info:toolkit>
  </info:dependencies>
 </info:toolkitInfoModel>

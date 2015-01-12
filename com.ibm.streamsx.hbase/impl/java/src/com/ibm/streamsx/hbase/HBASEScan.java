@@ -138,7 +138,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		long outstandingRows;
 
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
-				byte[] lastRow) throws IOException {
+			   byte[] lastRow) throws IOException {
 			operator.logger.debug("Creating a region scan for " + rawStartBytes
 					+ " to " + endBytes + " lastRow " + lastRow);
 			this.operator = operator;
@@ -156,7 +156,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			} else {
 				startBytes = rawStartBytes;
 			}
-
+			// @3 need to set the start and end bytes.
 			if (startBytes != null && endBytes != null) {
 				myScan = new Scan(startBytes, endBytes);
 			} else if (startBytes != null) {
@@ -167,12 +167,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan = new Scan();
 			}
 
-			if (operator.rowPrefix != null) {
-				myScan.setFilter(new PrefixFilter(operator.rowPrefix
-						.getBytes(operator.charset)));
-			}
+			
 			myTable = operator.connection.getTable(operator.tableNameBytes);
-			resultScanner = myTable.getScanner(myScan);
+			// This sets any filters based on operator parameters.
+			resultScanner = operator.startScan(myTable,myScan);
 			if (resultScanner != null) {
 				hasMore = true;
 			} else {
@@ -321,8 +319,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 							currentRegion = new ScanRegion(parent,
 									thisScan.getFirst(), thisScan.getSecond(),
 									lastRow);
-							// If we have a row prefix, set it.
-						}
+							}
 					} // end attempt to make a new region.
 
 					if (currentRegion != null && currentRegion.hasMore()) {
@@ -907,14 +904,20 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					+ inputMode);
 		}
 		HTableInterface myTable = connection.getTable(tableNameBytes);
-		ResultScanner resultScanner = startScan(myTable, myScan, tuple);
+		ResultScanner resultScanner = startScan(myTable, myScan);
 		submitResults(tuple, resultScanner, (long) -1);
 		myTable.close();
 		out.punctuate(Punctuation.WINDOW_MARKER);
 	}
-
-	private ResultScanner startScan(HTableInterface myTable, Scan myScan,
-			Tuple inputTuple) throws Exception {
+    /**
+     * Add the parameter-derived info to the scan and start the scan.
+     * Add the max versions, the static column family, the static columnqualifier,
+     * and the prefix (if present) to the scan.
+     * @param myTable The HTableInterface to use--the caller should close when teh result scanner is done.
+     * @param myScan The scan.  The start and the end should be set.
+     * @returns a result scanner.
+     */
+	private ResultScanner startScan(HTableInterface myTable, Scan myScan) throws IOException {
 		// Set scan attributes
 		if (maxVersions == 0) {
 			myScan.setMaxVersions();
@@ -938,6 +941,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			for (String fam : staticColumnFamilyList) {
 				myScan.addFamily(fam.getBytes(charset));
 			}
+		}
+		
+		if (rowPrefix != null ) {
+		    myScan.setFilter(new PrefixFilter(rowPrefix.getBytes(charset)));
 		}
 
 		if (logger.isInfoEnabled())
@@ -1001,6 +1008,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						outMapper.populate(tuple, thisCell);
 						if (resultCountIndex >= 0) {
 							tuple.setInt(resultCountIndex, 1);
+						}
+						if (logger.isDebugEnabled()) {
+						    logger.debug("Submitting the tuple "+tuple);
 						}
 						out.submit(tuple);
 					}
