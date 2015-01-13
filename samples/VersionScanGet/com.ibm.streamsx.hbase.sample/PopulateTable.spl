@@ -21,18 +21,33 @@ composite PopulateTable()
  * <code>entry_v1,entry_v2,entry_v3</code>.
  *
  */
-		stream<rstring row, rstring colQ, rstring message> inputStream = Beacon()
-		{
-			param
-			// If we set populate to false, don't produce any tuples here, so HBASE doesn't change.
-				iterations : $populate ? $numVersions * size($qualifiers) : 0 ;
-			output
-				inputStream : row = $row, colQ = $qualifiers [ IterationCount() %(uint64)
-					size($qualifiers) ], message = "entry_v" +(rstring)((uint64) 1 +
-					IterationCount() /(uint64) size($qualifiers)) ;
-		}
 
-		() as loadTable = HBASEPut(inputStream)
+
+	stream<rstring row, rstring colQ, rstring message> InputStream = Custom() {
+	logic state:
+	 {
+	boolean populate= $populate;
+	int32 numVersions = $numVersions; 
+	rstring row = $row;
+	list<rstring> qualifiers= $qualifiers;
+	}
+	onProcess: {
+	  if(populate) {
+	    mutable int32 versionsSent = 0;
+	    while (versionsSent < numVersions) {
+	       versionsSent++;
+	       for (rstring qual in qualifiers) {
+	       	   submit({row=row,colQ=qual,message="entry_v"+(rstring)versionsSent},InputStream);
+	       }
+	    }
+	  }
+	  submit(Sys.WindowMarker,InputStream);		      
+	  submit(Sys.FinalMarker,InputStream);		      
+        }
+
+ }
+		
+		() as loadTable = HBASEPut(InputStream)
 		{
 			param
 				staticColumnFamily : "all" ;
