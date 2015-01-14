@@ -49,7 +49,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
     static final String HBASE_SITE_PARAM_NAME="hbaseSite";
 	public static final String consistentCutIntroducer="\\n\\n**Consistent Region**\\n\\n";
-	public static final String commonDesc="\\n\\n**Configurating the operator**\\n\\n"+
+	public static final String commonDesc="\\n\\n**Configuring the operator**\\n\\n"+
 			"In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file." +
 			"You can either directly point the operator"+
 			"to hbase-site.xml via the "+HBASE_SITE_PARAM_NAME+" parameter, or it can look for the hbase-site.xml parameter "+
