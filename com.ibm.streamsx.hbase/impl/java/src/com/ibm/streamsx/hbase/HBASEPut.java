@@ -74,7 +74,8 @@ import com.ibm.streams.operator.model.Icons;
 		+ HBASEPutDelete.SUCCESS_PARAM
 		+ " on the output "
 		+ "port will be set to true if the put happens, and false otherwise."
-		+ HBASEPut.consistentCutInfo)
+		+ HBASEPut.consistentCutInfo
+		+ HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 @Icons(location32 = "impl/java/icons/HBASEPut_32.gif", location16 = "impl/java/icons/HBASEPut_16.gif")

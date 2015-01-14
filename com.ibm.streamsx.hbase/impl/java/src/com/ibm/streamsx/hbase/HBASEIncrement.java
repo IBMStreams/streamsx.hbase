@@ -30,7 +30,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * from the tuples.
  */
 
-@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple."+HBASEIncrement.CONSISTENT_REGION_INFO)
+@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple."+HBASEIncrement.CONSISTENT_REGION_INFO+HBASEOperator.DOC_BLANKLINE+HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @Icons(location32 = "impl/java/icons/HBASEIncrement_32.gif", location16 = "impl/java/icons/HBASEIncrement_16.gif")
 public class HBASEIncrement extends HBASEOperatorWithInput {

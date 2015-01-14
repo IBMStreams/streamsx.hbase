@@ -135,6 +135,7 @@ param expression<rstring> $tableName : getSubmissionTimeValue("tableName","strea
 			param
 				TupleProducer : longStringBlob ;
 				getType : tuple<int64 row, rstring colF, rstring colQ> ;
+				scanType : tuple<int64 row, rstring columnFamily, rstring columnQualifier> ;
 				valueType : blob ;
 				tableName: $tableName;
 		}
@@ -144,6 +145,7 @@ param expression<rstring> $tableName : getSubmissionTimeValue("tableName","strea
 			param
 				TupleProducer : stringBlobLong ;
 				getType : tuple<ustring row, rstring colF, blob colQ> ;
+				scanType : tuple<ustring row, rstring columnFamily, blob columnQualifier> ;
 				valueType : int64 ;
 				tableName: $tableName;
 		}
@@ -153,11 +155,12 @@ param expression<rstring> $tableName : getSubmissionTimeValue("tableName","strea
 			param
 				TupleProducer : blobLongString ;
 				getType : tuple<blob row, rstring colF, int64 colQ> ;
+				scanType : tuple<blob row, rstring columnFamily, int64 columnQualifier> ;
 				valueType : ustring ;
 				tableName: $tableName;
 		}
 
-		() as longStringBlogCheck = CheckTest()
+		() as longStringBlobCheck = CheckTest()
 		{
 			param
 				TupleProducer : longStringBlob ;

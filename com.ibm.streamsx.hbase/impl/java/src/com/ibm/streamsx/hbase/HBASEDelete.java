@@ -42,7 +42,8 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ " which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by "
 		+ HBASEPutDelete.SUCCESS_PARAM
 		+ " is set to true if the delete succeeded, and false otherwise."
-		+ HBASEDelete.consistentCutInfo)
+		+ HBASEDelete.consistentCutInfo
+		+ HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Copies tuple from input, setting "
 		+ HBASEPutDelete.SUCCESS_PARAM + " if "

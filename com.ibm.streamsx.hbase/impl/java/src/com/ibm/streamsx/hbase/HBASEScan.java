@@ -6,17 +6,11 @@ package com.ibm.streamsx.hbase;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectInputStream.GetField;
 import java.io.ObjectOutputStream;
-import java.io.ObjectOutputStream.PutField;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionInfo;
@@ -30,12 +24,6 @@ import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.log4j.Logger;
 
-import com.ibm.gsk.ikeyman.keystore.entry.Entry;
-import com.ibm.streams.operator.compile.OperatorContextChecker;
-import com.ibm.streams.operator.meta.TupleType;
-import com.ibm.streams.operator.model.Parameter;
-
-import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
@@ -46,18 +34,20 @@ import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
+import com.ibm.streams.operator.model.Icons;
+import com.ibm.streams.operator.model.InputPortSet;
+import com.ibm.streams.operator.model.InputPortSet.WindowMode;
+import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
+import com.ibm.streams.operator.model.InputPorts;
 import com.ibm.streams.operator.model.OutputPortSet;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.OutputPorts;
-import com.ibm.streams.operator.model.InputPorts;
-import com.ibm.streams.operator.model.InputPortSet;
-import com.ibm.streams.operator.model.InputPortSet.*;
+import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
-import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.state.Checkpoint;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
 import com.ibm.streams.operator.state.StateHandler;
-import com.ibm.streams.operator.types.RString;
 
 /*
  * TODO
@@ -114,7 +104,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ HBASEOperator.DOC_BLANKLINE
 			+ " In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the "
 			+ "attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers."
-			+ "\\n" + consistentCutDesc;
+			+ "\\n" + consistentCutDesc
+			+ DOC_BLANKLINE+commonDesc;
+			
 
 	/*
 	 * Used to describe the way tuples will be populated. It is set at
@@ -1061,6 +1053,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 	@Override
 	public void checkpoint(Checkpoint checkpoint) throws Exception {
+		// If we aren't in source mode, don't do anything.
+		if (processThreadArray==null) return;
 		logger.info("Checkpoint " + checkpoint.getSequenceId());
 		ObjectOutputStream outStream = checkpoint.getOutputStream();
 		outStream.writeObject(lastRow);
@@ -1089,7 +1083,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	}
 
 	private void reviveThreads() {
-
 		for (int i = 0; i < processThreadArray.length; i++) {
 			if (!processThreadArray[i].isAlive()) {
 				logger.info("Replacing dead thread at index " + i);
@@ -1107,6 +1100,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void reset(Checkpoint checkpoint) throws Exception {
+		// if we aren't in source mode, do nothing.
+		if (processThreadArray == null) return;
 		numFinishedThreads = 0;
 		logger.info("Reset to checkpoint " + checkpoint.getSequenceId());
 		ObjectInputStream inStream = checkpoint.getInputStream();
@@ -1139,6 +1134,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 	@Override
 	public void resetToInitialState() throws Exception {
+		// check to see if the operator is a source and return if it isn't.
+		if (processThreadArray == null) return;
 		numFinishedThreads = 0;
 		logger.info("Reset to initial state");
 		if (regionQueue != null) {
