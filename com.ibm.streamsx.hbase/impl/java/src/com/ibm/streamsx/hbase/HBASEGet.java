@@ -63,12 +63,16 @@ import com.ibm.streams.operator.compile.OperatorContextChecker;
  * 
  */
 @PrimitiveOperator(name="HBASEGet", namespace="com.ibm.streamsx.hbase",
-description="Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "+HBASEGet.OUT_PARAM_NAME+"  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnQualifiers to values."+" If columnFamily is also left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "+HBASEGet.SUCCESS_PARAM_NAME+" exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.")
+description="Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "+HBASEGet.OUT_PARAM_NAME+"  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnQualifiers to values."+" If columnFamily is also left unspecified, then "+HBASEGet.OUT_PARAM_NAME+" is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "+HBASEGet.SUCCESS_PARAM_NAME+" exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the case where no such entry existed in HBase."+HBASEGet.consistentCutInfo+HBASEOperator.commonDesc)
     @InputPorts({@InputPortSet(description="Description of which tuples to get", cardinality=1, optional=false, windowingMode=WindowMode.NonWindowed, windowPunctuationInputMode=WindowPunctuationInputMode.Oblivious)})
 @OutputPorts({@OutputPortSet(description="Input tuple with value or values from HBASE", cardinality=1, optional=false, windowPunctuationOutputMode=WindowPunctuationOutputMode.Preserving)})
     @Icons(location32="impl/java/icons/HBASEGet_32.gif",location16="impl/java/icons/HBASEGet_16.gif")
 public class HBASEGet extends HBASEOperatorWithInput {
 
+	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer+" HBASEGet is allowed in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, HBASEGet will give a different answer"+ 
+			"As a result, if used in a consistent region in conjuction with an operator that changes the state of a tuple (ie, HBASEGet feeds a functor that increments a value, and then puts the tuple back into HBase with HBASEPut"+
+			"you could get unexpected behavior."+
+			"\\nHBASEGet is not supported as the source of a consistent region."	;
 	/*
 	 * Used to describe the way tuples will be populated.  It is set at initialization time, and then used on process
 	 * to determine what to do.  
@@ -126,7 +130,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
         if (numOut != 1) {
 	    checker.setInvalidContext("Wrong number of outputs; expected 1 found "+numOut,new Object[0]);
         }
-
+        checkConsistentRegionSource(checker,"HBASEGet");
        }
 
     @ContextCheck(compile=false) 

@@ -1,17 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (C) 2013-2014, International Business Machines Corporation -->
 <!-- All Rights Reserved                                                   -->
-<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common"
- xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
- <info:identity>
-   <info:name>com.ibm.streamsx.hbase</info:name>
-   <info:description>Provides support for interacting with HBASE from Streams.
+<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
+  <info:identity>
+    <info:name>com.ibm.streamsx.hbase</info:name>
+    <info:description>Provides support for interacting with HBASE from Streams.
 
 Tuples can be added to HBASE via the HBASEPut operator (including with a checkAndPut condition) or incremented with the HBASEIncrement operator.  Tuples can be retrieved with the HBASEGet operator.  The HBASETableScan operator can output all tuples, or all tuples in a particular row range.  The HBASEDelete operator enables tuples to be delted from HBASE.
 
 Configuration uses the same hbase-site.xml that HBASE itself does.
 </info:description>
-   <info:version>1.2.0.__dev__</info:version>
-   <info:requiredProductVersion>3.2.0</info:requiredProductVersion>
- </info:identity>
- <info:dependencies/>
+    <info:version>2.0.0.__dev__</info:version>
+    <info:requiredProductVersion>3.2.2</info:requiredProductVersion>
+  </info:identity>
+  <info:dependencies/>
 </info:toolkitInfoModel>

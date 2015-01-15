@@ -37,6 +37,8 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
+import com.ibm.streams.operator.state.Checkpoint;
+import com.ibm.streams.operator.state.StateHandler;
 
 /**
  * Class for common functions of Put and Delete HBASEPut and HBASEDelete have
@@ -52,7 +54,7 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * 
  */
 
-public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
+public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements StateHandler{
 
 	// These are used by Put and Delete for checkAndPut and checkAndDelete
 	protected int checkColFIndex = -1;
@@ -90,24 +92,34 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 		checkAttr = name;
 	}
 
-    @ContextCheck(compile=true)
-	static void successRequiresOutput(OperatorContextChecker checker) {
+	/**
+	 * Used for compile-time checks.  Called by the subclass.
+	 * @param checker
+	 */
+	protected static void successRequiresOutput(OperatorContextChecker checker) {
 	OperatorContext context = checker.getOperatorContext();
 	Set<String> params = context.getParameterNames();
 	if (params.contains(SUCCESS_PARAM)) {
 
 	    if (context.getStreamingOutputs().size() == 0) {
-		checker.setInvalidContext("Parameter "+SUCCESS_PARAM+" requires an output port",new Object[0]);
+		checker.setInvalidContext("Parameter {0} requires an output port",new Object[]{SUCCESS_PARAM});
 	    }
 	}
 
     }
 
-    @ContextCheck(compile=true)
-	static void compileTimeCheck(OperatorContextChecker checker) {
-	// If successAttr is set, then we must be using checkAttrParam
+	/**
+	 * Called by the subclass.  This should invoke all checks common to HBASEPut and HBASEDelete.
+	 * @param checker  the operator context checker.
+	 * @param operatorName  the name of the operator, used to generate error messages.
+	 */
+	protected static void compileTimeChecks(OperatorContextChecker checker,String operatorName) {
+    	// If successAttr is set, then we must be using checkAttrParam
+	successRequiresOutput(checker);
 	checker.checkDependentParameters(SUCCESS_PARAM,CHECK_ATTR_PARAM);
-    }
+	checkConsistentRegionSource(checker,operatorName);
+    
+	}
 
 	protected void establishCheckAttrMatching(Attribute checkAttr)
 			throws Exception {
@@ -197,24 +209,27 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 			}
 			successAttrIndex = attr.getIndex();
 		}
+		context.registerStateHandler(this);
 	}
 
 	/**
-	 * Empty the buffer.
-	 * Called by shutdown and processPunctuation.
+	 * Flush the buffer.
+	 * Called by shutdown, processPunctuation, and drain.
 	 */
-	protected void emptyBuffer() throws IOException {
-		
-	}
+	abstract protected void flushBuffer() throws IOException; 
 	
-	   
+	/**
+	 * Clear the buffer of pending changes.  Called by reset.  
+	 */
+	abstract protected void clearBuffer(); 
+	
     /**
      * Shutdown this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
      */
    @Override
    public void shutdown() throws Exception{
-	   emptyBuffer();
+	   flushBuffer();
        super.shutdown();
     }
 	
@@ -222,7 +237,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 	public void processPunctuation(StreamingInput<Tuple> stream,
 			Punctuation mark) throws Exception {
 		if (Punctuation.FINAL_MARKER == mark) {
-			emptyBuffer();
+			flushBuffer();
 		}
 	}
 
@@ -252,4 +267,48 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput {
 		}
 	}
 
+	@Override
+	public void drain() throws Exception {
+		Logger.getLogger(this.getClass()).info("Flushing pending HBase mutations");
+		flushBuffer();
+		
+	}
+	
+	@Override
+	public void reset(Checkpoint checkpoint) throws Exception {
+		Logger.getLogger(this.getClass()).info("Clearing pending HBase mutations due to reset");
+		clearBuffer();
+		
+	}
+	
+	@Override
+	public void resetToInitialState() throws Exception {
+		Logger.getLogger(this.getClass()).info("Clearing pending HBase mutations due to resetToInitialState");
+		clearBuffer();
+		
+	}
+	
+	/**
+	 * Nothing to do on a close.
+	 */
+	@Override
+	public void close() throws IOException {
+
+	}
+	
+	/**
+	 * Nothing to save on a checkpoint.
+	 */
+	@Override
+	public void checkpoint(Checkpoint checkpoint) throws Exception {
+
+	}
+	
+	/**
+	 * Nothing to do on retire checkpoint.
+	 */
+	@Override
+	public void retireCheckpoint(long id) throws Exception {
+
+	}
 }

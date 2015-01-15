@@ -17,6 +17,7 @@
         <property name="hbase_home" value="${env.HBASE_HOME}" />
 	<property name="maven.bin" value="${env.M2_HOME}/bin/mvn" />
 	<property name="ext.downloads.dir" value="opt/downloaded" />
+	<property name="ext.downloads.dir.all" value="opt/tmp_downloaded" />
 	<property name="src.dir" value="impl/java/src" />
 	<property name="build.dir" value="impl/java/classes" />
 	<property name="override.dir" value="opt/local_override" />
@@ -31,6 +32,7 @@
 		<mkdir dir="${lib.dir}" />
 		<mkdir dir="${impl.lib.dir}" />
 		<mkdir dir="${ext.downloads.dir}" />
+		<mkdir dir="${ext.downloads.dir.all}" />
 	</target>
 
 	<target name="clean">
@@ -97,10 +99,14 @@
 		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.hbase in order to use maven to download necessary dependencies.  Three sample pom files are included: pom-v094.xml (hbase 0.94, hadoop 1),pom-v096-hadoop1.xml (hbase 0.96, hadoop 1), and  pom-v096-hadoop2.xml (hbase 0.96, hadoop 2).  Please rename the correct one for your install to pom.xml"/> 
 		<exec executable="${maven.bin}"  failonerror="true">
 			<arg value="dependency:copy-dependencies"/>
-			<arg value="-DoutputDirectory=${ext.downloads.dir}"/>
+			<arg value="-DoutputDirectory=${ext.downloads.dir.all}"/>
 	    </exec>
+		<echo message="copying only the necessary files"/>
+		<copy todir="${ext.downloads.dir}" verbose="true">
+		  <fileset dir="${ext.downloads.dir.all}" 
+			   includes="commons-codec*,hadoop-auth*,hbase-common*,commons-configuration*,hadoop-common*,hbase-protocol*,commons-logging*,hbase-client*,htrace-core*"/> 
+		  </copy>
 	</target>
-
 
 	<!-- Prints a message if no maven is found. -->
 	<target name="nomaven" unless="env.M2_HOME">

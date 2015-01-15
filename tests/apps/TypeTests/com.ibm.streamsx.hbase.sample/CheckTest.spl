@@ -104,7 +104,7 @@ composite CheckTest
 				{
 					mutable int64 value = - 1 ;
 					getInputPortMetricValue(0u, Sys.nTuplesProcessed, value) ;
-					assert((int32) value == numSuccess) ;
+					assert((int32) value == numSuccess,(rstring)numSuccess+"out of"+(rstring)value+" succesful") ;
 				}
 
 				onTuple getResults : assert(getResults.value == ".") ;

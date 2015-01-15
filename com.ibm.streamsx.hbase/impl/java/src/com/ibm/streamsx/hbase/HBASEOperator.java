@@ -20,11 +20,13 @@ import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
 import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.state.ConsistentRegionContext;
 import com.ibm.streams.operator.types.Blob;
 import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
@@ -42,8 +44,25 @@ import java.net.URI;
  * @author hildrum
  *
  */
-@Libraries({"opt/downloaded/*","@HBASE_HOME@/conf"})
+@Libraries({"opt/downloaded/*"})
 public abstract class HBASEOperator extends AbstractOperator {
+	public static final String DOC_BLANKLINE = "\\n\\n";
+    static final String HBASE_SITE_PARAM_NAME="hbaseSite";
+	public static final String consistentCutIntroducer="\\n\\n**Consistent Region**\\n\\n";
+	public static final String commonDesc="\\n\\n**Configuring the operator**\\n\\n"+
+			"In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file." +
+			"You can either directly point the operator"+
+			"to hbase-site.xml via the "+HBASE_SITE_PARAM_NAME+" parameter, or it can look for the hbase-site.xml parameter "+
+			"relative to the HBASE_HOME environment variable"+
+			DOC_BLANKLINE+
+			"If your operator will run on a host that has HBase installed, then you could set"+
+			"HBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml"+
+			DOC_BLANKLINE+
+			"If your HBase in located on a different host than streams, then use the "+HBASE_SITE_PARAM_NAME+" parameter."+
+			"To do this, copy hbase-site.xml into your application (eg, into the etc directory) and"+
+			"point the "+HBASE_SITE_PARAM_NAME+" parameter to this location, eg "+HBASE_SITE_PARAM_NAME+": \\\"etc/hbase-site.xml\\\"";
+			
+
 	protected List<String> staticColumnFamilyList= null;
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
@@ -53,7 +72,7 @@ public abstract class HBASEOperator extends AbstractOperator {
         private String hbaseSite =null;
 	protected HConnection connection =null;
 	private Configuration conf;
-        static final String HBASE_SITE_PARAM_NAME="hbaseSite";
+ 
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
@@ -85,6 +104,33 @@ public abstract class HBASEOperator extends AbstractOperator {
 	@Parameter(name=STATIC_COLQ_NAME, optional = true,description="If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.") 
 	public void setStaticColumnQualifier(List<String> name) {
 		staticColumnQualifierList = name;
+	}
+	
+	protected static void checkConsistentRegionSource(OperatorContextChecker checker,String operatorName) {
+	// Now we check whether we're in a consistent region.  
+	ConsistentRegionContext ccContext = checker.getOperatorContext()
+			.getOptionalContext(ConsistentRegionContext.class);
+	if (ccContext != null && ccContext.isStartOfRegion()) {
+		checker.setInvalidContext(
+				"{0} operator may not be the start of a consistent region",
+				new Object[]{operatorName});
+	}
+	}
+	
+	/**
+	 * Function for runtime context checks.  
+	 * @param checker
+	 */
+	@ContextCheck(compile=false)
+	public static void runtimeHBaseOperatorChecks(OperatorContextChecker checker) {
+		OperatorContext context = checker.getOperatorContext();
+		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
+		if (!context.getParameterNames().contains(HBASE_SITE_PARAM_NAME)) {
+			String hbaseHome = System.getenv("HBASE_HOME");
+			if (hbaseHome == null) {
+				checker.setInvalidContext("If "+HBASE_SITE_PARAM_NAME+" not specified, then HBASE_HOME must be set in runtime environment",new Object[0]);
+			}
+		}
 	}
 	
 	/**
@@ -196,7 +242,9 @@ public abstract class HBASEOperator extends AbstractOperator {
        
     	conf = new Configuration();
 	if (hbaseSite == null) {
-	    conf.addResource("hbase-site.xml");
+		String hbaseHome = System.getenv("HBASE_HOME");
+		File hbaseConfig = new File(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
+       		conf.addResource(new Path(hbaseConfig.toURI()));
 	}
 	else {
         // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.

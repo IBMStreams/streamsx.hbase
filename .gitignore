@@ -1,6 +1,8 @@
 # project specific excludes
 /com.ibm.streamsx.hbase/com.ibm.streamsx.hbase
 /samples/*/doc/
+/tests/apps/*/doc
+/tests/apps/*/output*
 com.ibm.streamsx.hbase/doc/
 
 # streams-specific excludes
