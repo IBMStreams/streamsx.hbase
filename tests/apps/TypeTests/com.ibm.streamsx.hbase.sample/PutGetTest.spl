@@ -28,6 +28,7 @@ composite PutGetTest
 		type $scanType;
 		type $valueType ;
 		expression<int32> $numTuples: 1000;
+		expression<rstring> $label: "undefined";
 		expression<rstring> $colF: "colF";
 		expression<rstring> $colQ: "colQ";
 		expression<rstring> $tableName : "streamsSample_typeTest" ;
@@ -127,6 +128,7 @@ composite PutGetTest
 				tableName : $tableName ;
 				outAttrName : "value" ;
 				initDelay : 15.0 ;
+				staticColumnFamily: $label;
 		}
 
 		stream<S tupleOut, I tupleIn> Joined = Join(FromHBaseScan
@@ -141,21 +143,33 @@ composite PutGetTest
 				Joined : tupleOut = S, tupleIn = I ;
 		}
 
+		() as tmp1 = FileSink(FromHBaseScan) {
+		param file: "scanResults"+$label+".txt";
+			}
+
+		() as tmp2 = FileSink(InputTuples) {
+		param file: "inputTuples"+$label+".txt";
+		}
+
+
+
 		() as CheckScan = Custom(Joined)
 		{
 			logic
 				onTuple Joined :
 				{
-					assert(tupleOut.columnFamily == tupleIn.colF) ;
-					assert(tupleOut.columnQualifier == tupleIn.colQ) ;
-					assert(tupleOut.value == tupleIn.value) ;
+					assert(tupleOut.columnFamily == tupleIn.colF,$label+": Column family match for row "+(rstring)tupleOut.row) ;
+					assert(tupleOut.columnQualifier == tupleIn.colQ,$label+": column qualifier match for row "+(rstring)tupleOut.row) ;
+					assert(tupleOut.value == tupleIn.value,$label+": value match for row "+(rstring)tupleOut.value) ;
 				}
 
 				onPunct Joined :
 				{
+				if (currentPunct() == Sys.FinalMarker) {
 					mutable int64 value = - 1 ;
 					getInputPortMetricValue(0u, Sys.nTuplesProcessed, value) ;
 					println("Scan Test complete. " +(rstring) value + " tuples evaluated") ;
+				    }
 				}
 
 		}

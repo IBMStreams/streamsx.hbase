@@ -130,36 +130,40 @@ composite TypeTests
 {
 param expression<rstring> $tableName : getSubmissionTimeValue("tableName","streamsSample_typeTest");
 	graph
-		() as longStringBlog = PutGetTest()
+		() as PutGetTestLSB = PutGetTest()
 		{
 			param
 				TupleProducer : longStringBlob ;
 				getType : tuple<int64 row, rstring colF, rstring colQ> ;
 				scanType : tuple<int64 row, rstring columnFamily, rstring columnQualifier> ;
 				valueType : blob ;
+				label: "longStringBlob";
 				tableName: $tableName;
 		}
 
-		() as stringBlogLong = PutGetTest()
+		() as PutGetTestSBL = PutGetTest()
 		{
 			param
 				TupleProducer : stringBlobLong ;
 				getType : tuple<ustring row, rstring colF, blob colQ> ;
 				scanType : tuple<ustring row, rstring columnFamily, blob columnQualifier> ;
 				valueType : int64 ;
+				label: "stringBlobLong";
 				tableName: $tableName;
 		}
 
-		() as blogLongString = PutGetTest()
+		() as PutGetTestBLS = PutGetTest()
 		{
 			param
 				TupleProducer : blobLongString ;
 				getType : tuple<blob row, rstring colF, int64 colQ> ;
 				scanType : tuple<blob row, rstring columnFamily, int64 columnQualifier> ;
 				valueType : ustring ;
+				label: "blobLongString";
 				tableName: $tableName;
 		}
 
+/*
 		() as longStringBlobCheck = CheckTest()
 		{
 			param
@@ -240,5 +244,5 @@ param expression<rstring> $tableName : getSubmissionTimeValue("tableName","strea
 				valueFunc : getRstring ;
 				tableName: $tableName;
 		}
-
+*/
 }
