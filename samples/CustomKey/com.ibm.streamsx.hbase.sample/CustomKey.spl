@@ -7,6 +7,10 @@ namespace com.ibm.streamsx.hbase.sample ;
  * generating data periodically with a time, a location, and the conditions
  * at the location.  We'd like the key to be a combination of the time
  * and the location.
+ *
+ * To build this sample, import it into streamsStudio.  StreamsStudio will 
+ * compile the java file and generate the makeKey function for you.
+ * 
  * 
  * In  impl/java/src/com/ibm/streamsx/hbase/sample/KeyHelper.java, you can see 
  * see the makeKey function.  When this is compiled, behind the scenes it generates
