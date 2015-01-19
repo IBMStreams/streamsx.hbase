@@ -11,7 +11,6 @@ import com.ibm.streams.function.model.Function;
 public class HelperFunctions {
 	public static final String NAMESPACE="com.ibm.streamsx.hbase.sample";
 	public static final Logger trace = Logger.getLogger(HelperFunctions.class.getCanonicalName());
-	//= LogManager.getLogger(HelperFunctions.class.getCanonicalName());
 	
 	// The sample application uses the makeKey function to make a key,
 	// but an application could use a combination of the appendLong and appendString
