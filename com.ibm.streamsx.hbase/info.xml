@@ -14,4 +14,7 @@ Configuration uses the same hbase-site.xml that HBASE itself does.
     <info:requiredProductVersion>3.2.2</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
+  <info:sabFiles>
+   <info:exclude path="opt/tmp_downloaded"/>
+</info:sabFiles>
 </info:toolkitInfoModel>
