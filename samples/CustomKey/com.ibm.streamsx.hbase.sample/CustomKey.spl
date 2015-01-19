@@ -70,7 +70,7 @@ composite CustomKey
 				// The key is of type blob, but in order to call get long, we have to cast it to type
 				// list<uint8>.  The second argument is the index where to start looking for the long.
 				// This must be unsigned for the function to work. 
-				time = com.ibm.streamsx.hbase::getLong((list<uint8>) key, 0u),
+				time = com.ibm.streamsx.hbase.sample::getLong((list<uint8>) key, 0u),
 
 				// Now we extract the string.  We again need ot case the key to list<uint8>.
 				// Get string requires the starting point of the string (in this case, just after
@@ -78,7 +78,7 @@ composite CustomKey
 				// length, you can use that, but here since we know the string is the last
 				// thing in the blob, we'll calcuate the length from the blob size and the starting
 				// point.
-				location = com.ibm.streamsx.hbase::getString((list<uint8>) key, 8u,(uint32)
+				location = com.ibm.streamsx.hbase.sample::getString((list<uint8>) key, 8u,(uint32)
 					size(key) - 8u) ;
 		}
 
