@@ -106,13 +106,17 @@ public abstract class HBASEOperator extends AbstractOperator {
 		staticColumnQualifierList = name;
 	}
 	
+	protected static String getNoCCString() {
+		return "ERROR: The following operator is not supported in a consistent region: {0}.";
+	}
+	
 	protected static void checkConsistentRegionSource(OperatorContextChecker checker,String operatorName) {
 	// Now we check whether we're in a consistent region.  
 	ConsistentRegionContext ccContext = checker.getOperatorContext()
 			.getOptionalContext(ConsistentRegionContext.class);
 	if (ccContext != null && ccContext.isStartOfRegion()) {
 		checker.setInvalidContext(
-				"{0} operator may not be the start of a consistent region",
+				"ERROR: The following operator cannot be the start of a consistent region: {0}.",
 				new Object[]{operatorName});
 	}
 	}

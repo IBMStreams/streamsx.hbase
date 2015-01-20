@@ -104,9 +104,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ HBASEOperator.DOC_BLANKLINE
 			+ " In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the "
 			+ "attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers."
-			+ "\\n" + consistentCutDesc
-			+ DOC_BLANKLINE+commonDesc;
-			
+			+ "\\n" + consistentCutDesc + DOC_BLANKLINE + commonDesc;
 
 	/*
 	 * Used to describe the way tuples will be populated. It is set at
@@ -130,7 +128,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		long outstandingRows;
 
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
-			   byte[] lastRow) throws IOException {
+				byte[] lastRow) throws IOException {
 			operator.logger.debug("Creating a region scan for " + rawStartBytes
 					+ " to " + endBytes + " lastRow " + lastRow);
 			this.operator = operator;
@@ -159,10 +157,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan = new Scan();
 			}
 
-			
 			myTable = operator.connection.getTable(operator.tableNameBytes);
 			// This sets any filters based on operator parameters.
-			resultScanner = operator.startScan(myTable,myScan);
+			resultScanner = operator.startScan(myTable, myScan);
 			if (resultScanner != null) {
 				hasMore = true;
 			} else {
@@ -174,13 +171,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		byte[] submitRows(long numRows) throws IOException, Exception {
 			byte[] lastRow = operator.submitResults(null, resultScanner,
 					numRows);
-			
+
 			if (lastRow == null) {
 				hasMore = false;
-			}
-			else {
-				rowsScanned = rowsScanned+numRows;
-				outstandingRows = outstandingRows+numRows;
+			} else {
+				rowsScanned = rowsScanned + numRows;
+				outstandingRows = outstandingRows + numRows;
 			}
 			return lastRow;
 		}
@@ -192,16 +188,16 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		void resetRowsSinceConsistent() {
 			outstandingRows = 0;
 		}
-		
+
 		long rowsSinceConsistent() {
 			return outstandingRows;
 		}
-		
-		// This is not entirely accurate, as it miscounts at the end. 
+
+		// This is not entirely accurate, as it miscounts at the end.
 		public long rowCount() {
 			return rowsScanned;
 		}
-		
+
 		public void close() throws IOException {
 			hasMore = false;
 			resultScanner.close();
@@ -217,7 +213,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		final boolean useDelay;
 		ScanRegion currentRegion = null;
 		final long rowsPerTrigger;
-		
+
 		ScanThread(HBASEScan parent, int index, boolean useDelay) {
 			this.parent = parent;
 			this.index = index;
@@ -311,37 +307,51 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 							currentRegion = new ScanRegion(parent,
 									thisScan.getFirst(), thisScan.getSecond(),
 									lastRow);
-							}
+						}
 					} // end attempt to make a new region.
 
 					if (currentRegion != null && currentRegion.hasMore()) {
 						long maxRows;
 						if (parent.trigger) {
-							maxRows = Math.min(rowsPerPermit,rowsPerTrigger - currentRegion.rowsSinceConsistent());
-						}
-						else {
+							maxRows = Math.min(rowsPerPermit, rowsPerTrigger
+									- currentRegion.rowsSinceConsistent());
+						} else {
 							maxRows = rowsPerPermit;
 						}
-						byte[] lastRow = currentRegion
-								.submitRows(maxRows);
+						byte[] lastRow = currentRegion.submitRows(maxRows);
 						parent.lastRow[index] = lastRow;
 						if (!currentRegion.hasMore()) {
 							// mark nothing in progress
 							parent.currentScan.set(index, null);
 						}
-						
-						// It's important we do the hasMore test, since rowsSinceConsistent() will not increase if there's no more
+
+						// It's important we do the hasMore test, since
+						// rowsSinceConsistent() will not increase if there's no
+						// more
 						// stuff in the region.
-						if (parent.trigger && (!currentRegion.hasMore() || currentRegion.rowsSinceConsistent() >= rowsPerTrigger)) {
+						if (parent.trigger
+								&& (!currentRegion.hasMore() || currentRegion
+										.rowsSinceConsistent() >= rowsPerTrigger)) {
 							boolean res = ccContext.makeConsistent();
-							// if there's been a reset, this is harmless, since currentRegion will be discarded next time through
+							// if there's been a reset, this is harmless, since
+							// currentRegion will be discarded next time through
 							// the loop
 							currentRegion.resetRowsSinceConsistent();
 							if (parent.logger.isInfoEnabled()) {
-								String oldRowString = lastRow == null? "null": new String(lastRow,parent.charset);
-								String lastRowString = parent.lastRow[index] == null? "null": new String(parent.lastRow[index],parent.charset);
-								parent.logger.info("Make consistent returned "+res+" row count "+currentRegion.rowCount()+" lastRow "+lastRow+" lastRow as string "+lastRowString+ " (was "+oldRowString+") rows per trigger "+rowsPerTrigger);
-							}		
+								String oldRowString = lastRow == null ? "null"
+										: new String(lastRow, parent.charset);
+								String lastRowString = parent.lastRow[index] == null ? "null"
+										: new String(parent.lastRow[index],
+												parent.charset);
+								parent.logger.info("Make consistent returned "
+										+ res + " row count "
+										+ currentRegion.rowCount()
+										+ " lastRow " + lastRow
+										+ " lastRow as string " + lastRowString
+										+ " (was " + oldRowString
+										+ ") rows per trigger "
+										+ rowsPerTrigger);
+							}
 						}
 					}
 					// release the permit, if needed.
@@ -901,15 +911,21 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		myTable.close();
 		out.punctuate(Punctuation.WINDOW_MARKER);
 	}
-    /**
-     * Add the parameter-derived info to the scan and start the scan.
-     * Add the max versions, the static column family, the static columnqualifier,
-     * and the prefix (if present) to the scan.
-     * @param myTable The HTableInterface to use--the caller should close when teh result scanner is done.
-     * @param myScan The scan.  The start and the end should be set.
-     * @returns a result scanner.
-     */
-	private ResultScanner startScan(HTableInterface myTable, Scan myScan) throws IOException {
+
+	/**
+	 * Add the parameter-derived info to the scan and start the scan. Add the
+	 * max versions, the static column family, the static columnqualifier, and
+	 * the prefix (if present) to the scan.
+	 * 
+	 * @param myTable
+	 *            The HTableInterface to use--the caller should close when teh
+	 *            result scanner is done.
+	 * @param myScan
+	 *            The scan. The start and the end should be set.
+	 * @returns a result scanner.
+	 */
+	private ResultScanner startScan(HTableInterface myTable, Scan myScan)
+			throws IOException {
 		// Set scan attributes
 		if (maxVersions == 0) {
 			myScan.setMaxVersions();
@@ -934,9 +950,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan.addFamily(fam.getBytes(charset));
 			}
 		}
-		
-		if (rowPrefix != null ) {
-		    myScan.setFilter(new PrefixFilter(rowPrefix.getBytes(charset)));
+
+		if (rowPrefix != null) {
+			myScan.setFilter(new PrefixFilter(rowPrefix.getBytes(charset)));
 		}
 
 		if (logger.isInfoEnabled())
@@ -995,14 +1011,16 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						if (outColumnQ >= 0)
 							tuple.setObject(outColumnQ, OutputMapper
 									.castFromBytes(qual, outColQType, charset));
+
 						// Don't need to look at the return value, because we've
 						// already determined it's non-empty.
 						outMapper.populate(tuple, thisCell);
+
 						if (resultCountIndex >= 0) {
 							tuple.setInt(resultCountIndex, 1);
 						}
 						if (logger.isDebugEnabled()) {
-						    logger.debug("Submitting the tuple "+tuple);
+							logger.debug("Submitting the tuple " + tuple);
 						}
 						out.submit(tuple);
 					}
@@ -1054,7 +1072,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	@Override
 	public void checkpoint(Checkpoint checkpoint) throws Exception {
 		// If we aren't in source mode, don't do anything.
-		if (processThreadArray==null) return;
+		if (processThreadArray == null)
+			return;
 		logger.info("Checkpoint " + checkpoint.getSequenceId());
 		ObjectOutputStream outStream = checkpoint.getOutputStream();
 		outStream.writeObject(lastRow);
@@ -1101,7 +1120,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	@Override
 	public void reset(Checkpoint checkpoint) throws Exception {
 		// if we aren't in source mode, do nothing.
-		if (processThreadArray == null) return;
+		if (processThreadArray == null)
+			return;
 		numFinishedThreads = 0;
 		logger.info("Reset to checkpoint " + checkpoint.getSequenceId());
 		ObjectInputStream inStream = checkpoint.getInputStream();
@@ -1135,7 +1155,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	@Override
 	public void resetToInitialState() throws Exception {
 		// check to see if the operator is a source and return if it isn't.
-		if (processThreadArray == null) return;
+		if (processThreadArray == null)
+			return;
 		numFinishedThreads = 0;
 		logger.info("Reset to initial state");
 		if (regionQueue != null) {

@@ -12,24 +12,21 @@ import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.log4j.Logger;
 
-import com.ibm.streams.operator.compile.OperatorContextChecker;
-import com.ibm.streams.operator.model.OutputPortSet;
-import com.ibm.streams.operator.model.OutputPorts;
-import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
-import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
-import com.ibm.streams.operator.StreamSchema;
-import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
+import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
+import com.ibm.streams.operator.model.OutputPortSet;
+import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
+import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
-import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
 
 /**
@@ -42,8 +39,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ " which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by "
 		+ HBASEPutDelete.SUCCESS_PARAM
 		+ " is set to true if the delete succeeded, and false otherwise."
-		+ HBASEDelete.consistentCutInfo
-		+ HBASEOperator.commonDesc)
+		+ HBASEDelete.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Copies tuple from input, setting "
 		+ HBASEPutDelete.SUCCESS_PARAM + " if "
@@ -84,7 +80,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	 */
 	@ContextCheck(compile = true)
 	public static void checkDeleteAll(OperatorContextChecker checker) {
-		HBASEPutDelete.compileTimeChecks(checker,"HBASEDelete");
+		HBASEPutDelete.compileTimeChecks(checker, "HBASEDelete");
 		OperatorContext context = checker.getOperatorContext();
 		Set<String> params = context.getParameterNames();
 		if (params.contains(DELETE_ALL_PARAM_NAME)) {
@@ -115,8 +111,8 @@ public class HBASEDelete extends HBASEPutDelete {
 								ConsistentRegionContext.class);
 				if (ccContext != null) {
 					checker.setInvalidContext(
-							"When in a consistent region {0} must be true",
-							new Object[] { DELETE_ALL_PARAM_NAME });
+							"When in a consistent region {0} must be true for {1}",
+							new Object[] { DELETE_ALL_PARAM_NAME, "HBASEDelete" });
 				}
 			}
 		}
