@@ -59,8 +59,8 @@ or the SPL compiler to be aware of the location of the toolkit.
 * Install IBM InfoSphere Streams.  Configure the product environment variables by entering the following command: 
     source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 * Install Apache HBase ([http://hbase.apache.org/]), Apache Hadoop ([http://hadoop.apache.org/]) 
-  and Apache Zookeeper ([http://zookeeper.apache.org/]). All of these products can be installed as part of IBM InfoSphere BigInsights. 
-  * This toolkit supports HBase 0.94.3 and Hadoop 1.1.0 and later versions.  
+  and Apache Zookeeper ([http://zookeeper.apache.org/]). All of these products are installed as part of IBM InfoSphere BigInsights. 
+  * This toolkit supports HBase 0.96 and later versions.  
   * *Note*: The host or resource where InfoSphere Streams is installed must be able to communicate with the resources where
     HBase is installed, but you do not need both on the same resource.
 
@@ -78,14 +78,10 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
      set the **HBASE_HOME** environment variable so that the operators look in `HBASE_HOME/conf/hbase-site.xml` 
      for HBASE configuration information. For example, set **HBASE_HOME** to the directory that contains HBase.
      
-     Also set the **HADOOP_HOME** to the directory that contains Hadoop.  In InfoSphere BigInsights, this is the `IHC` directory.
    * If the streams processing application runs on different resources than HBase and Hadoop,
-     copy the contents of **HBASE_HOME** and **HADOOP_HOME** to a place that is accessible to InfoSphere Streams.  
-     Alternatively, copy the `hbase-site.xml` file from the `conf` directory in your HBase installation 
+     copy the `hbase-site.xml` file from the `conf` directory in your HBase installation 
      into the `etc` directory in your application.
      Use the **hbaseSite** parameter in the HBase Toolkit operators to point to the `hbase-site.xml`. 
-     You still need to set the **HBASE_HOME** environment variable, but it does not need to point to anything.
-     For example: `export HBASE_HOME=/dev/null`.
 2. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
    * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
     or multiple toolkits (with : as a separator).  For example:
