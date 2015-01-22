@@ -22,22 +22,37 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 1.2.0.commit_caa0e3f</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEGet</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0.commit_6df02fb</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEGet</p>
 
 </div>
 
 <div class="section">
 
-<p class="p">Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by outAttrName  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then outAttrName is populated with a map of columnQualifiers to values. If columnFamily is also left unspecified, then outAttrName is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name outputCountAttr exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the cae where no such entry existed in hbase.
+<p class="p">Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by outAttrName  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then outAttrName is populated with a map of columnQualifiers to values. If columnFamily is also left unspecified, then outAttrName is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name outputCountAttr exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the case where no such entry existed in HBase.
+</p>
+
+<p class="p"><strong class="ph b">Consistent Region</strong>
+</p>
+
+<p class="p"> HBASEGet is allowed in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, HBASEGet will give a different answerAs a result, if used in a consistent region in conjuction with an operator that changes the state of a tuple (ie, HBASEGet feeds a functor that increments a value, and then puts the tuple back into HBase with HBASEPutyou could get unexpected behavior. HBASEGet is not supported as the source of a consistent region.
+</p>
+
+<p class="p"><strong class="ph b">Configuring the operator</strong>
+</p>
+
+<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
+</p>
+
+<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
+</p>
+
+<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
 </p>
 
 </div>
 
 <div class="section splprimop">
-<object type="image/svg+xml" data="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEGet.svg" width="672" height="112">
-<span>Primitive operator image not displayed. Problem loading file: ../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEGet.svg
-</span>
-</object>
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEGet.svg" width="672" height="112"/>
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
@@ -532,7 +547,7 @@ This operator supports 11 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*, @HBASE_HOME@/conf</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
 
  
  </dl>

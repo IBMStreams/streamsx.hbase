@@ -28,84 +28,28 @@
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
   
-    <dl class="dl">
+  <dl class="dl">
     <dt class="dt dlterm"/>
 <dd class="dd"/>
 
     
-      <dt class="dt dlterm splhead-2">Composite Operators</dt>
-
-      <dd class="dd"><ul class="sl simple">
-<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__composite_operator__CheckAndDelete">composite CheckAndDelete</a></strong>: Demonstrate how to use the atomic check-and-delete In this mode, the delete operator works as before, except that a check attribute is expected on the input stream.
-</li>
-
-     </ul>
-</dd>
-
-    
-    
       <dt class="dt dlterm splhead-2">Types</dt>
 
-      <dd class="dd"><ul class="sl simple">
-<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__type__AbsentCheckType">AbsentCheckType</a></strong>: 
+      <dd class="dd">
+<ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="spl$com.ibm.streamsx.hbase.sample$CheckAndDelete.html#spldoc_compilationunit__type__AbsentCheckType">AbsentCheckType</a></strong>
 </li>
 
-<li class="sli"><strong class="ph b"><a class="xref" href="#spldoc_compilationunit__type__FullCheckType">FullCheckType</a></strong>: 
+<li class="sli"><strong class="ph b"><a class="xref" href="spl$com.ibm.streamsx.hbase.sample$CheckAndDelete.html#spldoc_compilationunit__type__FullCheckType">FullCheckType</a></strong>
 </li>
 
-     </ul>
-</dd>
+</ul>
+
+      </dd>
 
     
-     </dl>
+  </dl>
 
-</div>
-
-<div class="section"><h2 class="title sectiontitle splhead-1">Composite Operators</h2>
-  
-</div>
-
-<div class="section" id="spldoc_compilationunit__composite_operator__CheckAndDelete"><h2 class="title sectiontitle splpart">composite CheckAndDelete</h2>
-  
-</div>
-
-<div class="section">
-
-<p class="p">Demonstrate how to use the atomic check-and-delete In this mode, the delete operator works as before, except that a check attribute is expected on the input stream.  This  attribute contains a columnFamily and columnQualifier, or a columnFamily, columnQualifier an a value. 
-</p>
-
-<p class="p">If there is a value, that entry in the table is checked; if it matches, the delete is happens, otherwise it does not.
-</p>
-
-<p class="p">When the check attribute type as no value , the delete only happens if that  particular row, columnFamily, columnQualifier combination doesn't exist.
-</p>
-
-<p class="p">In this mode, the operator is allowed to have an output port and a success attribute to say whether a delete succeeded or  failed.
-</p>
-
-<p class="p">The input files describe what output you should see.  The  put sample needs to have been run in order for this sample to work.
-</p>
-
-</div>
-
-<div class="section">
-</div>
-
-<div class="section">
-</div>
-
-<div class="section">
-</div>
-
-<div class="section"><h2 class="title sectiontitle splhead-2">Composite Operator Graph</h2>
-  
-</div>
-
-<div class="section splgraph">
-<object type="image/svg+xml" data="../../image/tk$DeleteSample/op$com.ibm.streamsx.hbase.sample$CheckAndDelete.svg" width="337" height="154">
-<span>SPL composite operator image not displayed. Problem loading file: ../../image/tk$DeleteSample/op$com.ibm.streamsx.hbase.sample$CheckAndDelete.svg
-</span>
-</object>
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Types</h2>

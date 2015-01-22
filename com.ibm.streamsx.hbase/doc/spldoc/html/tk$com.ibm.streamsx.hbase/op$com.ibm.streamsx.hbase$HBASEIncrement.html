@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 1.2.0.commit_caa0e3f</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEIncrement</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0.commit_6df02fb</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEIncrement</p>
 
 </div>
 
@@ -31,13 +31,28 @@
 <p class="p">Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple.
 </p>
 
+<p class="p"><strong class="ph b">Consistent Region</strong>
+</p>
+
+<p class="p"> HBASEIncrement is not allowed in a consistent region.
+</p>
+
+<p class="p"><strong class="ph b">Configuring the operator</strong>
+</p>
+
+<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
+</p>
+
+<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
+</p>
+
+<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
+</p>
+
 </div>
 
 <div class="section splprimop">
-<object type="image/svg+xml" data="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.svg" width="672" height="112">
-<span>Primitive operator image not displayed. Problem loading file: ../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.svg
-</span>
-</object>
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.svg" width="672" height="112"/>
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
@@ -416,7 +431,7 @@ This operator supports 9 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*, @HBASE_HOME@/conf</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
 
  
  </dl>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="Developing and running applications that use the HBase Toolkit"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_page"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>Developing and running applications that use the HBase Toolkit</title>
+</head>
+<body id="spldoc_page">
+
+
+<h1 class="title topictitle1">Developing and running applications that use the HBase Toolkit</h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0.commit_6df02fb</a> &gt; Developing and running applications that use the HBase Toolkit</p>
+
+</div>
+
+
+<div class="section">
+<p class="p">To create applications that use the HBase Toolkit, you must configure either Streams Studio or the SPL compiler to be aware of the location of the toolkit. 
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Before you begin
+</h2>
+
+<div class="p">
+<ul class="ul">
+<li class="li"> Install IBM InfoSphere Streams.  Configure the product environment variables by entering the following command: 
+<pre class="pre codeblock">
+source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
+</pre>
+
+</li>
+
+<li class="li"> Install Apache HBase (<a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>), Apache Hadoop (<a class="xref" href="http://hadoop.apache.org/">http://hadoop.apache.org/</a>)    and Apache Zookeeper (<a class="xref" href="http://zookeeper.apache.org/">http://zookeeper.apache.org/</a>). All of these products can be installed as part of IBM InfoSphere BigInsights. 
+<ul class="ul">
+<li class="li"> This toolkit supports HBase 0.94.3 and Hadoop 1.1.0 and later versions.  </li>
+
+<li class="li"> <em class="ph i">Note</em>: The host or resource where InfoSphere Streams is installed must be able to communicate with the resources where     HBase is installed, but you do not need both on the same resource.</li>
+
+</ul>
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">About this task
+</h2>
+
+<p class="p">After the location of the toolkit is communicated to the compiler, the SPL artifacts that are specified in the toolkit can be used by an application. The application can include a use directive to bring the necessary namespaces into scope. Alternatively, you can fully qualify the operators that are provided by toolkit with their namespaces as prefixes.
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Procedure
+</h2>
+
+<div class="p">
+<ol class="ol">
+<li class="li"> Configure the environment variables for HBase and Hadoop. Choose one of the following methods:
+<ul class="ul">
+<li class="li"> If the streams processing application runs on a resource where Hbase and Hadoop are installed,       set the <strong class="ph b">HBASE_HOME</strong> environment variable so that the operators look in <tt class="ph tt">HBASE_HOME/conf/hbase-site.xml</tt>       for HBASE configuration information. For example, set <strong class="ph b">HBASE_HOME</strong> to the directory that contains HBase.
+<p class="p">     Also set the <strong class="ph b">HADOOP_HOME</strong> to the directory that contains Hadoop.  In InfoSphere BigInsights, this is the <tt class="ph tt">IHC</tt> directory.
+</p>
+</li>
+
+<li class="li"> If the streams processing application runs on different resources than HBase and Hadoop,      copy the contents of <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong> to a place that is accessible to InfoSphere Streams.        Alternatively, copy the <tt class="ph tt">hbase-site.xml</tt> file from the <tt class="ph tt">conf</tt> directory in your HBase installation       into the <tt class="ph tt">etc</tt> directory in your application.      Use the <strong class="ph b">hbaseSite</strong> parameter in the HBase Toolkit operators to point to the <tt class="ph tt">hbase-site.xml</tt>.       You still need to set the <strong class="ph b">HBASE_HOME</strong> environment variable, but it does not need to point to anything.      For example: <tt class="ph tt">export HBASE_HOME=/dev/null</tt>.</li>
+
+</ul>
+</li>
+
+<li class="li"> Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+<ul class="ul">
+<li class="li"> Set the <strong class="ph b">STREAMS_SPLPATH</strong> environment variable to the root directory of a toolkit     or multiple toolkits (with : as a separator).  For example:       export STREAMS_SPLPATH=$STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase</li>
+
+<li class="li"> Specify the <strong class="ph b">-t</strong> or <strong class="ph b">--spl-path</strong> command parameter when you run the <strong class="ph b">sc</strong> command. For example:       sc -t $STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase -M MyMain     where MyMain is the name of the SPL main composite.     <strong class="ph b">Note</strong>: These command parameters override the <strong class="ph b">STREAMS_SPLPATH</strong> environment variable.</li>
+
+<li class="li"> Add the toolkit location in InfoSphere Streams Studio.</li>
+
+</ul>
+</li>
+
+<li class="li"> Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
+<ul class="ul">
+<li class="li"> For example, you can add the following clause in your SPL source file:       use com.ibm.streamsx.hbase::*;      You can also specify a use clause for individual operators by replacing the asterisk (*) with the operator name. For example:        use com.ibm.streamsx.hbase::HBASEDelete;</li>
+
+</ul>
+</li>
+
+<li class="li"> Build your application.  You can use the <strong class="ph b">sc</strong> command or Streams Studio.  </li>
+
+<li class="li"> Start the InfoSphere Streams instance. </li>
+
+<li class="li"> Run the application. You can submit the application as a job by using the <strong class="ph b">streamtool submitjob</strong> command or by using Streams Studio.  </li>
+
+</ol>
+
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

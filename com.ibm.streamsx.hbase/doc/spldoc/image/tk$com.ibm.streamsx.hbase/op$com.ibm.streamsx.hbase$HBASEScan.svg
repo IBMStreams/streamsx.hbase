@@ -90,15 +90,17 @@ FIVdT1YAAAAASUVORK5CYII="
       ><set attributeName="visibility" from="hidden" end="sdt0.mouseout" to="visible" begin="sdt0.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="43.0" width="392.08" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="62.0"
-      /><text x="48.65" y="56.0"
+    ><rect x="47.65" y="28.0" width="392.08" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
+      /><text x="48.65" y="41.0"
       >Required: tableName / Optional: channel, endRow, </text
-      ><text x="48.65" y="71.0"
+      ><text x="48.65" y="56.0"
       >hbaseSite, initDelay, maxChannels, maxVersions, maxThreads, </text
-      ><text x="48.65" y="86.0"
+      ><text x="48.65" y="71.0"
       >minTimestamp, outAttrName, outputCountAttr, rowPrefix, </text
+      ><text x="48.65" y="86.0"
+      >startRow, staticColumnFamily, staticColumnQualifier, </text
       ><text x="48.65" y="101.0"
-      >startRow, staticColumnFamily, staticColumnQualifier</text
+      >triggerCount</text
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"

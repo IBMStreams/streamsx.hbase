@@ -22,22 +22,49 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 1.2.0.commit_caa0e3f</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEScan</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0.commit_6df02fb</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEScan</p>
 
 </div>
 
 <div class="section">
 
-<p class="p">Scan an HBASE table.  Like FileSource, it has an optional input port.  If no input port is specifed, then the operator will scan the table according to the parameters, and then send final punctuation.  If an input  port is given, then the operator will not start a scan until a tuple is received.  Once a tuple is received, the operator will scan according to that tuple, then produce a punctuation.   When used without an input port, HBASEScan may be multi-threaded, and one thread will be used per HBASE region, up to  maxThreads.   If the operator is in a parallel region, given the channel and maxChannel parameters, it will further divide up the scanning work between other operators in the region, such that each row is scanned exactly once. When the scan is multithreaded or used as part of a parallel region, the tuples will not be in order.   By default, when no input port is given, the whole table is scanned.  If startRow and endRow are both specified, the scan starts at startRow and ends at  endRow.  If just startRow is supplied, the table scan starts at startRow.  If just endRow is supplied, the table scan starts at the beginning and scans until endRow If rowPrefix is supplied, the table scans all rows with that row prefix.   When an input port is given, the operator waits for a tuple beginning the scan.  The operator expects the input tuple to contain either (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.   It then scans according to that attribute, and outputs punctuation.  The attributes may be any of the valid input types (rstring, ustring, long, blob).  Any other attributes are copied through to the output tuple.    Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to a streams tuple,  with the row populating the row attribute, the columnFamily populating the columnFamily attribute, the columnQualifier  attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be a long or a string, all other values must be rstring.  In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers. 
+<p class="p">Scan an HBASE table.  Like FileSource, it has an optional input port.  If no input port is specifed, then the operator will scan the table according to the parameters, and then send final punctuation.  If an input  port is given, then the operator will not start a scan until a tuple is received.  Once a tuple is received, the operator will scan according to that tuple, then produce a punctuation.   When used without an input port, HBASEScan may be multi-threaded, and one thread will be used per HBASE region, up to  maxThreads.   If the operator is in a parallel region, given the channel and maxChannel parameters, it will further divide up the scanning work between other operators in the region, such that each row is scanned exactly once. When the scan is multithreaded or used as part of a parallel region, the tuples will not be in order.
+</p>
+
+<p class="p"> By default, when no input port is given, the whole table is scanned.  If startRow and endRow are both specified, the scan starts at startRow and ends at  endRow.  If just startRow is supplied, the table scan starts at startRow.  If just endRow is supplied, the table scan starts at the beginning and scans until endRow If rowPrefix is supplied, the table scans all rows with that row prefix.   When an input port is given, the operator waits for a tuple beginning the scan.  The operator expects the input tuple to contain either (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.   It then scans according to that attribute, and outputs punctuation.  The attributes may be any of the valid input types (rstring, ustring, long, blob).  Any other attributes are copied through to the output tuple.  
+</p>
+
+<p class="p"> Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to a streams tuple,  with the row populating the row attribute, the columnFamily populating the columnFamily attribute, the columnQualifier  attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be a long or a string, all other values must be rstring.
+</p>
+
+<p class="p"> In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers.
+</p>
+
+<p class="p"><strong class="ph b">Consistent Region</strong>
+</p>
+
+<p class="p">If the operator has an input port, it may not be the source of a consistent region. If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or trigger based.
+</p>
+
+<p class="p">When in a trigger-based consistent region, the triggerCount must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain. and maxThreads must be one
+</p>
+
+<p class="p"><strong class="ph b">Configuring the operator</strong>
+</p>
+
+<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
+</p>
+
+<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
+</p>
+
+<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
 </p>
 
 </div>
 
 <div class="section splprimop">
-<object type="image/svg+xml" data="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg" width="672" height="112">
-<span>Primitive operator image not displayed. Problem loading file: ../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg
-</span>
-</object>
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg" width="672" height="112"/>
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
@@ -58,7 +85,7 @@
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 15 parameters. (<tt class="ph tt">channel, endRow, hbaseSite, initDelay, maxChannels, maxVersions, maxThreads, minTimestamp, outAttrName, outputCountAttr, rowPrefix, startRow, staticColumnFamily, staticColumnQualifier, tableName</tt>)
+  <dd class="dd">This operator supports 16 parameters. (<tt class="ph tt">channel, endRow, hbaseSite, initDelay, maxChannels, maxVersions, maxThreads, minTimestamp, outAttrName, outputCountAttr, rowPrefix, startRow, staticColumnFamily, staticColumnQualifier, tableName, triggerCount</tt>)
 </dd>
 
  
@@ -182,7 +209,7 @@
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 15 parameters.<dl class="dl">
+This operator supports 16 parameters.<dl class="dl">
 
 <dt class="dt dlterm" id="spldoc_operator__parameter_channel"><tt class="ph tt">channel</tt></dt>
 
@@ -642,6 +669,37 @@ This operator supports 15 parameters.<dl class="dl">
 </dd>
 
 
+
+<dt class="dt dlterm" id="spldoc_operator__parameter_triggerCount"><tt class="ph tt">triggerCount</tt></dt>
+
+<dd class="dd">
+<p class="p">Number of rows to process before triggering a drain.  Only valid in a operator-driven consistent region
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int64
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
 </dl>
 
 </div>
@@ -656,7 +714,7 @@ This operator supports 15 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*, @HBASE_HOME@/conf</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
 
  
  </dl>
