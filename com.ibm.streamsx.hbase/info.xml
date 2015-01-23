@@ -100,7 +100,7 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 5. Start the InfoSphere Streams instance. 
 6. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 </info:description>
-    <info:version>2.0.0.__dev__</info:version>
+    <info:version>2.0.0</info:version>
     <info:requiredProductVersion>3.2.2</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
