@@ -8,12 +8,9 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.NavigableMap;
 
-import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OutputTuple;
-import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.Type.MetaType;
-import com.ibm.streams.operator.types.Blob;
 import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.types.ValueFactory;
 

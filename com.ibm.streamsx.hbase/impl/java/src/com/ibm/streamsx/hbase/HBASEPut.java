@@ -4,40 +4,32 @@
 package com.ibm.streamsx.hbase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.log4j.Logger;
 
-import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
-import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.StreamSchema;
-import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamingInput;
-import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
-import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
+import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
-import java.util.ArrayList;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
 import com.ibm.streams.operator.model.InputPorts;
-import com.ibm.streams.operator.model.Libraries;
 import com.ibm.streams.operator.model.OutputPortSet;
-import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
+import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
-import com.ibm.streams.operator.model.Icons;
 
 /**
  * Class for an operator that consumes tuples and does not produce an output
@@ -74,8 +66,7 @@ import com.ibm.streams.operator.model.Icons;
 		+ HBASEPutDelete.SUCCESS_PARAM
 		+ " on the output "
 		+ "port will be set to true if the put happens, and false otherwise."
-		+ HBASEPut.consistentCutInfo
-		+ HBASEOperator.commonDesc)
+		+ HBASEPut.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 @Icons(location32 = "impl/java/icons/HBASEPut_32.gif", location16 = "impl/java/icons/HBASEPut_16.gif")
@@ -109,14 +100,16 @@ public class HBASEPut extends HBASEPutDelete {
 	}
 
 	/**
-	 * Do any necessary compile time checks.  It calls the checker of the super class. 
+	 * Do any necessary compile time checks. It calls the checker of the super
+	 * class.
+	 * 
 	 * @param checker
 	 */
 	@ContextCheck(compile = true)
 	public static void checkDeleteAll(OperatorContextChecker checker) {
-		HBASEPutDelete.compileTimeChecks(checker,"HBASEPut");
+		HBASEPutDelete.compileTimeChecks(checker, "HBASEPut");
 	}
-	
+
 	Logger logger = Logger.getLogger(this.getClass());
 
 	/**
