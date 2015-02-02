@@ -104,7 +104,7 @@
 		<echo message="copying only the necessary files"/>
 		<copy todir="${ext.downloads.dir}" verbose="true">
 		  <fileset dir="${ext.downloads.dir.all}" 
-			   includes="commons-codec*,hadoop-auth*,hbase-common*,commons-configuration*,hadoop-common*,hbase-protocol*,commons-logging*,hbase-client*,htrace-core*"/> 
+			   includes="commons-codec*,hadoop-auth*,hbase-common*,commons-configuration*,hadoop-common*,hbase-protocol*,commons-logging*,hbase-client*,htrace-core*,jackson-mapper-asl-*,jackson-core-asl*"/> 
 		  </copy>
 	</target>
 

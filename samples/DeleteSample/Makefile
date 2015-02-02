@@ -23,7 +23,7 @@ data:
 	mkdir data
 
 standalone_delete: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_DELETE) $(SPL_CMD_ARGS) --output-dir output_plain
+	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_DELETE) $(SPL_CMD_ARGS) --output-dir output_delete
 
 standalone_check: data
 	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE_CHECK) $(SPL_CMD_ARGS) --output-dir output_check
