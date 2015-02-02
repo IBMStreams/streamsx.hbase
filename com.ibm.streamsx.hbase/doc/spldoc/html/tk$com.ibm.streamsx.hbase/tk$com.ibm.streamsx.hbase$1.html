@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0.commit_6df02fb</a> &gt; Developing and running applications that use the HBase Toolkit</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0</a> &gt; Developing and running applications that use the HBase Toolkit</p>
 
 </div>
 
@@ -45,9 +45,9 @@ source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 
 </li>
 
-<li class="li"> Install Apache HBase (<a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>), Apache Hadoop (<a class="xref" href="http://hadoop.apache.org/">http://hadoop.apache.org/</a>)    and Apache Zookeeper (<a class="xref" href="http://zookeeper.apache.org/">http://zookeeper.apache.org/</a>). All of these products can be installed as part of IBM InfoSphere BigInsights. 
+<li class="li"> Install Apache HBase (<a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>), Apache Hadoop (<a class="xref" href="http://hadoop.apache.org/">http://hadoop.apache.org/</a>)    and Apache Zookeeper (<a class="xref" href="http://zookeeper.apache.org/">http://zookeeper.apache.org/</a>). All of these products are installed as part of IBM InfoSphere BigInsights. 
 <ul class="ul">
-<li class="li"> This toolkit supports HBase 0.94.3 and Hadoop 1.1.0 and later versions.  </li>
+<li class="li"> This toolkit supports HBase 0.96 and later versions.  </li>
 
 <li class="li"> <em class="ph i">Note</em>: The host or resource where InfoSphere Streams is installed must be able to communicate with the resources where     HBase is installed, but you do not need both on the same resource.</li>
 
@@ -75,12 +75,12 @@ source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 <ol class="ol">
 <li class="li"> Configure the environment variables for HBase and Hadoop. Choose one of the following methods:
 <ul class="ul">
-<li class="li"> If the streams processing application runs on a resource where Hbase and Hadoop are installed,       set the <strong class="ph b">HBASE_HOME</strong> environment variable so that the operators look in <tt class="ph tt">HBASE_HOME/conf/hbase-site.xml</tt>       for HBASE configuration information. For example, set <strong class="ph b">HBASE_HOME</strong> to the directory that contains HBase.
-<p class="p">     Also set the <strong class="ph b">HADOOP_HOME</strong> to the directory that contains Hadoop.  In InfoSphere BigInsights, this is the <tt class="ph tt">IHC</tt> directory.
+<li class="li"> If the streams processing application runs on a resource where Hbase and Hadoop are installed,       set the <strong class="ph b">HBASE_HOME</strong> environment variable so that the operators look in <tt class="ph tt">HBASE_HOME/conf/hbase-site.xml</tt>       for HBASE configuration information. For example, set <strong class="ph b">HBASE_HOME</strong> to the directory that contains HBase.</li>
+
+<li class="li">
+<p class="p"> If the streams processing application runs on different resources than HBase and Hadoop,      copy the <tt class="ph tt">hbase-site.xml</tt> file from the <tt class="ph tt">conf</tt> directory in your HBase installation       into the <tt class="ph tt">etc</tt> directory in your application.      Use the <strong class="ph b">hbaseSite</strong> parameter in the HBase Toolkit operators to point to the <tt class="ph tt">hbase-site.xml</tt>. 
 </p>
 </li>
-
-<li class="li"> If the streams processing application runs on different resources than HBase and Hadoop,      copy the contents of <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong> to a place that is accessible to InfoSphere Streams.        Alternatively, copy the <tt class="ph tt">hbase-site.xml</tt> file from the <tt class="ph tt">conf</tt> directory in your HBase installation       into the <tt class="ph tt">etc</tt> directory in your application.      Use the <strong class="ph b">hbaseSite</strong> parameter in the HBase Toolkit operators to point to the <tt class="ph tt">hbase-site.xml</tt>.       You still need to set the <strong class="ph b">HBASE_HOME</strong> environment variable, but it does not need to point to anything.      For example: <tt class="ph tt">export HBASE_HOME=/dev/null</tt>.</li>
 
 </ul>
 </li>

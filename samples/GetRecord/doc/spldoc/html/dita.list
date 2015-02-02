@@ -1,4 +1,4 @@
-#Wed Jan 21 19:59:37 EST 2015
+#Mon Feb 02 10:56:37 EST 2015
 copytosourcelist=
 hreftargetslist=tk$GetRecord/spl$com.ibm.streamsx.hbase.sample$GetRecord.xml,tk$GetRecord/tk$GetRecord.xml,toolkits/ix$Type.xml,tk$GetRecord/ns$com.ibm.streamsx.hbase.sample.xml,toolkits/toolkits.xml,tk$GetRecord/ix$Type.xml
 fullditatopicfile=fullditatopic.list
