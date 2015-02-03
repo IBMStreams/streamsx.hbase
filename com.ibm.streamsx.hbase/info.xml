@@ -101,10 +101,10 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 6. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 </info:description>
     <info:version>2.0.0</info:version>
-    <info:requiredProductVersion>3.2.2</info:requiredProductVersion>
+    <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
   <info:sabFiles>
-   <info:exclude path="opt/tmp_downloaded"/>
-</info:sabFiles>
+    <info:exclude path="opt/tmp_downloaded"/>
+  </info:sabFiles>
 </info:toolkitInfoModel>
