@@ -48,14 +48,16 @@ import java.net.URI;
 public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
     static final String HBASE_SITE_PARAM_NAME="hbaseSite";
-	public static final String consistentCutIntroducer="\\n\\n**Consistent Region**\\n\\n";
-	public static final String commonDesc="\\n\\n**Configuring the operator**\\n\\n"+
+	public static final String consistentCutIntroducer="\\n\\n**Behavior in a consistent region**\\n\\n";
+	public static final String commonDesc="";
+	// Keep the old common description around for a little while, in case we decide to add it back into the documentation.
+	public static final String commonDescOld="\\n\\n**Configuring the operator**\\n\\n"+
 			"In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file." +
 			"You can either directly point the operator"+
 			"to hbase-site.xml via the "+HBASE_SITE_PARAM_NAME+" parameter, or it can look for the hbase-site.xml parameter "+
 			"relative to the HBASE_HOME environment variable"+
 			DOC_BLANKLINE+
-			"If your operator will run on a host that has HBase installed, then you could set"+
+			"If your operator will run on a host that has HBase installed, then you could set "+
 			"HBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml"+
 			DOC_BLANKLINE+
 			"If your HBase in located on a different host than streams, then use the "+HBASE_SITE_PARAM_NAME+" parameter."+
