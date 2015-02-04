@@ -79,31 +79,31 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ TRIGGER_PARAM
 			+ " must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain."
 			+ " and maxThreads must be one";
-	static final String operatorDescription = "Scan an HBASE table.  Like FileSource, it has an optional input port.  If no input port is"
-			+ " specifed, then the operator will scan the table according to the parameters, and then send final punctuation.  If an input "
-			+ " port is given, then the operator will not start a scan until a tuple is received.  Once a tuple is received, the operator will"
-			+ " scan according to that tuple, then produce a punctuation.  "
-			+ " When used without an input port, HBASEScan may be multi-threaded, and one thread will be used per HBASE region, up to "
-			+ " maxThreads.  "
-			+ " If the operator is in a parallel region, given the channel and maxChannel parameters, it will further divide up the scanning"
-			+ " work between other operators in the region, such that each row is scanned exactly once."
-			+ " When the scan is multithreaded or used as part of a parallel region, the tuples will not be in order."
+	static final String operatorDescription = "The `HBASEScan` operator scans an HBASE table.  Like the `FileSource` operator, it has an optional input port.  If no input port is"
+			+ " specifed, then the operator scans the table according to the parameters that you specify, and sends the final punctuation.  If you specify an input "
+			+ " port, the operator does not start a scan until it receives a tuple.  After the operator receives a tuple, it"
+			+ " scans according to that tuple and produces a punctuation.  "
+			+ " When you use this operator without an input port, the operator might be multi-threaded. One thread is used per HBASE region, up to "
+			+ " the value that you specify in the **maxThreads** parameter. "
+			+ " If the operator is in a parallel region, it further divides up the scanning"
+			+ " work between other operators in the region, based on the **channel** and **maxChannel** parameter values, such that each row is scanned exactly once."
+			+ " When the scan is multithreaded or used as part of a parallel region, the tuples are not in order."
 			+ HBASEOperator.DOC_BLANKLINE
-			+ " By default, when no input port is given, the whole table is scanned.  If startRow and endRow are both specified, the scan starts at startRow and ends at "
-			+ " endRow.  If just startRow is supplied, the table scan starts at startRow.  If just endRow is supplied, the table scan starts at the beginning and scans until endRow"
-			+ " If rowPrefix is supplied, the table scans all rows with that row prefix.  "
-			+ " When an input port is given, the operator waits for a tuple beginning the scan.  The operator expects the input tuple to contain either"
+			+ " By default, when you do not specify an input port, the operator scans the whole table.  If you specify both the **startRow** and **endRow** parameters, the scan starts at the row specified in the **startRow** parameter and ends at the row specified in the "
+			+ " **endRow** parameter.  If you specify only the **startRow** parameter, the table scan starts there.  If your specify only the **endRow** parameter, the table scan starts at the beginning and scans until the row specified in the **endRow** parameter. "
+			+ " If you specify the **rowPrefix** parameter, the table scans all rows with that row prefix.  "
+			+ " When you specify an input port, the operator waits for a tuple to begin the scan.  The operator expects the input tuple to contain either"
 			+ " (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.  "
-			+ " It then scans according to that attribute, and outputs punctuation.  The attributes may be any of the valid input types (rstring, ustring,"
-			+ " long, blob).  Any other attributes are copied through to the output tuple.  "
+			+ " It then scans according to that attribute and outputs punctuation.  The attributes can be any of the valid input types, such as rstring, ustring,"
+			+ " long, or blob.  Any other attributes are copied through to the output tuple.  "
 			+ HBASEOperator.DOC_BLANKLINE
-			+ " Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to a streams tuple, "
-			+ " with the row populating the row attribute, the columnFamily populating the columnFamily attribute, the columnQualifier "
-			+ " attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be"
-			+ " a long or a string, all other values must be rstring."
+			+ " Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to an InfoSphere Streams tuple. "
+			+ " The row populates the row attribute, the columnFamily populates the columnFamily attribute, the columnQualifier "
+			+ " attribute populates the columnQualifier attribute, and the value populates the value attribute.  The value can either be"
+			+ " a long or a string data type; all other values must be rstring data types."
 			+ HBASEOperator.DOC_BLANKLINE
-			+ " In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the "
-			+ "attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers."
+			+ " In record mode, the value attribute is of tuple type, and each row produces one InfoSphere Streams tuple.  The value is populated by taking the "
+			+ "attribute names in the value tuple as column qualifiers and placing the values in the attributes that are specified by their column qualifiers."
 			+ "\\n" + consistentCutDesc + DOC_BLANKLINE + commonDesc;
 
 	/*
@@ -450,46 +450,46 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		maxVersions = inMax;
 	}
 
-	@Parameter(optional = true, description = "If this operator is part of a parallel region it shares the work of scanning with other operators in the region.  To do this, this should be set by calling getChannel().  It is required if maximum number of channels is other than zero.")
+	@Parameter(optional = true, description = "If this operator is part of a parallel region, it shares the work of scanning with other operators in the region.  To do this, set this parameter value by calling getChannel().  This parameter is required if the maximum number of channels has a value other than zero.")
 	public void setChannel(int chan) {
 		channel = chan;
 	}
 
-	@Parameter(optional = true, description = "If this operator is part of a parallel region, this should be set by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned will be divided among the other copies of this operator in the other channels.  You must set channel if this parameter is set.")
+	@Parameter(optional = true, description = "If this operator is part of a parallel region, set this parameter value by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned are divided among the other copies of this operator in the other channels.  If this parameter is set, you must also set the **channel** parameter. ")
 	public void setMaxChannels(int numChan) {
 		maxChannels = numChan;
 	}
 
-	@Parameter(name = HBASEGet.SUCCESS_PARAM_NAME, optional = true, description = "Output attribute in which to put the number of results found.  When the result is a tuple, "
-			+ "is the number attributes in that tuple that were populated.")
+	@Parameter(name = HBASEGet.SUCCESS_PARAM_NAME, optional = true, description = "This parameter specifies the output attribute in which to put the number of results that are found.  When the result is a tuple, "
+			+ "this parameter value is the number attributes that were populated in that tuple.")
 	public void setResultCountName(String name) {
 		resultCountAttrName = name;
 	}
 
-	@Parameter(name = START_ROW_PARAM, optional = true, description = "Row to use to start the scan (inclusive)")
+	@Parameter(name = START_ROW_PARAM, optional = true, description = "This parameter specifies the row to use to start the scan.  The row that you specify is included in the scan.")
 	public void setStartRow(String row) {
 		startRow = row;
 	}
 
-	@Parameter(name = ROW_PREFIX_PARAM, optional = true, description = "Scan should only return rows with this prefix")
+	@Parameter(name = ROW_PREFIX_PARAM, optional = true, description = "This parameter specifies that the scan only return rows that have this prefix.")
 	public void setRowPrefix(String row) {
 		rowPrefix = row;
 	}
 
-	@Parameter(name = END_ROW_PARAM, optional = true, description = "Row to use to stop the scan (exclusive)")
+	@Parameter(name = END_ROW_PARAM, optional = true, description = "This parameter specifies the row to use to stop the scan.  The row that you specify is excluded from the scan.")
 	public void setEndRow(String row) {
 		endRow = row;
 	}
 
-	@Parameter(name = TRIGGER_PARAM, optional = true, description = "Number of rows to process before triggering a drain.  Only valid in a operator-driven consistent region")
+	@Parameter(name = TRIGGER_PARAM, optional = true, description = "This parameter specifies the number of rows to process before triggering a drain.  This parameter is valid only in a operator-driven consistent region.")
 	public void setTriggerCount(long val) {
 		triggerCount = val;
 	}
 
-	@Parameter(name = HBASEGet.OUT_PARAM_NAME, optional = true, description = "Name of the attribute in which to put the value."
-			+ "Defaults to value.  If it is a tuple type, the attribute names are used as columnQualifiers"
-			+ "if multiple families are included in the scan, and they have the ame columnQualifiers, there is no "
-			+ "way of knowing which columnFamily was used to populate a tuple attribute")
+	@Parameter(name = HBASEGet.OUT_PARAM_NAME, optional = true, description = "This parameter specifies the name of the attribute in which to put the value. "
+			+ "It defaults to `value`.  If the attribute is a tuple data type, the attribute names are used as columnQualifiers. "
+			+ "If multiple families are included in the scan and they have the same columnQualifiers, there is no "
+			+ "way of knowing which columnFamily was used to populate a tuple attribute.")
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}

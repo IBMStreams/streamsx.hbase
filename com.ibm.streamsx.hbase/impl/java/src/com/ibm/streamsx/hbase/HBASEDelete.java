@@ -34,11 +34,24 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * HBASE table. .
  * <P>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "Delete an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE, with optional checkAndDelete.  The mode in which the operator is working depends on the parameters.  To delete an entire row, specify only the row.  To delete a columnFamily, specify the row and the columnFamily (either via the staticColumnFamily parameter or the columnFamilyAttrName parameter), and to delete just a single entry, specify the row, columnFamily, and columnQualifier (either via the staticColumnQualifer or the columnQualiferAttrName parameter).  To support locking, HBASE allows for a conditional delete.  To use the conditional delete, you must set "
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE.  It can also optionally do a checkAndDelete operation."
+		+ HBASEOperator.DOC_BLANKLINE
+		+ "The behavior of the operator depends on its parameters:"
+		+ "* To delete an entire row, specify only the row."
+		+ "* To delete a columnFamily, specify the row and the columnFamily. "
+		+ "  You can specify the columnFamily by using the **staticColumnFamily** or **columnFamilyAttrName** parameters."
+		+ "* To delete just a single entry, specify the row, columnFamily, and columnQualifier."
+		+ "You can specify the columnQualifier by using the **staticColumnQualifer** or **columnQualiferAttrName** parameters."
+		+ HBASEOperator.DOC_BLANKLINE 
+		+ "To support locking, you can perform a conditional delete operation in HBASE."
+		+ "To use the conditional delete functionality in InfoSphere Streams, you must set "
 		+ HBASEPutDelete.CHECK_ATTR_PARAM
-		+ " which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by "
+		+ ".  This parameter must specify the attribute on the input port that contains a the tuple that describes the check."
+		+ "If the check fails, the deletion does not occur."
+		+ "To distinguish between failed and successful delete operations, use an optional output port."
+		+ "If the delete operation succeeded, the attribute of the output tuple in "
 		+ HBASEPutDelete.SUCCESS_PARAM
-		+ " is set to true if the delete succeeded, and false otherwise."
+		+ " is set to true. Otherwise, the attribute of the output tuple is false."
 		+ HBASEDelete.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Copies tuple from input, setting "
@@ -48,9 +61,10 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 public class HBASEDelete extends HBASEPutDelete {
 
 	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer
-			+ "HBASEDelete may be in a consistent region, but it may not be the start of a consistent region.\\n"
-			+ "When in a consistent region, deleteAllVersions must either be unspecified or set to true. "
-			+ "HBASEDelete ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing; thus if there is a reset, the "
+			+ "The `HBASEDelete` can be in a consistent region, but it cannot be the start of a consistent region.\\n"
+			+ "When in a consistent region, the **deleteAllVersions** parameter must either be unspecified or set to true. "
+			+ "The `HBASEDelete` operator ensures at-least-once tuple processing, but it does not guarentee exactly-once tuple processing."
+			+ "If there is a reset, the "
 			+ "same entry may be deleted twice.  "
 			+ "At drain points, it flushes its internal buffer, and at resets, in clears its internal buffer.";
 

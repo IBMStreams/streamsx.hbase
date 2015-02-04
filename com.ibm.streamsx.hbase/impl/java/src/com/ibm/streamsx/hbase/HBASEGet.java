@@ -57,16 +57,16 @@ import com.ibm.streams.operator.types.RString;
  * columnQualifers to values.
  * 
  */
-@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by "
+@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from HBASE. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
 		+ HBASEGet.OUT_PARAM_NAME
-		+ "  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then "
+		+ " parameter. The operator accepts three types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry.  The value can have a long or rstring data type.  If the columnQualifier is not specified, then the operator populates the "
 		+ HBASEGet.OUT_PARAM_NAME
-		+ " is populated with a map of columnQualifiers to values."
-		+ " If columnFamily is also left unspecified, then "
+		+ " with a map of columnQualifiers to values."
+		+ " If the columnFamily is also not specified, then the operator populates the "
 		+ HBASEGet.OUT_PARAM_NAME
-		+ " is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name "
+		+ " with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute with the name "
 		+ HBASEGet.SUCCESS_PARAM_NAME
-		+ " exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the case where no such entry existed in HBase."
+		+ " exists on the output port, it is populated with the number of values found.  This behavior can help you distinguish between the case where the value returned is zero and the case where no such entry existed in HBase."
 		+ HBASEGet.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Description of which tuples to get", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Input tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
@@ -74,9 +74,9 @@ import com.ibm.streams.operator.types.RString;
 public class HBASEGet extends HBASEOperatorWithInput {
 
 	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer
-			+ " HBASEGet is allowed in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, HBASEGet will give a different answer"
-			+ "As a result, if used in a consistent region in conjuction with an operator that changes the state of a tuple (ie, HBASEGet feeds a functor that increments a value, and then puts the tuple back into HBase with HBASEPut"
-			+ "you could get unexpected behavior."
+			+ "The `HBASEGet` operator can be in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, the `HBASEGet` operator gives a different answer. "
+			+ "As a result, if you use this operator in a consistent region in conjuction with an operator that changes the state of a tuple "
+			+ "you could get unexpected behavior. This might happen, for example, if the `HBASEGet` operator feeds a functor that increments a value, and then puts the tuple back into HBase by using the `HBASEPut` operator. "
 			+ "\\nHBASEGet is not supported as the source of a consistent region.";
 
 	/*
@@ -96,21 +96,21 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	static final String OUT_PARAM_NAME = "outAttrName";
 	static final String SUCCESS_PARAM_NAME = "outputCountAttr";
 	public static final String MIN_TIMESTAMP_PARAM_NAME = "minTimestamp";
-	public static final String MIN_TIMESTAMP_DESC = "The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.";
+	public static final String MIN_TIMESTAMP_DESC = "This parameter specifies the minimum timestamp that is used for queries.  The operator does not return any entries with a timestamp older than this value.  Unless you specify the **maxVersions** parameter, the opertor returns only one entry in this time range.";
 	public static final String MAX_VERSIONS_PARAM_NAME = "maxVersions";
-	public static final String MAX_VERSIONS_DESC = "The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.";
+	public static final String MAX_VERSIONS_DESC = "This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.";
 	private OutputMode outputMode;
 	private static final String defaultOutAttrName = "value";
 	private String outAttrName = defaultOutAttrName;;
 	private String successAttr = null;
 	private SingleOutputMapper primativeOutputMapper = null;
 
-	@Parameter(name = SUCCESS_PARAM_NAME, description = "Name of attribute of the output port in which to put the count of values populated.", optional = true)
+	@Parameter(name = SUCCESS_PARAM_NAME, description = "This parameter specifies the name of attribute of the output port where the operator puts a count of the values it populated.", optional = true)
 	public void setSuccessAttr(String name) {
 		successAttr = name;
 	}
 
-	@Parameter(name = OUT_PARAM_NAME, description = "Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.", optional = true)
+	@Parameter(name = OUT_PARAM_NAME, description = "This parameter specifies the name of the attribute of the output port in which the operator puts the retrieval results.  The data type for the attribute depends on whether you specified a columnFamily or columnQualifier.", optional = true)
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}
