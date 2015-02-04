@@ -29,7 +29,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * from the tuples.
  */
 
-@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "Increment the specified HBASE entry.  Uses the HTable.increment.  The value to increment by may be specified as an operator parameter or as an attribute in the input tuple."
+@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEIncrement` operator increments the specified HBASE entry.  The operator uses the `HTable.increment` function.  You can specify the value to increment as an operator parameter or as an attribute in the input tuple."
 		+ HBASEIncrement.CONSISTENT_REGION_INFO
 		+ HBASEOperator.DOC_BLANKLINE
 		+ HBASEOperator.commonDesc)
@@ -46,14 +46,16 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	private static final String INCREMENT_ATTR_PARAM = "incrementAttrName";
 	private static final String STATIC_INCREMENT_VALUE = "increment";
 
-	@Parameter(name = INCREMENT_ATTR_PARAM, optional = true, description = "Attribute to be used to determine the increment. Cannot be used with "
-			+ STATIC_INCREMENT_VALUE)
+	@Parameter(name = INCREMENT_ATTR_PARAM, optional = true, description = "This parameter specifies the attribute that is used to determine the increment. It cannot be used with the "
+			+ STATIC_INCREMENT_VALUE
+            + " parameter.")
 	public void setIncrAttr(String name) {
 		incrAttr = name;
 	}
 
-	@Parameter(name = STATIC_INCREMENT_VALUE, optional = true, description = "Value by which to increment.  Cannot be specified with "
-			+ INCREMENT_ATTR_PARAM)
+	@Parameter(name = STATIC_INCREMENT_VALUE, optional = true, description = "This parameter specifies the value by which to increment.  It cannot be specified with "
+			+ INCREMENT_ATTR_PARAM
+            + " parameter.")
 	public void setIncr(long _inc) {
 		defaultIncr = _inc;
 	}
