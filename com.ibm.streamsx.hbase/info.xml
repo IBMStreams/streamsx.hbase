@@ -60,7 +60,7 @@ or the SPL compiler to be aware of the location of the toolkit.
     source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 * Install Apache HBase ([http://hbase.apache.org/]), Apache Hadoop ([http://hadoop.apache.org/]) 
   and Apache Zookeeper ([http://zookeeper.apache.org/]). All of these products are installed as part of IBM InfoSphere BigInsights. 
-  * This toolkit supports HBase 0.96 and later versions.  
+  * This toolkit supports IBM InfoSphere BigInsights version 3.0.0 and later and HBase 0.96 and later versions.  
   * *Note*: The host or resource where InfoSphere Streams is installed must be able to communicate with the resources where
     HBase is installed, but you do not need both on the same resource.
 
