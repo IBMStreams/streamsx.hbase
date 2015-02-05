@@ -59,12 +59,40 @@ import com.ibm.streams.operator.types.RString;
  */
 @PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from HBASE. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
 		+ HBASEGet.OUT_PARAM_NAME
-		+ " parameter. The operator accepts three types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry.  The value can have a long or rstring data type.  If the columnQualifier is not specified, then the operator populates the "
-		+ HBASEGet.OUT_PARAM_NAME
-		+ " with a map of columnQualifiers to values."
-		+ " If the columnFamily is also not specified, then the operator populates the "
-		+ HBASEGet.OUT_PARAM_NAME
-		+ " with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute with the name "
+		   + " parameter. The operator accepts four types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry. \\n"
++"    stream<rstring who, rstring infoType, rstring requestedDetail, rstring value, \\n"
++"           int32 numResults> queryResults = HBASEGet(queries) {\\n"
++"              param\\n"
++"                 tableName : \\\"streamsSample_lotr\\\";\\n"
++"                 rowAttrName : \\\"who\\\" ;\\n"
++"                 columnFamilyAttrName : \\\"infoType\\\" ;\\n"
++"                 columnQualifierAttrName : \\\"requestedDetail\\\" ;\\n"
++"                 outAttrName : \\\"value\\\" ;\\n"
++"                 outputCountAttr : \\\"numResults\\\" ;\\n"
++"                }\\n"
++"\\nIf the type of the attributed given by outAttrName is a tuple, it interprets the "
++" the attribute names of the output attribute as the column qualifiers, thus getting "
++" multiple values at once." 
++"\\nSuppose that you represent a book in HBase as a row, with a single column family,"
++" and entries with different column qualifiers to represent the title, the author_fname, the author_lname, "
++" and the year.  We could do separate queries for each column family using the "
++" the approach above, but as a short cut, we let you populate the whole tuple at once "
++" Let `GetBookType` represent a the type of a book.\\n" 
++"    type GetBookType = rstring title,rstring author_fname, rstring author_lname, rstring year, rstring fiction;\\n"
++ HBASEOperator.DOC_BLANKLINE
++ "Then we query the table as follows:\\n"
++ "    stream<rstring key,GetBookType value> enriched = HBASEGet(keyStream) {\\n"
++ "      param\\n"
++ "        rowAttrName: \\\"key\\\";\\n"
++ "        tableName: \\\"streamsSample_books\\\";\\n"
++ "        staticColumnFamily: \\\"all\\\";\\n"
++ "        outAttrName: \\\"value\\\";\\n"
++ "    }\\n"
++HBASEOperator.DOC_BLANKLINE
++" Additionally, you can get all the entries for a given row-columnFamily pair by supplying an output attribute that is of type map.  The map will be populated with columnqualifiers mapping to their corresponding values.  If you wan all the entries for a given row, you can supply an output attribute that is of type map to map.  The map will take column families to a map of columnqualfiers to values.  See the GetSample in samples for details."
++HBASEOperator.DOC_BLANKLINE
++"If you wish to get multiple versions of a given entry, you can do that by providing using a list type instead of a primitive type.  "
++"In all cases, if an attribute with the name "
 		+ HBASEGet.SUCCESS_PARAM_NAME
 		+ " exists on the output port, it is populated with the number of values found.  This behavior can help you distinguish between the case where the value returned is zero and the case where no such entry existed in HBase."
 		+ HBASEGet.consistentCutInfo + HBASEOperator.commonDesc)
