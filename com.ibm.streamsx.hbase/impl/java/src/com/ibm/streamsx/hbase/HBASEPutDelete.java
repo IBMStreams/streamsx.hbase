@@ -70,7 +70,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		batchSize = _size;
 	}
 
-	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description = "Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.  When a value is specified, the put or delete operation will only succeed when that entry specified by the check attribute exists.  When there is no value in the type of the checkAttribute, the put or delete operation will only succeed when there is no entry for that row, columnFamily, columnQualifer combination.")
+	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description = "Name of the attribute specifying the tuple to check for before applying the Put or Delete.  The type of the attribute is tuple with attributes columnFamily and columnQualifier, or a tuple with attributes columnFamily, columnQualifier, and value.   In the first case, the Put or Delete will be allowed to proceed only when there is no entry for the row, columnFamily, columnQualifer combination.  When the the type of the attribute given by "+CHECK_ATTR_PARAM+" contains an attribute `value`, the Put or Delete operation will only succeed when the entry specified the row, columnFamily, and columnQualifier has the given value.")
+
 	public void setCheckAttr(String name) {
 		checkAttr = name;
 	}
