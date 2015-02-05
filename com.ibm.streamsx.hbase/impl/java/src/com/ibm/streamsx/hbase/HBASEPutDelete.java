@@ -65,7 +65,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		successAttrName = name;
 	}
 
-	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "Number of mutations to received before sending the to HBASE.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.")
+	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "Maximum number of Puts or Deletes to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.")
 	public void setBatchSize(int _size) {
 		batchSize = _size;
 	}
