@@ -72,6 +72,7 @@
   <target name="samples" depends="toolkit">
     <subant target="indextoolkit" genericantfile="${basedir}/build.xml">
        <dirset dir="samples" includes="*"/>
+       <dirset dir="extraSamples" includes="*"/>
     </subant>
   </target>
   <target name="cleansamples">
