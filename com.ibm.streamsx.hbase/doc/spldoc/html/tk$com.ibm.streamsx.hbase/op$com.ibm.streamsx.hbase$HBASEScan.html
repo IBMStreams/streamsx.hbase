@@ -28,37 +28,25 @@
 
 <div class="section">
 
-<p class="p">Scan an HBASE table.  Like FileSource, it has an optional input port.  If no input port is specifed, then the operator will scan the table according to the parameters, and then send final punctuation.  If an input  port is given, then the operator will not start a scan until a tuple is received.  Once a tuple is received, the operator will scan according to that tuple, then produce a punctuation.   When used without an input port, HBASEScan may be multi-threaded, and one thread will be used per HBASE region, up to  maxThreads.   If the operator is in a parallel region, given the channel and maxChannel parameters, it will further divide up the scanning work between other operators in the region, such that each row is scanned exactly once. When the scan is multithreaded or used as part of a parallel region, the tuples will not be in order.
+<p class="p">The <tt class="ph tt">HBASEScan</tt> operator scans an HBASE table.  Like the <tt class="ph tt">FileSource</tt> operator, it has an optional input port.  If no input port is specifed, then the operator scans the table according to the parameters that you specify, and sends the final punctuation.  If you specify an input  port, the operator does not start a scan until it receives a tuple.  After the operator receives a tuple, it scans according to that tuple and produces a punctuation.   When you use this operator without an input port, the operator might be multi-threaded. One thread is used per HBASE region, up to  the value that you specify in the <strong class="ph b">maxThreads</strong> parameter.  If the operator is in a parallel region, it further divides up the scanning work between other operators in the region, based on the <strong class="ph b">channel</strong> and <strong class="ph b">maxChannel</strong> parameter values, such that each row is scanned exactly once. When the scan is multithreaded or used as part of a parallel region, the tuples are not in order.
 </p>
 
-<p class="p"> By default, when no input port is given, the whole table is scanned.  If startRow and endRow are both specified, the scan starts at startRow and ends at  endRow.  If just startRow is supplied, the table scan starts at startRow.  If just endRow is supplied, the table scan starts at the beginning and scans until endRow If rowPrefix is supplied, the table scans all rows with that row prefix.   When an input port is given, the operator waits for a tuple beginning the scan.  The operator expects the input tuple to contain either (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.   It then scans according to that attribute, and outputs punctuation.  The attributes may be any of the valid input types (rstring, ustring, long, blob).  Any other attributes are copied through to the output tuple.  
+<p class="p"> By default, when you do not specify an input port, the operator scans the whole table.  If you specify both the <strong class="ph b">startRow</strong> and <strong class="ph b">endRow</strong> parameters, the scan starts at the row specified in the <strong class="ph b">startRow</strong> parameter and ends at the row specified in the  <strong class="ph b">endRow</strong> parameter.  If you specify only the <strong class="ph b">startRow</strong> parameter, the table scan starts there.  If your specify only the <strong class="ph b">endRow</strong> parameter, the table scan starts at the beginning and scans until the row specified in the <strong class="ph b">endRow</strong> parameter.  If you specify the <strong class="ph b">rowPrefix</strong> parameter, the table scans all rows with that row prefix.   When you specify an input port, the operator waits for a tuple to begin the scan.  The operator expects the input tuple to contain either (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.   It then scans according to that attribute and outputs punctuation.  The attributes can be any of the valid input types, such as rstring, ustring, long, or blob.  Any other attributes are copied through to the output tuple.  
 </p>
 
-<p class="p"> Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to a streams tuple,  with the row populating the row attribute, the columnFamily populating the columnFamily attribute, the columnQualifier  attribute populating the columnQualifier attribute, and the value populating the value attribute.  The value may either be a long or a string, all other values must be rstring.
+<p class="p"> Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to an InfoSphere Streams tuple.  The row populates the row attribute, the columnFamily populates the columnFamily attribute, the columnQualifier  attribute populates the columnQualifier attribute, and the value populates the value attribute.  The value can either be a long or a string data type; all other values must be rstring data types.
 </p>
 
-<p class="p"> In record mode, the value attribute is of tuple type, and each row produces one streams tuple.  The value is populated by taking the attribute names in the value tuple to be column qualifiers, and placing the values in the attributes given by their column qualifiers.
+<p class="p"> In record mode, the value attribute is of tuple type, and each row produces one InfoSphere Streams tuple.  The value is populated by taking the attribute names in the value tuple as column qualifiers and placing the values in the attributes that are specified by their column qualifiers.
 </p>
 
-<p class="p"><strong class="ph b">Consistent Region</strong>
+<p class="p"><strong class="ph b">Behavior in a consistent region</strong>
 </p>
 
 <p class="p">If the operator has an input port, it may not be the source of a consistent region. If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or trigger based.
 </p>
 
 <p class="p">When in a trigger-based consistent region, the triggerCount must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain. and maxThreads must be one
-</p>
-
-<p class="p"><strong class="ph b">Configuring the operator</strong>
-</p>
-
-<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
-</p>
-
-<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
-</p>
-
-<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
 </p>
 
 </div>
@@ -214,7 +202,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_channel"><tt class="ph tt">channel</tt></dt>
 
 <dd class="dd">
-<p class="p">If this operator is part of a parallel region it shares the work of scanning with other operators in the region.  To do this, this should be set by calling getChannel().  It is required if maximum number of channels is other than zero.
+<p class="p">If this operator is part of a parallel region, it shares the work of scanning with other operators in the region.  To do this, set this parameter value by calling getChannel().  This parameter is required if the maximum number of channels has a value other than zero.
 </p>
 <dl class="dl">
 
@@ -245,7 +233,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_endRow"><tt class="ph tt">endRow</tt></dt>
 
 <dd class="dd">
-<p class="p">Row to use to stop the scan (exclusive)
+<p class="p">This parameter specifies the row to use to stop the scan.  The row that you specify is excluded from the scan.
 </p>
 <dl class="dl">
 
@@ -276,7 +264,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
-<p class="p">The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the application directory.
+<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
 </p>
 <dl class="dl">
 
@@ -338,7 +326,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_maxChannels"><tt class="ph tt">maxChannels</tt></dt>
 
 <dd class="dd">
-<p class="p">If this operator is part of a parallel region, this should be set by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned will be divided among the other copies of this operator in the other channels.  You must set channel if this parameter is set.
+<p class="p">If this operator is part of a parallel region, set this parameter value by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned are divided among the other copies of this operator in the other channels.  If this parameter is set, you must also set the <strong class="ph b">channel</strong> parameter. 
 </p>
 <dl class="dl">
 
@@ -369,7 +357,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_maxVersions"><tt class="ph tt">maxVersions</tt></dt>
 
 <dd class="dd">
-<p class="p">The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.
+<p class="p">This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.
 </p>
 <dl class="dl">
 
@@ -431,7 +419,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_minTimestamp"><tt class="ph tt">minTimestamp</tt></dt>
 
 <dd class="dd">
-<p class="p">The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.
+<p class="p">This parameter specifies the minimum timestamp that is used for queries.  The operator does not return any entries with a timestamp older than this value.  Unless you specify the <strong class="ph b">maxVersions</strong> parameter, the opertor returns only one entry in this time range.
 </p>
 <dl class="dl">
 
@@ -462,7 +450,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_outAttrName"><tt class="ph tt">outAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute in which to put the value.Defaults to value.  If it is a tuple type, the attribute names are used as columnQualifiersif multiple families are included in the scan, and they have the ame columnQualifiers, there is no way of knowing which columnFamily was used to populate a tuple attribute
+<p class="p">This parameter specifies the name of the attribute in which to put the value. It defaults to <tt class="ph tt">value</tt>.  If the attribute is a tuple data type, the attribute names are used as columnQualifiers. If multiple families are included in the scan and they have the same columnQualifiers, there is no way of knowing which columnFamily was used to populate a tuple attribute.
 </p>
 <dl class="dl">
 
@@ -493,7 +481,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_outputCountAttr"><tt class="ph tt">outputCountAttr</tt></dt>
 
 <dd class="dd">
-<p class="p">Output attribute in which to put the number of results found.  When the result is a tuple, is the number attributes in that tuple that were populated.
+<p class="p">This parameter specifies the output attribute in which to put the number of results that are found.  When the result is a tuple, this parameter value is the number attributes that were populated in that tuple.
 </p>
 <dl class="dl">
 
@@ -524,7 +512,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_rowPrefix"><tt class="ph tt">rowPrefix</tt></dt>
 
 <dd class="dd">
-<p class="p">Scan should only return rows with this prefix
+<p class="p">This parameter specifies that the scan only return rows that have this prefix.
 </p>
 <dl class="dl">
 
@@ -555,7 +543,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_startRow"><tt class="ph tt">startRow</tt></dt>
 
 <dd class="dd">
-<p class="p">Row to use to start the scan (inclusive)
+<p class="p">This parameter specifies the row to use to start the scan.  The row that you specify is included in the scan.
 </p>
 <dl class="dl">
 
@@ -673,7 +661,7 @@ This operator supports 16 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_triggerCount"><tt class="ph tt">triggerCount</tt></dt>
 
 <dd class="dd">
-<p class="p">Number of rows to process before triggering a drain.  Only valid in a operator-driven consistent region
+<p class="p">This parameter specifies the number of rows to process before triggering a drain.  This parameter is valid only in a operator-driven consistent region.
 </p>
 <dl class="dl">
 

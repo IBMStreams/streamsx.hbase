@@ -28,25 +28,13 @@
 
 <div class="section">
 
-<p class="p">Get tuples from HBASE; similar to enrich from database operators.  It places the result in the parameter described by outAttrName  The operator accepts three types of queries.  In the simplest case, a row, columnFamily, and columnQualifier is specified, and the output value is the single value in that entry.  The type of the value may be long or rstring.  If the columnQualifier is left unspecified, then outAttrName is populated with a map of columnQualifiers to values. If columnFamily is also left unspecified, then outAttrName is populated with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute of name outputCountAttr exists on the output port, it will be populated with the number of values found.  This can help distinguish between the case when the value returned is zero and the case where no such entry existed in HBase.
+<p class="p">The <tt class="ph tt">HBASEGet</tt> operator gets tuples from HBASE. It is similar to the <tt class="ph tt">ODBCEnrich</tt> operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the outAttrName parameter. The operator accepts three types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry.  The value can have a long or rstring data type.  If the columnQualifier is not specified, then the operator populates the outAttrName with a map of columnQualifiers to values. If the columnFamily is also not specified, then the operator populates the outAttrName with a map of columnFamilies to a map of columnQualifiers to values.  In all cases, if an attribute with the name outputCountAttr exists on the output port, it is populated with the number of values found.  This behavior can help you distinguish between the case where the value returned is zero and the case where no such entry existed in HBase.
 </p>
 
-<p class="p"><strong class="ph b">Consistent Region</strong>
+<p class="p"><strong class="ph b">Behavior in a consistent region</strong>
 </p>
 
-<p class="p"> HBASEGet is allowed in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, HBASEGet will give a different answerAs a result, if used in a consistent region in conjuction with an operator that changes the state of a tuple (ie, HBASEGet feeds a functor that increments a value, and then puts the tuple back into HBase with HBASEPutyou could get unexpected behavior. HBASEGet is not supported as the source of a consistent region.
-</p>
-
-<p class="p"><strong class="ph b">Configuring the operator</strong>
-</p>
-
-<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
-</p>
-
-<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
-</p>
-
-<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
+<p class="p">The <tt class="ph tt">HBASEGet</tt> operator can be in a consistent region.  It is treated as a stateless operator, which means that if the underlying HBASE table changes between the first time a tuple is sent and when it is replayed, the <tt class="ph tt">HBASEGet</tt> operator gives a different answer. As a result, if you use this operator in a consistent region in conjuction with an operator that changes the state of a tuple you could get unexpected behavior. This might happen, for example, if the <tt class="ph tt">HBASEGet</tt> operator feeds a functor that increments a value, and then puts the tuple back into HBase by using the <tt class="ph tt">HBASEPut</tt> operator.  HBASEGet is not supported as the source of a consistent region.
 </p>
 
 </div>
@@ -264,7 +252,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
-<p class="p">The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the application directory.
+<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
 </p>
 <dl class="dl">
 
@@ -295,7 +283,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_maxVersions"><tt class="ph tt">maxVersions</tt></dt>
 
 <dd class="dd">
-<p class="p">The maximum number of versions returned.  Defaults to one.  A value of 0 means get all versions.
+<p class="p">This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.
 </p>
 <dl class="dl">
 
@@ -326,7 +314,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_minTimestamp"><tt class="ph tt">minTimestamp</tt></dt>
 
 <dd class="dd">
-<p class="p">The minimum timestamp to be used for queries.  No entries with a timestamp older than this value will be returned.  Note that unless you set maxVersions, you will get either only one entry in this time range.
+<p class="p">This parameter specifies the minimum timestamp that is used for queries.  The operator does not return any entries with a timestamp older than this value.  Unless you specify the <strong class="ph b">maxVersions</strong> parameter, the opertor returns only one entry in this time range.
 </p>
 <dl class="dl">
 
@@ -357,7 +345,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_outAttrName"><tt class="ph tt">outAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute of the output port in which to put the result of the get.  Its type depends on whether a columnFamily or columnQualifier was set.
+<p class="p">This parameter specifies the name of the attribute of the output port in which the operator puts the retrieval results.  The data type for the attribute depends on whether you specified a columnFamily or columnQualifier.
 </p>
 <dl class="dl">
 
@@ -475,7 +463,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_outputCountAttr"><tt class="ph tt">outputCountAttr</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of attribute of the output port in which to put the count of values populated.
+<p class="p">This parameter specifies the name of attribute of the output port where the operator puts a count of the values it populated.
 </p>
 <dl class="dl">
 

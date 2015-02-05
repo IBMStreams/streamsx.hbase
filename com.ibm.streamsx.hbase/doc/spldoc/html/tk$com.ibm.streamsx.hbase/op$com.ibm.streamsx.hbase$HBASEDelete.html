@@ -28,25 +28,19 @@
 
 <div class="section">
 
-<p class="p">Delete an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE, with optional checkAndDelete.  The mode in which the operator is working depends on the parameters.  To delete an entire row, specify only the row.  To delete a columnFamily, specify the row and the columnFamily (either via the staticColumnFamily parameter or the columnFamilyAttrName parameter), and to delete just a single entry, specify the row, columnFamily, and columnQualifier (either via the staticColumnQualifer or the columnQualiferAttrName parameter).  To support locking, HBASE allows for a conditional delete.  To use the conditional delete, you must set checkAttrName which gives the attribute on the input port containing a the tuple that describes the check.  If the check fails, the delete isn't done  To distinguish between failed and successful deletes, you can have an optional output port. The attribute of the output tuple give by successAttr is set to true if the delete succeeded, and false otherwise.
+<p class="p">The <tt class="ph tt">HBASEDelete</tt> operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE.  It can also optionally do a checkAndDelete operation.
 </p>
 
-<p class="p"><strong class="ph b">Consistent Region</strong>
+<p class="p">The behavior of the operator depends on its parameters:* To delete an entire row, specify only the row.* To delete a columnFamily, specify the row and the columnFamily.   You can specify the columnFamily by using the <strong class="ph b">staticColumnFamily</strong> or <strong class="ph b">columnFamilyAttrName</strong> parameters.* To delete just a single entry, specify the row, columnFamily, and columnQualifier.You can specify the columnQualifier by using the <strong class="ph b">staticColumnQualifer</strong> or <strong class="ph b">columnQualiferAttrName</strong> parameters.
 </p>
 
-<p class="p">HBASEDelete may be in a consistent region, but it may not be the start of a consistent region. When in a consistent region, deleteAllVersions must either be unspecified or set to true. HBASEDelete ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing; thus if there is a reset, the same entry may be deleted twice.  At drain points, it flushes its internal buffer, and at resets, in clears its internal buffer.
+<p class="p">To support locking, you can perform a conditional delete operation in HBASE.To use the conditional delete functionality in InfoSphere Streams, you must set checkAttrName.  This parameter must specify the attribute on the input port that contains a the tuple that describes the check.If the check fails, the deletion does not occur.To distinguish between failed and successful delete operations, use an optional output port.If the delete operation succeeded, the attribute of the output tuple in successAttr is set to true. Otherwise, the attribute of the output tuple is false.
 </p>
 
-<p class="p"><strong class="ph b">Configuring the operator</strong>
+<p class="p"><strong class="ph b">Behavior in a consistent region</strong>
 </p>
 
-<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
-</p>
-
-<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
-</p>
-
-<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
+<p class="p">The <tt class="ph tt">HBASEDelete</tt> can be in a consistent region, but it cannot be the start of a consistent region. When in a consistent region, the <strong class="ph b">deleteAllVersions</strong> parameter must either be unspecified or set to true. The <tt class="ph tt">HBASEDelete</tt> operator ensures at-least-once tuple processing, but it does not guarentee exactly-once tuple processing.Thus, if there is a reset, the same delete may be sent twice. However, unless another process is modifying the table, sending the same delete twice is no different than sending it once.At drain points, it flushes its internal buffer, and at resets, in clears its internal buffer.
 </p>
 
 </div>
@@ -159,7 +153,7 @@
 
    <dd class="dd">
 
-<p class="p">Copies tuple from input, setting successAttr if checkAttrName is specified
+<p class="p">This port can only be used if checkAttrName is specified. When that attribute is specified, deletes are conditional on the state of the table, and so may either succeed or fail. This output port allows the SPL developer to determine whether the delete succeede or failed.  For each input tuple, an output tuple is generated. The attribute named by successAttr is set to true when the delete succeded, and false otherwiseThe other attributes are copied from the input tuple.
 </p>
 
 <p class="p"/>
@@ -202,7 +196,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_batchSize"><tt class="ph tt">batchSize</tt></dt>
 
 <dd class="dd">
-<p class="p">Number of mutations to received before sending the to HBASE.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.
+<p class="p">Maximum number of Puts or Deletes to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.
 </p>
 <dl class="dl">
 
@@ -233,7 +227,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_checkAttrName"><tt class="ph tt">checkAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.  When a value is specified, the put or delete operation will only succeed when that entry specified by the check attribute exists.  When there is no value in the type of the checkAttribute, the put or delete operation will only succeed when there is no entry for that row, columnFamily, columnQualifer combination.
+<p class="p">Name of the attribute specifying the tuple to check for before applying the Put or Delete.  The type of the attribute is tuple with attributes columnFamily and columnQualifier, or a tuple with attributes columnFamily, columnQualifier, and value.   In the first case, the Put or Delete will be allowed to proceed only when there is no entry for the row, columnFamily, columnQualifer combination.  When the the type of the attribute given by checkAttrName contains an attribute <tt class="ph tt">value</tt>, the Put or Delete operation will only succeed when the entry specified the row, columnFamily, and columnQualifier has the given value.
 </p>
 <dl class="dl">
 
@@ -357,7 +351,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
-<p class="p">The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the application directory.
+<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
 </p>
 <dl class="dl">
 

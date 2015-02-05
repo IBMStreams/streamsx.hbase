@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<srcCode:sourceModel xmlns:srcCode="http://www.ibm.com/xmlns/prod/streams/spl/sourceCode" xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <srcCode:sourceFile uri="com.ibm.streamsx.hbase.sample/ScanTester.spl">
+    <srcCode:compilationUnit>
+      <srcCode:splNamespace column="10" line="1" name="com.ibm.streamsx.hbase.sample"/>
+      <srcCode:useDirectives>
+        <srcCode:useDirective column="5" line="3" namespaceName="com.ibm.streamsx.hbase" tail="::HBASEScan"/>
+      </srcCode:useDirectives>
+      <srcCode:definitions>
+        <srcCode:compositeDefinition endColumn="1" endLine="25" startColumn="1" startLine="4">
+          <srcCode:compositeHead column="1" line="4" name="ScanAndWrite">
+            <srcCode:inputs>
+              <srcCode:iport column="30" index="0" line="4" name="queryStream"/>
+            </srcCode:inputs>
+          </srcCode:compositeHead>
+          <srcCode:compositeBody>
+            <srcCode:parameters>
+              <srcCode:parameter column="8" line="7" name="$hbaseOutType">
+                <srcCode:expressionMode mode="type"/>
+              </srcCode:parameter>
+              <srcCode:parameter column="23" line="8" name="$file">
+                <srcCode:expressionMode mode="expression" type="rstring"/>
+              </srcCode:parameter>
+              <srcCode:parameter column="23" line="9" name="$tableName">
+                <srcCode:expressionMode mode="expression" type="rstring"/>
+              </srcCode:parameter>
+            </srcCode:parameters>
+            <srcCode:graph>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="40" line="11" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="28" index="0" line="11" streamName="outStream" type="I, $hbaseOutType"/>
+                  </srcCode:outputs>
+                  <srcCode:inputs>
+                    <srcCode:input alias="I" column="65" index="0" line="11">
+                      <srcCode:istream column="50" line="11" name="queryStream"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="14" name="tableName">
+                      <srcCode:value expr="$tableName"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="fileSink" line="18" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="29" index="0" line="18">
+                      <srcCode:istream column="29" line="18" name="outStream"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="21" name="file">
+                      <srcCode:value expr="$file"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="22" name="writePunctuations">
+                      <srcCode:value expr="true"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+            </srcCode:graph>
+          </srcCode:compositeBody>
+        </srcCode:compositeDefinition>
+      </srcCode:definitions>
+    </srcCode:compilationUnit>
+  </srcCode:sourceFile>
+
+  <srcCode:sourceFile uri="com.ibm.streamsx.hbase.sample/ScanString.spl">
+    <srcCode:compilationUnit>
+      <srcCode:splNamespace column="11" line="4" name="com.ibm.streamsx.hbase.sample"/>
+      <srcCode:useDirectives>
+        <srcCode:useDirective column="5" line="6" namespaceName="com.ibm.streamsx.hbase" tail="::HBASEScan"/>
+      </srcCode:useDirectives>
+      <srcCode:definitions>
+        <srcCode:compositeDefinition endColumn="1" endLine="117" startColumn="1" startLine="9">
+          <srcCode:compositeHead column="1" line="24" name="ScanString">
+            <srcCode:splDoc>
+              <srcCode:description>
+                <srcCode:description>Demonstrates HBASEScan
+This example demonstrates HBASEScan. 
+It assumes you've run both the increment sample and 
+the put sample, as it reads the table streamsSample_lotr and the 
+table streamsSample_wordCount.  
+
+It consists of three pieces:
+
+*Scan example where the value is a string and all tuple attributes
+are populated
+* Scan example where the value is an int64.  No columnQualifier on 
+the output.
+* Scan example where the row set is limited by a startRow and an endRow.
+
+</srcCode:description>
+              </srcCode:description>
+            </srcCode:splDoc>
+          </srcCode:compositeHead>
+          <srcCode:compositeBody>
+            <srcCode:graph>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="31" line="29" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="19" index="0" line="29" streamName="lotrTable" type="rstring row, rstring columnFamily, rstring columnQualifier, rstring value"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="32" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_lotr&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="lotrSink" line="35" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="30" index="0" line="35">
+                      <srcCode:istream column="30" line="35" name="lotrTable"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="3" line="37" name="file">
+                      <srcCode:value expr="&quot;lotr.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="77" line="47" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="53" index="0" line="47" streamName="lotrTableWithVersions" type="rstring row, rstring columnFamily, rstring columnQualifier, list&lt;tuple&lt;rstring yourchoice, int64 ts>> value"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="50" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_lotr&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="51" name="maxVersions">
+                      <srcCode:value expr="2"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="lotrSink_versions" line="54" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="39" index="0" line="54">
+                      <srcCode:istream column="39" line="54" name="lotrTableWithVersions"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="3" line="56" name="file">
+                      <srcCode:value expr="&quot;lotr_versions.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="4" line="62" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="58" index="0" line="61" streamName="countTable" type="rstring row, rstring columnFamily, int64 value"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="65" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_wordCount&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="66" name="staticColumnFamily">
+                      <srcCode:value expr="&quot;Iliad&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="67" name="staticColumnQualifier">
+                      <srcCode:value expr="&quot;Book1&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="IliadSink" line="70" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="30" index="0" line="70">
+                      <srcCode:istream column="30" line="70" name="countTable"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="3" line="72" name="file">
+                      <srcCode:value expr="&quot;iliad.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="4" line="77" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="60" index="0" line="76" streamName="partialTable" type="rstring row, rstring columnFamily, int64 value"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="80" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_wordCount&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="81" name="staticColumnFamily">
+                      <srcCode:value expr="&quot;Iliad&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="82" name="staticColumnQualifier">
+                      <srcCode:value expr="&quot;Book1&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="83" name="startRow">
+                      <srcCode:value expr="&quot;K&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="84" name="endRow">
+                      <srcCode:value expr="&quot;L&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="IliadPartialSink" line="89" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="37" index="0" line="89">
+                      <srcCode:istream column="37" line="89" name="partialTable"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="3" line="91" name="file">
+                      <srcCode:value expr="&quot;iliad_k.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="4" line="97" operatorName="HBASEScan">
+                  <srcCode:outputs>
+                    <srcCode:output column="60" index="0" line="96" streamName="prefixScan" type="rstring row, rstring columnFamily, int64 value"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="5" line="100" name="tableName">
+                      <srcCode:value expr="&quot;streamsSample_wordCount&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="101" name="staticColumnFamily">
+                      <srcCode:value expr="&quot;Iliad&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="102" name="staticColumnQualifier">
+                      <srcCode:value expr="&quot;Book1&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="5" line="103" name="rowPrefix">
+                      <srcCode:value expr="&quot;K&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="IliadPartialSink2" line="109" operatorName="FileSink">
+                  <srcCode:inputs>
+                    <srcCode:input column="38" index="0" line="109">
+                      <srcCode:istream column="38" line="109" name="prefixScan"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="3" line="111" name="file">
+                      <srcCode:value expr="&quot;iliad_k2.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="9" invocationAlias="ScanWithInputSink" line="114" operatorName="ScanWithInput"/>
+                <srcCode:operatorInvocationBody/>
+              </srcCode:operatorInvocation>
+            </srcCode:graph>
+          </srcCode:compositeBody>
+        </srcCode:compositeDefinition>
+      </srcCode:definitions>
+    </srcCode:compilationUnit>
+  </srcCode:sourceFile>
+
+  <srcCode:sourceFile uri="com.ibm.streamsx.hbase.sample/ScanWithInput.spl">
+    <srcCode:compilationUnit>
+      <srcCode:splNamespace column="10" line="1" name="com.ibm.streamsx.hbase.sample"/>
+      <srcCode:definitions>
+        <srcCode:compositeDefinition endColumn="1" endLine="79" startColumn="1" startLine="3">
+          <srcCode:compositeHead column="1" line="15" name="ScanWithInput">
+            <srcCode:splDoc>
+              <srcCode:description>
+                <srcCode:description>Test table scanning from input tuple.
+
+The input tuple may have:
+* startRow
+* endRow
+* both startRow and endRow
+* rowPrefix
+
+This composite tests all those four cases, using different ways of having the scan 
+report output.
+</srcCode:description>
+              </srcCode:description>
+            </srcCode:splDoc>
+          </srcCode:compositeHead>
+          <srcCode:compositeBody>
+            <srcCode:parameters>
+              <srcCode:parameter column="27" defaultValue="[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;, &quot;G&quot;, &quot;H&quot;, &quot;I&quot;, &quot;J&quot;, &quot;K&quot;, &quot;L&quot;, &quot;M&quot;, &quot;N&quot;, &quot;O&quot;, &quot;P&quot;, &quot;Q&quot;, &quot;R&quot;, &quot;S&quot;, &quot;T&quot;, &quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;];" line="17" name="$prefixes">
+                <srcCode:expressionMode mode="expression" type="list&lt;rstring>"/>
+              </srcCode:parameter>
+              <srcCode:parameter column="21" defaultValue="&quot;streamsSample_wordCount&quot;;" line="18" name="$tableName">
+                <srcCode:expressionMode mode="expression" type="rstring"/>
+              </srcCode:parameter>
+            </srcCode:parameters>
+            <srcCode:graph>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="38" line="21" operatorName="Beacon">
+                  <srcCode:outputs>
+                    <srcCode:output column="26" index="0" line="21" streamName="justStart" type="rstring startRow"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="22" name="iterations">
+                      <srcCode:value expr="1"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                  <srcCode:outputAssignments>
+                    <srcCode:outputAssignment column="8" line="23" portName="justStart">
+                      <srcCode:attributeAssignment column="1" line="24" name="startRow">
+                        <srcCode:value expr="&quot;Z&quot;"/>
+                      </srcCode:attributeAssignment>
+                    </srcCode:outputAssignment>
+                  </srcCode:outputAssignments>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="justStartSink" line="27" operatorName="ScanAndWrite">
+                  <srcCode:inputs>
+                    <srcCode:input column="36" index="0" line="27">
+                      <srcCode:istream column="36" line="27" name="justStart"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="29" name="tableName">
+                      <srcCode:value expr="$tableName"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="30" name="file">
+                      <srcCode:value expr="&quot;startRow.out&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="31" name="hbaseOutType">
+                      <srcCode:value expr="tuple&lt;rstring row, rstring columnQualifier, int64 value>"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="34" line="36" operatorName="Beacon">
+                  <srcCode:outputs>
+                    <srcCode:output column="24" index="0" line="36" streamName="justEnd" type="rstring endRow"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="37" name="iterations">
+                      <srcCode:value expr="1"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                  <srcCode:outputAssignments>
+                    <srcCode:outputAssignment column="8" line="38" portName="justEnd">
+                      <srcCode:attributeAssignment column="1" line="39" name="endRow">
+                        <srcCode:value expr="&quot;D&quot;"/>
+                      </srcCode:attributeAssignment>
+                    </srcCode:outputAssignment>
+                  </srcCode:outputAssignments>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="justEndSink" line="42" operatorName="ScanAndWrite">
+                  <srcCode:inputs>
+                    <srcCode:input column="34" index="0" line="42">
+                      <srcCode:istream column="34" line="42" name="justEnd"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="44" name="tableName">
+                      <srcCode:value expr="$tableName"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="45" name="file">
+                      <srcCode:value expr="&quot;endRow.out&quot;"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="46" name="hbaseOutType">
+                      <srcCode:value expr="tuple&lt;rstring row, rstring columnQualifier, list&lt;tuple&lt;int64 count, int64 time>> value>"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="53" line="50" operatorName="Beacon">
+                  <srcCode:outputs>
+                    <srcCode:output column="42" index="0" line="50" streamName="startEnd" type="rstring startRow, rstring endRow"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="51" name="iterations">
+                      <srcCode:value expr="1"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                  <srcCode:outputAssignments>
+                    <srcCode:outputAssignment column="8" line="52" portName="startEnd">
+                      <srcCode:attributeAssignment column="1" line="53" name="startRow">
+                        <srcCode:value expr="&quot;D&quot;"/>
+                      </srcCode:attributeAssignment>
+                      <srcCode:attributeAssignment column="1" line="54" name="endRow">
+                        <srcCode:value expr="&quot;Z&quot;"/>
+                      </srcCode:attributeAssignment>
+                    </srcCode:outputAssignment>
+                  </srcCode:outputAssignments>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="startEndSink" line="57" operatorName="ScanAndWrite">
+                  <srcCode:inputs>
+                    <srcCode:input column="35" index="0" line="57">
+                      <srcCode:istream column="35" line="57" name="startEnd"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="59" name="tableName">
+                      <srcCode:value expr="$tableName"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="60" name="hbaseOutType">
+                      <srcCode:value expr="tuple&lt;rstring row, rstring columnFamily, rstring columnQualifier, int64 value>"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="61" name="file">
+                      <srcCode:value expr="&quot;startEnd.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="54" line="64" operatorName="Beacon">
+                  <srcCode:outputs>
+                    <srcCode:output column="45" index="0" line="64" streamName="prefix" type="rstring rowPrefix, uint64 iteration"/>
+                  </srcCode:outputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="7" line="65" name="iterations">
+                      <srcCode:value expr="size($prefixes)"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                  <srcCode:outputAssignments>
+                    <srcCode:outputAssignment column="8" line="66" portName="prefix">
+                      <srcCode:attributeAssignment column="1" line="67" name="iteration" outputFunction="IterationCount"/>
+                      <srcCode:attributeAssignment column="1" line="68" name="rowPrefix">
+                        <srcCode:value expr="$prefixes[IterationCount()]"/>
+                      </srcCode:attributeAssignment>
+                    </srcCode:outputAssignment>
+                  </srcCode:outputAssignments>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+              <srcCode:operatorInvocation>
+                <srcCode:operatorInvocationHead column="7" invocationAlias="PrefixSink" line="71" operatorName="ScanAndWrite">
+                  <srcCode:inputs>
+                    <srcCode:input column="33" index="0" line="71">
+                      <srcCode:istream column="33" line="71" name="prefix"/>
+                    </srcCode:input>
+                  </srcCode:inputs>
+                </srcCode:operatorInvocationHead>
+                <srcCode:operatorInvocationBody>
+                  <srcCode:parameters>
+                    <srcCode:parameter column="1" line="73" name="tableName">
+                      <srcCode:value expr="$tableName"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="74" name="hbaseOutType">
+                      <srcCode:value expr="tuple&lt;rstring row, tuple&lt;int64 Book1> value>"/>
+                    </srcCode:parameter>
+                    <srcCode:parameter column="1" line="75" name="file">
+                      <srcCode:value expr="&quot;prefix.out&quot;"/>
+                    </srcCode:parameter>
+                  </srcCode:parameters>
+                </srcCode:operatorInvocationBody>
+              </srcCode:operatorInvocation>
+            </srcCode:graph>
+          </srcCode:compositeBody>
+        </srcCode:compositeDefinition>
+      </srcCode:definitions>
+    </srcCode:compilationUnit>
+  </srcCode:sourceFile>
+
+</srcCode:sourceModel>

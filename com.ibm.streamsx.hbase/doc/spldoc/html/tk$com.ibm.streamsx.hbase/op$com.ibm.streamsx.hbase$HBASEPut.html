@@ -28,25 +28,13 @@
 
 <div class="section">
 
-<p class="p">Put tuples in HBASE, with support for checkAndPut.  In the value is a primitive type, a Put must have a row, columnFamily, columnQualifier,and value specified.  The row and value are from the input tuple, specified by the attribute rowAttrName and valueAttrName, respectively.  The columnFamily and columnQualifier may be specified in the same way (via columnFamilyAttrName and columnQualifierAttrName respectively), or they may be the same for all tuples, by setting staticColumnFamily and staticColumnQualifier.  Currently all must be of type rstring. If the value is a tuple type, then attribute names of the tuple will be interpreted as the columnQualifiers  for the correponding values.  See the PutRecord sample application for an example.To allow for locking, HBASE supports a conditional put.  That is supported in this operator via the checkAttrName.  If that parameter is set, then the input attribute it refers to must be a valid check type--see the description for details.  On a put, the conditionis checked.  If it passes, the put happens, if not, the put fails.  To check the success or failure of the put, the operator has an optional output port.  The attribute successAttr on the output port will be set to true if the put happens, and false otherwise.
+<p class="p">The <tt class="ph tt">HBASEPut</tt> operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,and value specified.  The row and value are derived from the input tuple, which is specified by the rowAttrName and valueAttrName parameters.  The columnFamily and columnQualifier can be specified in the same way, by using the columnFamilyAttrName and columnQualifierAttrName parameters. Alternatively, they can be the same for all tuples, by setting the staticColumnFamily and staticColumnQualifier parameters. All of the attribute values must have the following data type: rstring. If the value is a tuple type, then the attribute names of the tuple are interpreted as the columnQualifiers  for the correponding values.  See the PutRecord sample application for an example.To support locking, HBASE supports a conditional put operation.  This operator supports that operation by using the checkAttrName parameter.  If that parameter is set, then the input attribute it refers to must be a valid check type.  For more information, see the parameter description. On a put operation, the condition is checked.If it passes, the put operation happens; if not, the put operation fails.  To check the success or failure of the put operation, use an optional output port.  The attribute that is specified in the successAttr parameter on the output port is set to true if the put operation occurs, and false otherwise.
 </p>
 
-<p class="p"><strong class="ph b">Consistent Region</strong>
+<p class="p"><strong class="ph b">Behavior in a consistent region</strong>
 </p>
 
-<p class="p">HBASEPut may be in a consistent region, but it may not be the start of a consistent region. At drain points, it flushes its internal buffer, and at resets, in clears its internal buffer.Thus, it ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing; thus if there is a reset, the same entry may be put twice.  If used with HBASEGet to do a Get, modify, Put on the same entry in a consistent region, you could end up doingthe modification twice, so that is not recommended. If you need exactly-once tuple processing, using checkAndPut along with sequence numbers may be possible.
-</p>
-
-<p class="p"><strong class="ph b">Configuring the operator</strong>
-</p>
-
-<p class="p">In order to run, the operator the  HBase configuration information.  It reads this information from hbase-site.xml file.You can either directly point the operatorto hbase-site.xml via the hbaseSite parameter, or it can look for the hbase-site.xml parameter relative to the HBASE_HOME environment variable
-</p>
-
-<p class="p">If your operator will run on a host that has HBase installed, then you could setHBASE_HOME in the operator's runtime environment, in which case the operator looks under HBASE_HOME/conf for hbase-site.xml
-</p>
-
-<p class="p">If your HBase in located on a different host than streams, then use the hbaseSite parameter.To do this, copy hbase-site.xml into your application (eg, into the etc directory) andpoint the hbaseSite parameter to this location, eg hbaseSite: "etc/hbase-site.xml"
+<p class="p">The <tt class="ph tt">HBASEPut</tt> operator can be in a consistent region, but it cannot be the start of a consistent region. At drain points, it flushes its internal buffer. At resets, it clears its internal buffer.The operator ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing. If there is a reset, the same entry might be put twice. If you use this operator with the <tt class="ph tt">HBASEGet</tt> operator to do a get, modify, and put operation on the same entry in a consistent region, you could end up doingthe modification twice.  That scenario is not recommended. If you need exactly-once tuple processing, it might be possible to use checkAndPut with sequence numbers.
 </p>
 
 </div>
@@ -202,7 +190,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_batchSize"><tt class="ph tt">batchSize</tt></dt>
 
 <dd class="dd">
-<p class="p">Number of mutations to received before sending the to HBASE.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.
+<p class="p">Maximum number of Puts or Deletes to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.
 </p>
 <dl class="dl">
 
@@ -233,7 +221,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_checkAttrName"><tt class="ph tt">checkAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute specifying the tuple to check for before applying the mutation.  It must have a row, columnFamily, and columnQualifier.  It may optionally have a value.  When a value is specified, the put or delete operation will only succeed when that entry specified by the check attribute exists.  When there is no value in the type of the checkAttribute, the put or delete operation will only succeed when there is no entry for that row, columnFamily, columnQualifer combination.
+<p class="p">Name of the attribute specifying the tuple to check for before applying the Put or Delete.  The type of the attribute is tuple with attributes columnFamily and columnQualifier, or a tuple with attributes columnFamily, columnQualifier, and value.   In the first case, the Put or Delete will be allowed to proceed only when there is no entry for the row, columnFamily, columnQualifer combination.  When the the type of the attribute given by checkAttrName contains an attribute <tt class="ph tt">value</tt>, the Put or Delete operation will only succeed when the entry specified the row, columnFamily, and columnQualifier has the given value.
 </p>
 <dl class="dl">
 
@@ -326,7 +314,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
-<p class="p">The hbase-site.xml file.  This is an optional parameter; if not set, the operator will look in opt/downloaded and HBASE_HOME/conf for hbase-site.xml.  It may be absolute or relative; if relative, it's relative to the application directory.
+<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
 </p>
 <dl class="dl">
 
@@ -506,7 +494,7 @@ This operator supports 11 parameters.<dl class="dl">
 <dt class="dt dlterm" id="spldoc_operator__parameter_valueAttrName"><tt class="ph tt">valueAttrName</tt></dt>
 
 <dd class="dd">
-<p class="p">Name of the attribute containing the value to put into the table
+<p class="p">This parmeter specifies the name of the attribute that contains the value that is put into the table.
 </p>
 <dl class="dl">
 
