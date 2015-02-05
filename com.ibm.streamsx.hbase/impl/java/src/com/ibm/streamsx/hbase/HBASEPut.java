@@ -37,35 +37,36 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * 
  */
 
-@PrimitiveOperator(name = "HBASEPut", namespace = "com.ibm.streamsx.hbase", description = "Put tuples in HBASE, with support for checkAndPut.  In the value is a primitive type, a Put must have a row, columnFamily, columnQualifier,"
-		+ "and value specified.  The row and value are from the input tuple, specified by the attribute "
+@PrimitiveOperator(name = "HBASEPut", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEPut` operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,"
+		+ "and value specified.  The row and value are derived from the input tuple, which is specified by the "
 		+ HBASEOperator.ROW_PARAM_NAME
 		+ " and "
 		+ HBASEPut.VALUE_NAME
-		+ ", respectively.  The columnFamily and "
-		+ "columnQualifier may be specified in the same way (via "
+		+ " parameters.  The columnFamily and "
+		+ "columnQualifier can be specified in the same way, by using the "
 		+ HBASEOperatorWithInput.COL_FAM_PARAM_NAME
 		+ " and "
 		+ HBASEOperatorWithInput.COL_QUAL_PARAM_NAME
-		+ " respectively), or they may be the same for all "
-		+ "tuples, by setting "
+		+ " parameters. Alternatively, they can be the same for all "
+		+ "tuples, by setting the "
 		+ HBASEOperator.STATIC_COLF_NAME
 		+ " and "
 		+ HBASEOperator.STATIC_COLQ_NAME
-		+ ".  Currently "
-		+ "all must be of type rstring. "
-		+ "If the value is a tuple type, then attribute names of the tuple will be interpreted as the columnQualifiers "
+		+ " parameters. "
+		+ "All of the attribute values must have the following data type: rstring. "
+		+ "If the value is a tuple type, then the attribute names of the tuple are interpreted as the columnQualifiers "
 		+ " for the correponding values.  See the PutRecord sample application for an example."
-		+ "To allow for locking, HBASE supports a conditional put.  That is supported "
-		+ "in this operator via the "
+		+ "To support locking, HBASE supports a conditional put operation.  This operator supports that operation "
+		+ "by using the "
 		+ HBASEPutDelete.CHECK_ATTR_PARAM
-		+ ".  If that parameter is set, then the input "
-		+ "attribute it refers to must be a valid check type--see the description for details.  On a put, the condition"
-		+ "is checked.  If it passes, the put happens, if not, the put fails.  To check the success or failure of the "
-		+ "put, the operator has an optional output port.  The attribute "
+		+ " parameter.  If that parameter is set, then the input "
+		+ "attribute it refers to must be a valid check type.  For more information, see the parameter description. "
+		+ "On a put operation, the condition is checked."
+		+ "If it passes, the put operation happens; if not, the put operation fails.  To check the success or failure of the "
+		+ "put operation, use an optional output port.  The attribute that is specified in the "
 		+ HBASEPutDelete.SUCCESS_PARAM
-		+ " on the output "
-		+ "port will be set to true if the put happens, and false otherwise."
+		+ " parameter on the output "
+		+ "port is set to true if the put operation occurs, and false otherwise."
 		+ HBASEPut.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
@@ -73,12 +74,13 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 public class HBASEPut extends HBASEPutDelete {
 
 	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer
-			+ "HBASEPut may be in a consistent region, but it may not be the start of a consistent region.\\n"
-			+ "At drain points, it flushes its internal buffer, and at resets, in clears its internal buffer."
-			+ "Thus, it ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing; thus if there is a reset, the "
-			+ "same entry may be put twice.  If used with HBASEGet to do a Get, modify, Put on the same entry in a consistent region, you could end up doing"
-			+ "the modification twice, so that is not recommended.\\n"
-			+ "If you need exactly-once tuple processing, using checkAndPut along with sequence numbers may be possible.";
+			+ "The `HBASEPut` operator can be in a consistent region, but it cannot be the start of a consistent region.\\n"
+			+ "At drain points, it flushes its internal buffer. At resets, it clears its internal buffer."
+			+ "The operator ensures at-least-once tuple processing, but does not guarentee exactly-once tuple processing. "
+			+ "If there is a reset, the same entry might be put twice. "
+			+ "If you use this operator with the `HBASEGet` operator to do a get, modify, and put operation on the same entry in a consistent region, you could end up doing"
+			+ "the modification twice.  That scenario is not recommended.\\n"
+			+ "If you need exactly-once tuple processing, it might be possible to use checkAndPut with sequence numbers.";
 
 	List<Put> putList;
 
@@ -94,7 +96,7 @@ public class HBASEPut extends HBASEPutDelete {
 	private int valueAttrIndex = -1;
 	private MetaType valueAttrType = null;
 
-	@Parameter(name = VALUE_NAME, optional = false, description = "Name of the attribute containing the value to put into the table")
+	@Parameter(name = VALUE_NAME, optional = false, description = "This parmeter specifies the name of the attribute that contains the value that is put into the table.")
 	public void setValueAttr(String val) {
 		valueAttr = val;
 	}
