@@ -96,7 +96,7 @@ sub lookForApp($$) {
 	next if (defined $exclude && $dir =~ /$exclude/);
 	next unless (-d "$fullName");
 	if (-e "$fullName/doc/spldoc") {
-	    if ($fullName =~ /samples/) {
+	    if ($fullName =~ /samples/ || $fullName =~ /extraSamples/) {
 		$debug && print "$fullName is a sample\n";
 		$samples{$f}="$fullName/doc/spldoc/html/index.html";
 	    }
