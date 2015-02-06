@@ -73,7 +73,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final String consistentCutDesc = HBASEOperator.consistentCutIntroducer
 			+ "If the operator has an input port, it may not be the source of a consistent region."
 			+ " If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or "
-			+ "trigger based."
+			+ "periodic."
 			+ HBASEOperator.DOC_BLANKLINE
 			+ "When in a trigger-based consistent region, the "
 			+ TRIGGER_PARAM
