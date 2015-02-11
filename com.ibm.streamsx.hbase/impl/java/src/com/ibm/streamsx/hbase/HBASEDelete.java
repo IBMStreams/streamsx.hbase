@@ -37,9 +37,12 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 @PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE.  It can also optionally do a checkAndDelete operation."
 		+ HBASEOperator.DOC_BLANKLINE
 		+ "The behavior of the operator depends on its parameters:"
+		+HBASEOperator.DOC_BLANKLINE
 		+ "* To delete an entire row, specify only the row."
+		+ HBASEOperator.DOC_BLANKLINE
 		+ "* To delete a columnFamily, specify the row and the columnFamily. "
 		+ "  You can specify the columnFamily by using the **staticColumnFamily** or **columnFamilyAttrName** parameters."
+		+ HBASEOperator.DOC_BLANKLINE
 		+ "* To delete just a single entry, specify the row, columnFamily, and columnQualifier."
 		+ "You can specify the columnQualifier by using the **staticColumnQualifer** or **columnQualiferAttrName** parameters."
 		+ HBASEOperator.DOC_BLANKLINE 
