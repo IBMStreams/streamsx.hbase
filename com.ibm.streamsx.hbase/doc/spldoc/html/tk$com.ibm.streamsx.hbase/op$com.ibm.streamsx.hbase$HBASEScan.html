@@ -43,10 +43,10 @@
 <p class="p"><strong class="ph b">Behavior in a consistent region</strong>
 </p>
 
-<p class="p">If the operator has an input port, it may not be the source of a consistent region. If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or trigger based.
+<p class="p">If the operator has an input port, it may not be the source of a consistent region. If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or periodic.
 </p>
 
-<p class="p">When in a trigger-based consistent region, the triggerCount must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain. and maxThreads must be one
+<p class="p">When in a operator-based consistent region, the triggerCount must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain.
 </p>
 
 </div>

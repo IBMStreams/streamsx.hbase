@@ -28,7 +28,48 @@
 
 <div class="section">
 
-<p class="p">The <tt class="ph tt">HBASEPut</tt> operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,and value specified.  The row and value are derived from the input tuple, which is specified by the rowAttrName and valueAttrName parameters.  The columnFamily and columnQualifier can be specified in the same way, by using the columnFamilyAttrName and columnQualifierAttrName parameters. Alternatively, they can be the same for all tuples, by setting the staticColumnFamily and staticColumnQualifier parameters. All of the attribute values must have the following data type: rstring. If the value is a tuple type, then the attribute names of the tuple are interpreted as the columnQualifiers  for the correponding values.  See the PutRecord sample application for an example.To support locking, HBASE supports a conditional put operation.  This operator supports that operation by using the checkAttrName parameter.  If that parameter is set, then the input attribute it refers to must be a valid check type.  For more information, see the parameter description. On a put operation, the condition is checked.If it passes, the put operation happens; if not, the put operation fails.  To check the success or failure of the put operation, use an optional output port.  The attribute that is specified in the successAttr parameter on the output port is set to true if the put operation occurs, and false otherwise.
+<p class="p">The <tt class="ph tt">HBASEPut</tt> operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,and value specified.  The row and value are derived from the input tuple, which is specified by the rowAttrName and valueAttrName parameters.  The columnFamily and columnQualifier can be specified in the same way, by using the columnFamilyAttrName and columnQualifierAttrName parameters. Alternatively, they can be the same for all tuples, by setting the staticColumnFamily and staticColumnQualifier parameters. 
+</p>
+
+<div class="p">Here is an example: 
+<pre class="pre codeblock">
+           () as allSink = HBASEPut(full)
+            {
+                    param
+                            tableName : "streamsSample_lotr" ;
+                            rowAttrName : "character" ;
+                            columnFamilyAttrName : "colF" ;
+                            columnQualifierAttrName : "colQ" ;
+                            valueAttrName : "value" ;
+            }
+</pre>
+
+If the value is a tuple type, then the attribute names of the tuple are interpreted as the columnQualifiers  for the correponding values.  Here is an snippet from the PutRecord sample application. We create the toHBASE stream: 
+<pre class="pre codeblock">
+            stream&lt;rstring key, tuple&lt;rstring title, rstring author_fname,
+                    rstring author_lname, rstring year, rstring rating&gt; bookData&gt; toHBASE =
+                    Functor(bookStream)
+            {
+                  //// ...
+            }
+</pre>
+
+ Then we can use HBASEPut as follows:
+<pre class="pre codeblock">
+            () as putsink = HBASEPut(toHBASE)
+            {
+                    param
+                            rowAttrName : "key" ;
+                            tableName : "streamsSample_books" ;
+                            staticColumnFamily : "all" ;
+                            valueAttrName : "bookData" ;
+            }
+</pre>
+
+
+</div>
+
+<p class="p">To support locking, HBASE supports a conditional put operation.  This operator supports that operation by using the checkAttrName parameter.  If that parameter is set, then the input attribute it refers to must be a valid check type.  For more information, see the parameter description. On a put operation, the condition is checked.If it passes, the put operation happens; if not, the put operation fails.  To check the success or failure of the put operation, use an optional output port.  The attribute that is specified in the successAttr parameter on the output port is set to true if the put operation occurs, and false otherwise.
 </p>
 
 <p class="p"><strong class="ph b">Behavior in a consistent region</strong>
