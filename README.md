@@ -24,7 +24,7 @@ Please see the individual product pages for instructions on installation.
 
 ## Building the toolkit
 
-The toolkit uses maven (http://maven.apache.org/). Maven will d 
+The toolkit uses maven (http://maven.apache.org/). Maven will download the needed dependencies.
 * Set M2_HOME to point to the maven directory.
 * Pick the correct pom file for your install.  In com.ibm.streamsx.hbase, there are three example pom files: 
       * pom-v094.xml: HBASE 0.94, hadoop 1
