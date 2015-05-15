@@ -73,15 +73,13 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 # Procedure
 
-1. Configure the environment variables for HBase and Hadoop. Choose one of the following methods:
-   * If the streams processing application runs on a resource where Hbase and Hadoop are installed, 
+1. Supply the operator with HBase configuration information. Choose one of the following methods:
+   * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation 
+     into the `etc` directory in your application.
+     Use the **hbaseSite** parameter in the HBase Toolkit operators to point to the `hbase-site.xml`.
+   * If the Streams processing application runs on a resource where Hbase and Hadoop are installed, you may instead 
      set the **HBASE_HOME** environment variable so that the operators look in `HBASE_HOME/conf/hbase-site.xml` 
      for HBASE configuration information. For example, set **HBASE_HOME** to the directory that contains HBase.
-     
-   * If the streams processing application runs on different resources than HBase and Hadoop,
-     copy the `hbase-site.xml` file from the `conf` directory in your HBase installation 
-     into the `etc` directory in your application.
-     Use the **hbaseSite** parameter in the HBase Toolkit operators to point to the `hbase-site.xml`. 
 2. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
    * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
     or multiple toolkits (with : as a separator).  For example:
