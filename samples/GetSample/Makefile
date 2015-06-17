@@ -9,7 +9,7 @@
 
 TOOLKIT_NAME=com.ibm.streamsx.hbase
 # Fill in STREAMS_HBASE_TOOLKIT location here.
-STREAMS_HBASE_TOOLKIT ?= $(shell  ([ -e ../../$(TOOLKIT_NAME) ] && echo ../../$(TOOLKIT_NAME)) ||\
+STREAMS_HBASE_TOOLKIT ?= $(shell  ([ -e ../../$(TOOLKIT_NAME)/toolkit.xml ] && echo ../../$(TOOLKIT_NAME)) ||\
 	                  ([ -e "../com.ibm.streamsx.hbase" ] && echo ../$(TOOLKIT_NAME)) ||\
 	                                           echo $(STREAMS_INSTALL)/toolkits/$(TOOLKIT_NAME))
 SPLC_FLAGS ?= -a --data-directory data 
