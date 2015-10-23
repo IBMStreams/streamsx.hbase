@@ -98,7 +98,7 @@ import com.ibm.streams.operator.types.RString;
 		+ HBASEGet.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Description of which tuples to get", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ @OutputPortSet(description = "Input tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
-@Icons(location32 = "impl/java/icons/HBASEGet_32.gif", location16 = "impl/java/icons/HBASEGet_16.gif")
+@Icons(location32 = "icons/HBASEGet_32.gif", location16 = "icons/HBASEGet_16.gif")
 public class HBASEGet extends HBASEOperatorWithInput {
 
 	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer
