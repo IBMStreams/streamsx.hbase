@@ -2,7 +2,15 @@
  * All Rights Reserved  
  */
 use com.ibm.streamsx.hbase.bluemix::*;
-
+/**
+ * This sample demonstrates how to use the functions in the com.ibm.streamsx.hbase.bluemix toolkit to
+ * interact with HBase when its deployed on Bluemix.
+ * It can be compiled in Streams Studio or using the Makefile from the command line.
+ * If compiling at command line, you could launch in standalone mode as follows:
+ * ./output/Standalone/TestHBase/bin/standalone username=user url=https:URL password=password
+ * Or use the streamtool submitjob command to submit ajob.
+    
+ */
 composite TestHBase {
     param
         expression<rstring> $password:getSubmissionTimeValue("password");

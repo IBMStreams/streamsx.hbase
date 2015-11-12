@@ -5,9 +5,11 @@
 
 .PHONY: all clean
 
-HBASE_BLUEMIX ?=../../com.ibm.streamsx.hbase.bluemix
-BYTES_TOOLKIT ?= ../../../streamsx.bytes/com.ibm.streamsx.bytes
-INET_TOOLKIT ?= ../../../streamsx.inet/com.ibm.streamsx.inet
+The following paths ass
+HBASE_BLUEMIX ?= ../../com.ibm.streamsx.hbase.bluemix #Change to Path to bluemix, bytes and inet toolkits on your machine.
+BYTES_TOOLKIT ?= ../../../streamsx.bytes/com.ibm.streamsx.bytes 
+INET_TOOLKIT ?= ../../com.ibm.streamsx.inet
+
 SPLC_FLAGS = -a -t $(HBASE_BLUEMIX) -t $(BYTES_TOOLKIT) -t $(INET_TOOLKIT)
 
 SPLC = $(STREAMS_INSTALL)/bin/sc
