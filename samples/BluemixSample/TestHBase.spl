@@ -1,0 +1,28 @@
+/* Copyright (C) 2015, International Business Machines Corporation  
+ * All Rights Reserved  
+ */
+use com.ibm.streamsx.hbase.bluemix::*;
+
+composite TestHBase {
+    param
+        expression<rstring> $password:getSubmissionTimeValue("password");
+    expression<rstring> $username:getSubmissionTimeValue("username");
+    // should be something like https://ipaddr:port/gateway/default/hbase
+    expression<rstring> $baseUrl:getSubmissionTimeValue("url");
+
+    graph
+
+        () as Tester = Custom() {
+            logic onProcess: {
+                hbaseDeleteTable($baseUrl,$username,$password,"doesnotexisttable");
+                hbaseDeleteTable($baseUrl,$username,$password,"test_rest_api");
+                hbaseMakeTable($baseUrl,$username,$password,"test_rest_api",["all"]);
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","testcq","myvalue");
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","testcq","myvalue2");
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","cq2","myvalue3");
+                RowType row = hbaseGet($baseUrl,$username,$password,"test_rest_api","testrow");
+                appTrc(Trace.error,"result="+(rstring)row);
+            }
+        }
+
+}
