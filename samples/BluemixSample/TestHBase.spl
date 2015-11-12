@@ -1,0 +1,36 @@
+/* Copyright (C) 2015, International Business Machines Corporation  
+ * All Rights Reserved  
+ */
+use com.ibm.streamsx.hbase.bluemix::*;
+/**
+ * This sample demonstrates how to use the functions in the com.ibm.streamsx.hbase.bluemix toolkit to
+ * interact with HBase when its deployed on Bluemix.
+ * It can be compiled in Streams Studio or using the Makefile from the command line.
+ * If compiling at command line, you could launch in standalone mode as follows:
+ * ./output/Standalone/TestHBase/bin/standalone username=user url=https:URL password=password
+ * Or use the streamtool submitjob command to submit ajob.
+    
+ */
+composite TestHBase {
+    param
+        expression<rstring> $password:getSubmissionTimeValue("password");
+    expression<rstring> $username:getSubmissionTimeValue("username");
+    // should be something like https://ipaddr:port/gateway/default/hbase
+    expression<rstring> $baseUrl:getSubmissionTimeValue("url");
+
+    graph
+
+        () as Tester = Custom() {
+            logic onProcess: {
+                hbaseDeleteTable($baseUrl,$username,$password,"doesnotexisttable");
+                hbaseDeleteTable($baseUrl,$username,$password,"test_rest_api");
+                hbaseMakeTable($baseUrl,$username,$password,"test_rest_api",["all"]);
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","testcq","myvalue");
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","testcq","myvalue2");
+                hbasePut($baseUrl,$username,$password,"test_rest_api","testrow","all","cq2","myvalue3");
+                RowType row = hbaseGet($baseUrl,$username,$password,"test_rest_api","testrow");
+                appTrc(Trace.error,"result="+(rstring)row);
+            }
+        }
+
+}
