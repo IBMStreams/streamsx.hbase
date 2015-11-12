@@ -5,8 +5,8 @@
 
 .PHONY: all clean
 
-The following paths ass
-HBASE_BLUEMIX ?= ../../com.ibm.streamsx.hbase.bluemix #Change to Path to bluemix, bytes and inet toolkits on your machine.
+#Change to Path to bluemix, bytes and inet toolkits on your machine.
+HBASE_BLUEMIX ?= ../../com.ibm.streamsx.hbase.bluemix 
 BYTES_TOOLKIT ?= ../../../streamsx.bytes/com.ibm.streamsx.bytes 
 INET_TOOLKIT ?= ../../com.ibm.streamsx.inet
 
