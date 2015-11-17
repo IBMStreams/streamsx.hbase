@@ -1,0 +1,40 @@
+/* Copyright (C) 2015, International Business Machines Corporation  
+ * All Rights Reserved  
+ */
+use com.ibm.streamsx.hbase.bluemix::*;
+
+
+
+
+composite HBaseGet {
+    param
+    	expression<rstring> $baseUrl:getSubmissionTimeValue("baseUrl");
+    	expression<rstring> $username:getSubmissionTimeValue("username");
+        expression<rstring> $password:getSubmissionTimeValue("password");
+
+
+   //type RowType = rstring row, list<tuple<rstring column, rstring value, int64 time>> cells;
+
+    graph
+
+        //() as Tester = Custom() {
+        stream<RowType row>  ReadHBase = Custom() {
+            logic onProcess: {
+               RowType row = hbaseGet($baseUrl,$username,$password,"person","1");
+		submit ({row = row},ReadHBase);
+               //appTrc(Trace.error,"result="+(rstring)row);
+
+
+            }
+        }
+
+	() as Writer = Custom(ReadHBase) {
+		logic	
+		onTuple	
+	
+			ReadHBase: printStringLn((rstring)row);
+
+	} // End Writer
+
+
+}
