@@ -5,10 +5,11 @@
 
 .PHONY: all clean
 
+#This assumes all the toolkits have been unpacked into a common root folder.
 #Change to Path to bluemix, bytes and inet toolkits on your machine.
 HBASE_BLUEMIX ?= ../../com.ibm.streamsx.hbase.bluemix 
 BYTES_TOOLKIT ?= ../../../streamsx.bytes/com.ibm.streamsx.bytes 
-INET_TOOLKIT ?= ../../../com.ibm.streamsx.inet
+INET_TOOLKIT ?= ../../../streamsx.inet/com.ibm.streamsx.inet
 
 SPLC_FLAGS = -a -t $(HBASE_BLUEMIX) -t $(BYTES_TOOLKIT) -t $(INET_TOOLKIT)
 
