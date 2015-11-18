@@ -72,6 +72,7 @@ public void hbaseMakeTable(rstring baseUrl, rstring username, rstring password, 
  * @param columnFamily Column family of entry to added.
  * @param columnQualifier Column qualifier of entry to be added.
  * @param value Value of entry to be added.
+ * @return A string describing the result of the put request. Will be empty on success and may contain an exception otherwise. 
  */
 
 public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row, rstring columnFamily, rstring columnQualifier, rstring value) {
@@ -98,7 +99,7 @@ public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rst
  * @param password Password for Knox gateway, if needed.
  * @param tableName Name of the table
  * @param row row to get.
- * @return Tuple contain the row and all values in that row.
+ * @return Tuple containing the row and all values in that row.
  */
 
 public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row) {
