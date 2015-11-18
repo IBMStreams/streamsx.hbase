@@ -9,45 +9,40 @@ composite HBaseMakeTableAndPut {
     	expression<rstring> $username:getSubmissionTimeValue("username");
     	expression<rstring> $baseUrl:getSubmissionTimeValue("url");
 
-
-
-
 	type
-   		AppTuple = uint64 rowKey;
-
-
-    graph
-
-
-        () as CreateTable = Custom() {
-            logic onProcess: {
-                hbaseMakeTable($baseUrl,$username,$password,"person",["personal","professional"]);
-            }
-        }
-
-	stream <AppTuple>  AppTuple_beat = Beacon () {
-
-     		logic state: {
-      			mutable uint64 tupleCount = 0u;
-       		}
-
-		param iterations: 10u;
-		      initDelay: 10.0;
-
-		output AppTuple_beat : rowKey = ++tupleCount;
-
-
-
+		AppTuple = uint64 rowKey;
+	
+	
+	 graph
+	
+	
+	    () as CreateTable = Custom() {
+	        logic onProcess: {
+	            hbaseMakeTable($baseUrl,$username,$password,"person",["personal","professional"]);
+	    }
 	}
-
-
-        () as InsertData = Custom(AppTuple_beat) {
-            logic onTuple AppTuple_beat: {
-                hbasePut($baseUrl,$username,$password,"person",(rstring)rowKey,"personal","fname","Tasos");
-                //hbasePut($baseUrl,$username,$password,"person","1",colFamily,colName,value);
-            }
-        }
-
-
-
+	
+	stream <AppTuple>  AppTuple_beat = Beacon () {
+	
+		logic state: {
+			mutable uint64 tupleCount = 0u;
+		}
+	
+		param 
+			iterations: 10u;
+		    initDelay: 10.0;
+	
+		output 
+			AppTuple_beat : rowKey = ++tupleCount;
+	}
+	
+	
+	() as InsertData = Custom(AppTuple_beat) {
+	    logic onTuple AppTuple_beat: {
+	       hbasePut($baseUrl,$username,$password,"person",(rstring)rowKey,"personal","fname","Tasos");
+	        }
+	    }
+	
+	
+	
 }

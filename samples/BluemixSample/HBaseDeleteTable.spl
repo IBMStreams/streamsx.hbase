@@ -13,8 +13,7 @@ composite HBaseDeleteTable {
 
         () as Tester = Custom() {
             logic onProcess: {
-                hbaseDeleteTable($baseUrl,$username,$password,"person");
-
+              hbaseDeleteTable($baseUrl,$username,$password,"person");
             }
         }
 
