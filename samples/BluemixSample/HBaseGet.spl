@@ -8,7 +8,7 @@ use com.ibm.streamsx.hbase.bluemix::*;
 
 composite HBaseGet {
     param
-    	expression<rstring> $baseUrl:getSubmissionTimeValue("baseUrl");
+    	expression<rstring> $baseUrl:getSubmissionTimeValue("url");
     	expression<rstring> $username:getSubmissionTimeValue("username");
         expression<rstring> $password:getSubmissionTimeValue("password");
 
@@ -24,7 +24,7 @@ composite HBaseGet {
 		() as Writer = Custom(ReadHBase) {
 			logic	
 				onTuple	ReadHBase: {
-					prntStringLn((rstring)row);
+					printStringLn((rstring)row);
 				}
 		} 
 

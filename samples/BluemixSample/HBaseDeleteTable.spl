@@ -5,7 +5,7 @@ use com.ibm.streamsx.hbase.bluemix::*;
 
 composite HBaseDeleteTable {
     param
-    	expression<rstring> $baseUrl:getSubmissionTimeValue("baseUrl");
+    	expression<rstring> $baseUrl:getSubmissionTimeValue("url");
     	expression<rstring> $username:getSubmissionTimeValue("username");
         expression<rstring> $password:getSubmissionTimeValue("password");
 
