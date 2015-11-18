@@ -4,16 +4,13 @@
  <info:identity>
    <info:name>com.ibm.streamsx.hbase.bluemix</info:name>
    <info:description>
-   The com.bm.streamsx.hbase.bluemix toolkit is used for interacting with HBase via its rest API.  As the name implies, the toolkit is best suited for interacting with HBase deployed on Bluemix.
+   The HBase Bluemix toolkit is used for interacting with HBase via its rest API.  As the name implies, the toolkit is best suited for interacting with HBase deployed on Bluemix.
 
-The toolkit contains spl functions for interacting with HBase.  You can use these SPL functions
-in Custom operators and Functors as needed in your application.  This requires the inet toolkit 2.7 or better.
+The toolkit contains spl functions for interacting with HBase.  You can use these SPL functions in Custom operators and Functors as needed in your application.  This requires version 2.7 better of the com.ibm.streamsx.inet toolkit, as well as version 1.0 or better of the com.ibm.streamsx.bytes toolkit.
 
-This toolkit separates its functionality into a number of namespaces:
-* com.ibm.streamsx.hbase.bluemix: Functions for interacting with HBase.
-* com.ibm.streamsx.base64: Functions for encoding data into base64 and decoding base64 data.
+This functionality is provided in the com.ibm.streamsx.hbase.bluemix namespace.
 
-+ Developing and running applications that use the Internet Toolkit
++ Developing and running applications that use the HBase Bluemix Toolkit
 
 To create applications that use the HBase Toolkit you must configure either Streams Studio
 or the SPL compiler to be aware of the location of the toolkit. 
@@ -21,7 +18,7 @@ or the SPL compiler to be aware of the location of the toolkit.
 # Before you begin
 
 Install IBM InfoSphere Streams. Configure the product environment variables by entering the following command: 
-    source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
+    source product-installation-root-directory/4.x.x.x/bin/streamsprofile.sh
 
 # About this task
 
