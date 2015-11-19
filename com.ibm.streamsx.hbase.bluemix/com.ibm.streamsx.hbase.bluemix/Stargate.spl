@@ -26,10 +26,10 @@ public rstring hbaseDeleteTable(rstring baseUrl, rstring username, rstring passw
     mutable int32 error = 0;
     rstring toReturn = httpDelete(url,(list<rstring>)[],username,password,error);
     if (isTraceable(Trace.debug)) {
-        appTrc(Trace.debug, "returned: "+toReturn);
-    }
-
+     	appTrc(Trace.debug, "HBase delete table request returned: "+ toReturn);
+     }	
     return toReturn;
+
 }
 
 /** Create an HBase table.
@@ -57,10 +57,10 @@ public void hbaseMakeTable(rstring baseUrl, rstring username, rstring password, 
     mutable list<rstring> returnedHeaders=[];
     rstring toReturn = httpPut(toPut,url,["Accept: application/json","Content-Type: application/json"],username, password,returnedHeaders, error);
     if (isTraceable(Trace.debug)) {
-        appTrc(Trace.debug,"put to make table returned "+toReturn);
+        appTrc(Trace.debug,"put request to make HBase table returned "+toReturn);
     }
     if (error != 0) {
-        appTrc(Trace.error, "Error code "+(rstring)error);
+        appTrc(Trace.error, "HBase Make table Error code "+(rstring)error);
     }
 }
 
@@ -72,6 +72,7 @@ public void hbaseMakeTable(rstring baseUrl, rstring username, rstring password, 
  * @param columnFamily Column family of entry to added.
  * @param columnQualifier Column qualifier of entry to be added.
  * @param value Value of entry to be added.
+ * @return A string describing the result of the put request. Will be empty on success and may contain an exception otherwise. 
  */
 
 public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row, rstring columnFamily, rstring columnQualifier, rstring value) {
@@ -84,11 +85,11 @@ public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rst
     }
     rstring toReturn = httpPost(toPut,url,["Accept: text/xml","Content-Type: text/xml"], username, password, returnedHeaders, error);
     if (error != 0) {
-        appTrc(Trace.error, "Error code for hbase put "+(rstring)error);
+        appTrc(Trace.error, "Error code for HBase put "+(rstring)error);
     }
-    if (isTraceable(Trace.debug)) {
-        appTrc(Trace.error,"Result for hbase put "+toReturn);
-    }
+    if (isTraceable(Trace.debug) ) {
+        appTrc(Trace.debug,"Result for HBase put "+toReturn);
+   }
     return toReturn;
 }
 
@@ -98,7 +99,7 @@ public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rst
  * @param password Password for Knox gateway, if needed.
  * @param tableName Name of the table
  * @param row row to get.
- * @return Tuple contain the row and all values in that row.
+ * @return Tuple containing the row and all values in that row.
  */
 
 public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row) {
@@ -106,10 +107,10 @@ public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rs
     mutable int32 error=0;
     rstring resultJson = httpGet(url,["Accept: application/json","Content-Type: application/xml"], username, password, error);
     if (error != 0) {
-        appTrc(Trace.error, "Error code "+(rstring)error);
+        appTrc(Trace.error, "HBase get returned error code "+(rstring)error);
     }
     if (isTraceable(Trace.debug)) {
-        appTrc(Trace.error,"Result is "+resultJson);
+        appTrc(Trace.debug,"Result is "+resultJson);
     }
     int32 keyStart = findFirst(resultJson,"key\":");
     int32 rowidStart = findFirst(resultJson,":",keyStart)+2;
