@@ -2,7 +2,11 @@
  * All Rights Reserved
  */
 use com.ibm.streamsx.hbase.bluemix::*;
-
+/***
+ * Create a table in HBase and add some data to it using the
+ * hbaseMakeTable and hbasePut functions.
+ * See the HBaseGet sample to see how to retrieve data from HBase.
+ */
 composite HBaseMakeTableAndPut {
     param
         expression<rstring> $password:getSubmissionTimeValue("password");
@@ -10,37 +14,59 @@ composite HBaseMakeTableAndPut {
     	expression<rstring> $baseUrl:getSubmissionTimeValue("url");
 
 	type
-		AppTuple = uint64 rowKey;
+		AppTuple = uint64 rowKey, rstring name;
 	
 	
 	 graph
 	
 	
 	    () as CreateTable = Custom() {
-	        logic onProcess: {
+	        logic
+	         onProcess: {
+	           
 	            hbaseMakeTable($baseUrl,$username,$password,"person",["personal","professional"]);
-	    }
-	}
+	  		 }
+		}
 	
 	stream <AppTuple>  AppTuple_beat = Beacon () {
 	
 		logic state: {
 			mutable uint64 tupleCount = 0u;
+			list<rstring> people = ["Tasos", "Mark", "Robin", "Kelly", "Grace"];
 		}
 	
 		param 
-			iterations: 10u;
+			iterations: 5u;
 		    initDelay: 10.0;
 	
 		output 
-			AppTuple_beat : rowKey = ++tupleCount;
+			AppTuple_beat :name= people[IterationCount()], rowKey = ++tupleCount;
 	}
 	
 	
 	() as InsertData = Custom(AppTuple_beat) {
-	    logic onTuple AppTuple_beat: {
-	       hbasePut($baseUrl,$username,$password,"person",(rstring)rowKey,"personal","fname","Tasos");
-	        }
+	    logic state :{
+	    		mutable int32 count = 0;
+	    	}
+	    	onTuple AppTuple_beat: {
+	      			
+	      		rstring error_msg = hbasePut($baseUrl,$username,$password,"person",(rstring)rowKey,"personal","fname", name );
+	      		
+	      		//error handling/checking
+	      		if (length(error_msg) == 0) { 
+	      			//hbasePut returns an empty message if the put was successful
+	      			count++;
+	      		} else {
+	      			printStringLn("Error returned from hbasePut: " + error_msg);
+	      		}
+	       } 
+	       	
+	       	onPunct AppTuple_beat: {
+	       		if (currentPunct() == Sys.FinalMarker) {
+	       			//only print when the application is finished
+	       			printStringLn("hbasePut test successfully put " + (rstring)count + " entries.");
+	       		}
+	       }
 	    }
 	
 	

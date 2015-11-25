@@ -13,7 +13,10 @@ composite HBaseDeleteTable {
 
         () as Tester = Custom() {
             logic onProcess: {
-              hbaseDeleteTable($baseUrl,$username,$password,"person");
+            rstring msg =  hbaseDeleteTable($baseUrl,$username,$password,"person");
+              if (length(msg) == 0) {
+              	printStringLn("HBase table deleted successfully.");
+              }
             }
         }
 
