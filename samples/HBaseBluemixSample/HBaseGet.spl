@@ -3,7 +3,11 @@
  */
 use com.ibm.streamsx.hbase.bluemix::*;
 
-
+/**
+ * This sample demonstrates how to get cells from a row in HBase using the hbaseGet function.
+ * It is assumed that the HBaseMakeTableAndPut sample has been run first to insert rows into a table.
+ * 
+ */
 
 
 composite HBaseGet {
@@ -16,15 +20,22 @@ composite HBaseGet {
 
 		stream<RowType row>  ReadHBase = Custom() {
 		    logic onProcess: {
-		       RowType row = hbaseGet($baseUrl,$username,$password,"person","1");
-			   submit ({row = row},ReadHBase);
+		     mutable int32 count = 1;
+		     while (count <= 5) { //Retrieve the 5 rows added by the HBaseMakeTableAndPut sample.
+		       	RowType row = hbaseGet($baseUrl,$username,$password,"person", (rstring)count);
+			   	submit ({row = row},ReadHBase);
+			   	count++;
+			   }
 		    }
 		}
 		
 		() as Writer = Custom(ReadHBase) {
 			logic	
 				onTuple	ReadHBase: {
-					printStringLn((rstring)row);
+					RowType returned_row = ReadHBase.row;
+					for (CellType cell in returned_row.cells) {
+						printStringLn("Row " +  returned_row.rowKey+ ", Column: " + cell.column + " Value: " + cell.value +  " Time:" + (rstring)cell.time);
+					}
 				}
 		} 
 

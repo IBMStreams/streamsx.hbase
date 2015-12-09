@@ -6,7 +6,17 @@ namespace com.ibm.streamsx.hbase.bluemix;
 use com.ibm.streamsx.inet.http::*;
 use com.ibm.streamsx.bytes.conversion::*;
 
-type RowType = rstring row, list<tuple<rstring column, rstring value, int64 time>> cells;
+
+/**
+ * Represents a row in an HBase table.
+*/
+type RowType = rstring rowKey, list<CellType> cells;
+
+/**
+ Represents a cell within a row in an HBase table.
+ */
+type CellType = tuple<rstring column, rstring value, int64 time>;
+
 
 /**
  * Delete an HBase table.  
@@ -14,7 +24,7 @@ type RowType = rstring row, list<tuple<rstring column, rstring value, int64 time
  * @param username Username if access is via the Knox gateway.  May be empty.
  * @param password Password for the Knox gateway.  Maybe be empty.
  * @param tableName Name of the table to create.
- * @return the result of the HttpDelete request.  May contain an exception in the case of an error.
+ * @return the result of the HttpDelete request.  May contain an exception in the case of an error and will be empty otherwise.
  */
 
 public rstring hbaseDeleteTable(rstring baseUrl, rstring username, rstring password, rstring tableName) {
@@ -124,7 +134,7 @@ public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rs
     if (isTraceable(Trace.trace)) {
         appTrc(Trace.trace,"row key is "+rowid);
     }
-    mutable list<tuple<rstring column, rstring value, int64 time>> cellList = [];
+    mutable list<CellType> cellList = [];
     mutable int32 nextCell = findFirst(resultJson,"{",rowidEnd);
     while (nextCell != -1) {
         int32 columnStart =	findFirst(resultJson,"column\":",nextCell) + 9;
@@ -148,5 +158,6 @@ public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rs
     if (isTraceable(Trace.trace)) {
         appTrc(Trace.error,"Cell list:"+(rstring)cellList);
     }
-    return {row = rowid,cells=cellList};
+    return {rowKey= rowid,cells=cellList};
 }
+

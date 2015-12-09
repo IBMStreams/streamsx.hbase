@@ -8,7 +8,7 @@
 
   <!-- toolkit was tested with HBase 0.94.3 and Hadoop 1.1.1      -->
   <property name="streams.install" value="${env.STREAMS_INSTALL}" />
-  <property name="toolkit" location="com.ibm.streamsx.hbase"/>
+  <property name="toolkit" location="com.ibm.streamsx.hbase.bluemix"/>
   <property name="tmp" location="tmp" />
 	
   <target name="all" depends="toolkit,samples"/>
@@ -64,20 +64,19 @@
     </antcall>
     <touch file="${tkinfo.info:identity.info:name}/toolkit.xml"/>
     <subant target="spldoctoolkit" genericantfile="${basedir}/build.xml">
-       <dirset dir="samples" includes="*"/>
+       <dirset dir="samples" includes="HBaseBluemixSample"/>
     </subant>
 
   </target>
 
   <target name="samples" depends="toolkit">
     <subant target="indextoolkit" genericantfile="${basedir}/build.xml">
-       <dirset dir="samples" includes="*"/>
-       <dirset dir="extraSamples" includes="*"/>
+       <dirset dir="samples" includes="HBaseBluemixSample*"/>
     </subant>
   </target>
   <target name="cleansamples">
     <subant target="cleantoolkit" genericantfile="${basedir}/build.xml">
-       <dirset dir="samples" includes="*"/>
+       <dirset dir="samples" includes="HBaseBluemixSample"/>
     </subant>
   </target>
   
@@ -120,13 +119,14 @@
 
   <!-- Targets to build releases -->
   <target name="release"  depends="clean,all,spldoc">
+  	<echo message="toolkit to build {toolkit}"/>
 	<mkdir dir="${tmp}" />
-        <property name="releasefilename" value="${tmp}/streamsx.hbase.toolkits-${tkinfo.info:identity.info:version}-${DSTAMP}-${TSTAMP}.tgz"/>
+        <property name="releasefilename" value="${tmp}/streamsx.hbase.bluemix.toolkits-${tkinfo.info:identity.info:version}-${DSTAMP}-${TSTAMP}.tgz"/>
     	<tar compression="gzip" longfile="gnu"
              destfile="${releasefilename}"
     	     basedir="${basedir}"
-             includes="${tkinfo.info:identity.info:name}/** samples/**"
-             excludes="**/.gitignore **/.settings/** **/.settings **/.project **/.classpath **/tmp_downloaded/*"
+             includes="${tkinfo.info:identity.info:name}/** samples/HBaseBluemixSample/**"
+             excludes="**/.gitignore samples/HBaseBluemixSample/toolkit.xml samples/HBaseBluemixSample/output/** samples/HBaseBluemixSample/.toolkitList ${tkinfo.info:identity.info:name}/.settings com.ibm.streams.hbase.bluemix/.project ${tkinfo.info:identity.info:name}/.classpath **/tmp_downloaded/*"
     	/>
         <checksum file="${releasefilename}"/>
         <checksum algorithm="sha1" file="${releasefilename}"/>
