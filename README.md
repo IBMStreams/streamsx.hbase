@@ -1,4 +1,4 @@
-lHBase Toolkit for Bluemix
+HBase Toolkit for Bluemix
 ==============
 
 This fork of the streamsx.hbase project provides allows Streams to write tuples into an HBase servers in the BigInsights service in Bluemix.
