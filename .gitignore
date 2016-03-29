@@ -23,7 +23,6 @@ $StreamsModel.java
 
 # begin streamsx.hbase excluded
 samples/*/data/*.out
-.classpath
 .toolkitList
 .namespace
 samples/*/output_*
