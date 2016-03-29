@@ -5,7 +5,7 @@ import com.ibm.streams.function.model.Function;
 
 public class KeyHelper {
 
-	/**.
+	/**
 	 * Here our key is a concatenation of a timestamp (represented as a long) and a location.
 	 *  (NOTE: This is probably not a good key, as consecutive updates will go to the same HBase tablet server, and your application won't be able to get much parallelism.) 
 	 *  This function will generate two spl functions:  list<uint8> makeKey(uint64, T)  list<int8> makeKey(int64,T).  
