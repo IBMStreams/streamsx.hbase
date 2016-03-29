@@ -1,4 +1,5 @@
-namespace com.ibm.streamsx.hbase.sample ;
+namespace com.ibm.streamsx.hbase.sample;
+
 /**
  * Demonstrate how to use java native functions to generate keys for 
  * Hbase operators.
@@ -89,3 +90,4 @@ composite CustomKey
 		}
 
 }
+

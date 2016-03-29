@@ -1,4 +1,3 @@
 /.apt_generated/
-/impl/java/gensrc
-/com.ibm.streamsx.hbase.sample/native.function/
-/data
+/output/
+/impl/java/bin
