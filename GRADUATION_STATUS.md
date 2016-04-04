@@ -6,22 +6,22 @@ Incubation for projects is covered here: https://github.com/IBMStreams/administr
 
 ## Status
 
-- [ ] :red_circle: Stable release(s)
-  * Status: **TBD**
-- [ ] :red_circle: Project is properly documented
-  * Status: **TBD**
-- [ ] :red_circle: Project has samples and instructions to help users get started easily
-  * Status: **TBD**
-- [ ] :red_circle: Sufficient testing
-  * Status: **TBD**
+- [x] :white_check_mark: Stable release(s)
+  * Status: Multiple releases already completed
+- [x] :white_check_mark: Project is properly documented
+  * Status: Yes
+- [x] :white_check_mark: Project has samples and instructions to help users get started easily
+  * Status: Yes
+- [x] :large_orange_diamond: Sufficient testing
+  * Status: Functional testing is done, stress/performance tests pending.
 - [ ] :red_circle: Instructions on how to get started with development and contributing to project
   * Status: **TBD**
-- [ ] :red_circle: Website that contains information and documentation of the project
-  * Status: **TBD**
+- [x] :white_check_mark: Website that contains information and documentation of the project
+  * Status: Yes, project site is kept up to date.
 - [ ] :red_circle: Clear release plan
   * Status: **TBD**
-- [ ] :red_circle: At least one active committer
-  * Status: **TBD**
+- [x] :red_circle: At least one active committer
+  * Status: Yes, Natasha D'Silva
 
 ### Key
 * :white_check_mark: - Complete
