@@ -221,7 +221,7 @@ public class HBASEPut extends HBASEPutDelete {
 			// It should be impossible to get here.
 			throw new Exception("Unsupported Put type");
 		}
-		HTableInterface myTable = connection.getTable(tableNameBytes);
+		
 		if (checkAttr != null) {
 			Tuple checkTuple = tuple.getTuple(checkAttrIndex);
 
@@ -252,7 +252,6 @@ public class HBASEPut extends HBASEPutDelete {
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
 		submitOutputTuple(tuple, success);
-		myTable.close();
 	}
 
 	/**
@@ -267,7 +266,6 @@ public class HBASEPut extends HBASEPutDelete {
 					myTable.put(putList);
 				}
 			}
-			myTable.close();
 		}
 	}
 
