@@ -61,7 +61,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ "When that attribute is specified, deletes are conditional on the state of the table, and so may either succeed or fail. "
 		+ "This output port allows the SPL developer to determine whether the delete succeede or failed.  "
 		+ "For each input tuple, an output tuple is generated. "
-		+ "The attribute named by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true when the delete succeded, and false otherwise"
+		+ "The attribute named by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true when the delete succeded, and false otherwise.  "
 		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 @Icons(location32 = "impl/java/icons/HBASEDelete_32.gif", location16 = "impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {
@@ -91,6 +91,10 @@ public class HBASEDelete extends HBASEPutDelete {
 		deleteAll = _delete;
 	}
 
+	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "Maximum number of Deletes to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.")
+	public void setBatchSize(int _size) {
+		batchSize = _size;
+	}
 	/**
 	 * deleteAll only has an effect when a single cell is being deleted, so
 	 * let's make sure no one is misusing it. To do this, we make sure a
@@ -242,6 +246,7 @@ public class HBASEDelete extends HBASEPutDelete {
 						myTable.delete(deleteList);
 					}
 				}
+				myTable.close();
 			}
 		}
 	}
@@ -258,6 +263,5 @@ public class HBASEDelete extends HBASEPutDelete {
 				deleteList.clear();
 			}
 		}
-
 	}
 }

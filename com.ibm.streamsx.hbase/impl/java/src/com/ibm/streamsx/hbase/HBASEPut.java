@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
+import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
@@ -123,8 +124,29 @@ public class HBASEPut extends HBASEPutDelete {
 	protected MetaType[] attrType = null;
 	private int valueAttrIndex = -1;
 	private MetaType valueAttrType = null;
+	protected boolean bufferTransactions = false;
 
-	@Parameter(name = VALUE_NAME, optional = false, description = "This parmeter specifies the name of the attribute that contains the value that is put into the table.")
+	protected Object tableLock = new Object();
+	public static final String BUFFER_PARAM = "enableBuffer";
+
+	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "**This parameter has been deprecated as of Streams 4.2.0**.  The **" +BUFFER_PARAM+"** parameter should be used instead.  The **batchSize** parameter indicates the maximum number of Puts to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.")
+	public void setBatchSize(int _size) {
+		batchSize = _size;
+	}
+	
+	@Parameter(name= BUFFER_PARAM, optional = true, description = "When set to true, this parameter can improve the performance of the operator because tuples received by the operator will not be immediately forwarded to the HBase server. "+ 
+	"The buffer is flushed and the tuples are sent to HBase when one of the following three conditions is met: " +
+	"the buffer's size limit is reached, or a window marker punctuation is received by the operator, or, during a drain operation if the operator is present "+
+	"in a consistent region.  The buffer size is set in `hbase-site.xml` using the `hbase.client.write.buffer` property. "+
+	" Note that although enabling buffering improves performance, there is a risk of data loss if there is a system failure before the buffer is flushed. "
+	+"By default, **" + BUFFER_PARAM + "** is set to false.  This parameter cannot be combined with the **" + CHECK_ATTR_PARAM + "** parameter, since checkAndPut operations in HBase are not buffered.")
+	public void setEnableBuffering(boolean bufferTuples) {
+		bufferTransactions = bufferTuples;
+	}
+	
+	
+	
+	@Parameter(name = VALUE_NAME, optional = false, description = "This parameter specifies the name of the attribute that contains the value that is put into the table.")
 	public void setValueAttr(String val) {
 		valueAttr = val;
 	}
@@ -138,9 +160,35 @@ public class HBASEPut extends HBASEPutDelete {
 	@ContextCheck(compile = true)
 	public static void checkDeleteAll(OperatorContextChecker checker) {
 		HBASEPutDelete.compileTimeChecks(checker, "HBASEPut");
+		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BUFFER_PARAM)){
+			checker.setInvalidContext("The " + CHECK_ATTR_PARAM + " parameter cannot be used with the " + BUFFER_PARAM + "  parameter", new Object[0]);
+		}
+	}
+	
+
+	/**
+	 * Check if the batchSize parameter is used, if so, issue a warning.
+	 * @param checker
+	 */
+	@ContextCheck(compile=true)
+	public static void checkForBatchSizeParam(OperatorContextChecker checker) {
+		OperatorContext context = checker.getOperatorContext();
+		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
+		 
+		if ((!checker.checkExcludedParameters(BATCHSIZE_NAME,BUFFER_PARAM))){
+		 	checker.setInvalidContext("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " +BUFFER_PARAM  + " parameter instead.", null);
+		} else if (context.getParameterNames().contains(BATCHSIZE_NAME)) {
+			System.err.println("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " +BUFFER_PARAM  + " parameter instead.");
+		}
+		
 	}
 
 	Logger logger = Logger.getLogger(this.getClass());
+	/**
+	 * When enableBuffer is true and we are disabling autoflush,
+	 * keep a pointer to the hbase table. This value will be null otherwise
+	 */
+	private HTableInterface cachedTable;
 
 	/**
 	 * Initialize this operator. Create the list to store the batch.
@@ -157,6 +205,13 @@ public class HBASEPut extends HBASEPutDelete {
 		if (batchSize > 0) {
 			putList = new ArrayList<Put>(batchSize);
 		}
+		
+		if (bufferTransactions) {
+    		Logger.getLogger(this.getClass()).trace("Disabling auto flush");
+    		cachedTable = connection.getTable(tableNameBytes);
+
+    		cachedTable.setAutoFlush(false, true);
+    	}
 		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
 		StreamSchema schema = inputPort.getStreamSchema();
 		Attribute attr = schema.getAttribute(valueAttr);
@@ -202,7 +257,10 @@ public class HBASEPut extends HBASEPutDelete {
 		byte colF[] = getColumnFamily(tuple);
 		boolean success = false;
 		Put myPut = new Put(row);
-
+		HTableInterface table = null;
+		if (!bufferTransactions) {
+			table = connection.getTable(tableNameBytes);
+		}
 		switch (putMode) {
 
 		case ENTRY:
@@ -235,19 +293,25 @@ public class HBASEPut extends HBASEPutDelete {
 					checkColQType);
 			byte checkValue[] = getCheckValue(checkTuple);
 
-			success = myTable.checkAndPut(checkRow, checkColF, checkColQ,
+			success = table.checkAndPut(checkRow, checkColF, checkColQ,
 					checkValue, myPut);
 			logger.debug("Result is " + success);
-		} else if (batchSize == 0) {
-			myTable.put(myPut);
+		} else if (!bufferTransactions && batchSize == 0) {
+			table.put(myPut);
+		} else if (bufferTransactions){
+			safePut(myPut);
 		} else {
 			synchronized (listLock) {
 				putList.add(myPut);
 				if (putList.size() >= batchSize) {
-					myTable.put(putList);
+					logger.debug("Submitting batch puts");
+					table.put(putList);
 					putList.clear();
 				}
 			}
+		}
+		if (!bufferTransactions){
+			table.close();
 		}
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
@@ -255,27 +319,95 @@ public class HBASEPut extends HBASEPutDelete {
 	}
 
 	/**
+	 * Since the table is cached we need to make sure access to it are thread safe.
+	 */
+	protected void safePut(Put p) throws IOException {
+		synchronized (tableLock) {
+			cachedTable.put(p);
+		}
+	}
+	
+	@Override
+	public void shutdown() throws Exception {
+		if (cachedTable != null) {
+			cachedTable.close();
+		}
+			
+	}
+	
+	/***
+	 * Safely flush the underlying HBase buffer 
+	 * @throws IOException 
+	 */
+	protected void safeFlush() throws IOException {
+		if (connection != null && !connection.isClosed()) {
+			synchronized (tableLock) {
+				cachedTable.flushCommits();
+			}
+		}
+	}
+	/**
 	 * Empty the buffer. Called by shutdown and processPunctuation.
 	 */
 	@Override
-	protected synchronized void flushBuffer() throws IOException {
+	protected   void flushBuffer() throws IOException {
 		if (connection != null && !connection.isClosed()) {
-			HTableInterface myTable = connection.getTable(tableNameBytes);
-			synchronized (listLock) {
-				if (myTable != null && putList != null && putList.size() > 0) {
-					myTable.put(putList);
-				}
+			if (bufferTransactions) {
+				safeFlush();
+			}
+			if (batchSize > 0) {
+				flushInternalBuffer();
+			}
+		}
+	}
+	
+	/**
+	 * Flush the internal list of puts we keep when using our own batch puts instead of autoflush
+	 */
+	protected synchronized void flushInternalBuffer() throws IOException {
+		HTableInterface table = connection.getTable(tableNameBytes);
+		synchronized (listLock) {
+			if (table != null && putList != null && putList.size() > 0) {
+				logger.debug("Emptying buffer ");
+				table.put(putList);
+				table.close();
 			}
 		}
 	}
 
 	@Override
-	protected synchronized void clearBuffer() {
-		synchronized (listLock) {
-			if (putList != null && putList.size() > 0) {
-				putList.clear();
+	protected void clearBuffer() throws IOException{
+		if (batchSize > 0) {
+			clearInternalBuffer();
+		}
+		if (bufferTransactions) {
+			logger.debug("Attempting to submit cached transactions to HBase");
+			safeFlush();
+		}
+	}
+	
+	protected synchronized void clearInternalBuffer() {
+		if (connection != null && !connection.isClosed()) {
+			synchronized (listLock) {
+				if (putList != null && putList.size() > 0) {
+					putList.clear();
+				}
 			}
 		}
 	}
+	
+	
+	@Override
+	public void processPunctuation(StreamingInput<Tuple> stream,
+			Punctuation mark) throws Exception {
+		if (bufferTransactions && Punctuation.WINDOW_MARKER == mark) {
+			safeFlush();
+		} else if (Punctuation.FINAL_MARKER == mark && batchSize > 0) {
+			flushBuffer();
+		}
+	}
+
+	
+ 
 
 }
