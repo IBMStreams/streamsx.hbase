@@ -83,7 +83,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
 	
-	HTableInterface myTable = null;
 	
     @Parameter(name=HBASE_SITE_PARAM_NAME, optional=true,description="The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
 	public void setHbaseSite(String name) {
@@ -270,13 +269,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
 	
-	myTable = connection.getTable(tableNameBytes);
-
-    	if (null == myTable) {
-    		Logger.getLogger(this.getClass()).error("Cannot access table, failing.");
-    		throw new Exception("Cannot access table.  Check configuration");
-    	}
-    	myTable.setAutoFlush(false, true);
 	}
 	
 	/**
@@ -300,9 +292,6 @@ public abstract class HBASEOperator extends AbstractOperator {
    @Override
    public synchronized void shutdown() throws Exception {
        OperatorContext context = getOperatorContext();
-       if (myTable != null) {
-    	   myTable.close();
-       }
        Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
        if (connection != null && !connection.isClosed()) {
     	   connection.close();

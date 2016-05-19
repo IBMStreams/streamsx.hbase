@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -59,17 +60,13 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	private String successAttrName = null;
 	private int successAttrIndex = -1;
 	StreamingOutput<OutputTuple> outStream = null;
-
+	
 	@Parameter(name = SUCCESS_PARAM, optional = true, description = "Attribute on the output port to be set to true if the check passes and the action is successful")
 	public void setSuccessAttr(String name) {
 		successAttrName = name;
 	}
 
-	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "Maximum number of Puts or Deletes to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.")
-	public void setBatchSize(int _size) {
-		batchSize = _size;
-	}
-
+	
 	@Parameter(name = CHECK_ATTR_PARAM, optional = true, description = "Name of the attribute specifying the tuple to check for before applying the Put or Delete.  The type of the attribute is tuple with attributes columnFamily and columnQualifier, or a tuple with attributes columnFamily, columnQualifier, and value.   In the first case, the Put or Delete will be allowed to proceed only when there is no entry for the row, columnFamily, columnQualifer combination.  When the the type of the attribute given by "+CHECK_ATTR_PARAM+" contains an attribute `value`, the Put or Delete operation will only succeed when the entry specified the row, columnFamily, and columnQualifier has the given value.")
 
 	public void setCheckAttr(String name) {
@@ -110,7 +107,9 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		successRequiresOutput(checker);
 		checker.checkDependentParameters(SUCCESS_PARAM, CHECK_ATTR_PARAM);
 		checkConsistentRegionSource(checker, operatorName);
-
+		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BATCHSIZE_NAME)){
+			checker.setInvalidContext("The " + CHECK_ATTR_PARAM + " parameter cannot be used with the " + BATCHSIZE_NAME + "  parameter", new Object[0]);
+		}
 	}
 
 	protected void establishCheckAttrMatching(Attribute checkAttr)
@@ -163,11 +162,14 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		
+		
+		HTableInterface table = connection.getTable(tableNameBytes);
 
-		if (batchSize > 0 && checkAttr != null) {
-			// TODO make this proper context check!
-			throw new Exception("Cannot use checkAttr with batchSize > 0");
-		}
+    	if (null == table) {
+    		Logger.getLogger(this.getClass()).error("Cannot access table, failing.");
+    		throw new Exception("Cannot access table.  Check configuration");
+    	}
 
 		StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
 		StreamSchema inputSchema = input.getStreamSchema();
@@ -206,6 +208,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			}
 			successAttrIndex = attr.getIndex();
 		}
+		table.close();
 		context.registerStateHandler(this);
 	}
 
@@ -217,7 +220,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	/**
 	 * Clear the buffer of pending changes. Called by reset.
 	 */
-	abstract protected void clearBuffer();
+	abstract protected void clearBuffer() throws Exception;
 
 	/**
 	 * Shutdown this operator.
@@ -228,7 +231,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	@Override
 	public void shutdown() throws Exception {
 		flushBuffer();
-		super.shutdown();
+	  super.shutdown();
 	}
 
 	@Override
