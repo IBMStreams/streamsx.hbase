@@ -329,9 +329,11 @@ public class HBASEPut extends HBASEPutDelete {
 	
 	@Override
 	public void shutdown() throws Exception {
+		flushBuffer();
 		if (cachedTable != null) {
 			cachedTable.close();
 		}
+		super.shutdown();
 			
 	}
 	
