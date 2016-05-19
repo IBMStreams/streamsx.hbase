@@ -342,6 +342,7 @@ public class HBASEPut extends HBASEPutDelete {
 	protected void safeFlush() throws IOException {
 		if (connection != null && !connection.isClosed()) {
 			synchronized (tableLock) {
+				logger.debug("Calling hbase internal flush commits");
 				cachedTable.flushCommits();
 			}
 		}
