@@ -332,6 +332,7 @@ public class HBASEPut extends HBASEPutDelete {
 		flushBuffer();
 		if (cachedTable != null) {
 			cachedTable.close();
+			cachedTable = null;
 		}
 		super.shutdown();
 			
@@ -355,7 +356,7 @@ public class HBASEPut extends HBASEPutDelete {
 	@Override
 	protected   void flushBuffer() throws IOException {
 		if (connection != null && !connection.isClosed()) {
-			if (bufferTransactions) {
+			if (bufferTransactions && cachedTable != null) {
 				safeFlush();
 			}
 			if (batchSize > 0) {
