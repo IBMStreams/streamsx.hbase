@@ -67,7 +67,7 @@ import com.ibm.streams.operator.state.StateHandler;
 		+ " is a list or a primitive type, there will be one tuple per HBASE entry.  If "
 		+ HBASEGet.OUT_PARAM_NAME
 		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating) })
-@Icons(location32 = "impl/java/icons/HBASEScan_32.gif", location16 = "impl/java/icons/HBASEScan_16.gif")
+@Icons(location32 = "icons/HBASEScan_32.gif", location16 = "icons/HBASEScan_16.gif")
 public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final String TRIGGER_PARAM = "triggerCount";
 	static final String consistentCutDesc = HBASEOperator.consistentCutIntroducer
