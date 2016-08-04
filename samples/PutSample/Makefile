@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2014, International Business Machines Corporation  
+# Copyright (C) 2013-2016, International Business Machines Corporation  
 # All Rights Reserved     
 
 # NOTE: To compile, you must have HBASE_HOME and HBASE_HOME set in your
@@ -20,39 +20,27 @@ SPL_MAIN_CHECK = com.ibm.streamsx.hbase.sample::CheckAndPut
 SPL_MAIN_EXIST_CHECK=com.ibm.streamsx.hbase.sample::PutExistCheck
 SPL_MAIN_PUT=com.ibm.streamsx.hbase.sample::PutSample
 
+SPL_MAIN_COMP= BasicUpdate
+SPL_MAIN_CHECK_COMP= CheckAndPut
+SPL_MAIN_EXIST_COMP= PutExistCheck
+SPL_MAIN_PUT_COMP=PutSample
 
-all: standalone_update standalone_check standalone_exist standalone_put
+all: compile data
 
 data:
 	mkdir data
 
-standalone_update: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS) --output-dir output_update
 
-standalone_check: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS) --output-dir output_check
-
-standalone_exist: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS) --output-dir output_check_exist
-
-standalone_put: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS) --output-dir output_put
-
-
-distributed: data
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS)
+compile: data
+	$(SPLC) --output-dir output/$(SPL_MAIN_COMP) $(SPLC_FLAGS) -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS)
+	$(SPLC) --output-dir output/$(SPL_MAIN_CHECK_COMP) $(SPLC_FLAGS) -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS)
+	$(SPLC) --output-dir output/$(SPL_MAIN_EXIST_COMP) $(SPLC_FLAGS) -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS)
+	$(SPLC) --output-dir output/$(SPL_MAIN_PUT_COMP)  $(SPLC_FLAGS) -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS)
 
 clean: 
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS)
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS) --output-dir output_update
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS) --output-dir output_check
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS) --output-dir output_check_exist
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS) --output-dir output_put
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_UPDATE) $(SPL_CMD_ARGS)  --output-dir output/$(SPL_MAIN_COMP)
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_CHECK_COMP)
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_EXIST_COMP) 
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_PUT_COMP)
 	rm data/*.out
 
