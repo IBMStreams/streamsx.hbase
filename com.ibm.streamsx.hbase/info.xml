@@ -57,7 +57,7 @@ or the SPL compiler to be aware of the location of the toolkit.
 # Before you begin
 
 * Install IBM InfoSphere Streams.  Configure the product environment variables by entering the following command: 
-    source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
+    source product-installation-root-directory/4.2.0.0/bin/streamsprofile.sh
 * Install Apache HBase ([http://hbase.apache.org/]), Apache Hadoop ([http://hadoop.apache.org/]) 
   and Apache Zookeeper ([http://zookeeper.apache.org/]). All of these products are installed as part of IBM InfoSphere BigInsights. 
   * This toolkit supports IBM InfoSphere BigInsights version 3.0.0 and later and HBase 0.96 and later versions.  
@@ -73,14 +73,17 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 # Procedure
 
-1. Supply the operator with HBase configuration information. Choose one of the following methods:
-   * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation 
-     into the `etc` directory in your application.
-     Use the **hbaseSite** parameter in the HBase Toolkit operators to point to the `hbase-site.xml`.
-   * If the Streams processing application runs on a resource where Hbase and Hadoop are installed, you may instead 
-     set the **HBASE_HOME** environment variable so that the operators look in `HBASE_HOME/conf/hbase-site.xml` 
-     for HBASE configuration information. For example, set **HBASE_HOME** to the directory that contains HBase.
-2. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+1. Configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
+   * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase. For example, for IBM BigInsights version 4.2, set **HBASE_HOME** to `/usr/iop/4.2.0.0/hbase`.
+   * Otherwise, copy the **HBASE_HOME**/`lib` directory to the file system where Streams will be running:
+     * Create a new directory on the file system.
+     * Copy the lib directory of your HBase installation to the directory you just created.
+     * Set **HBASE_HOME** to the directory you created.
+   * **HBASE_HOME**  must be set as an application environment variable on the instance where your application will be running. This can be done using the Streams Console or the `streamtool` utility.
+2. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/`conf` is searched for the `hbase-site.xml`.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
+   * Create a `conf` directory in the same directory you created in step 1 and copy the `hbase-site.xml` from your HBase installation to that directory.
+   * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation into a directory accessible by your application and use the **hbaseSite** parameter to specify the path to the copied file.
+3. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
    * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
     or multiple toolkits (with : as a separator).  For example:
        export STREAMS_SPLPATH=$STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase
@@ -103,6 +106,6 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
   </info:identity>
   <info:dependencies/>
   <info:sabFiles>
-    <info:exclude path="opt/tmp_downloaded"/>
+    <info:exclude path="opt/downloaded"/>
   </info:sabFiles>
 </info:toolkitInfoModel>

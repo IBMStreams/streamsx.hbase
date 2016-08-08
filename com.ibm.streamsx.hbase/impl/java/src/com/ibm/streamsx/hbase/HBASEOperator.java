@@ -44,7 +44,7 @@ import java.net.URI;
  * @author hildrum
  *
  */
-@Libraries({"opt/downloaded/*"})
+@Libraries({"@HBASE_HOME@/lib/*"})
 public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
     static final String HBASE_SITE_PARAM_NAME="hbaseSite";
