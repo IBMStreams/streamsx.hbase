@@ -57,7 +57,7 @@ or the SPL compiler to be aware of the location of the toolkit.
 # Before you begin
 
 * Install IBM InfoSphere Streams.  Configure the product environment variables by entering the following command: 
-    source product-installation-root-directory/4.2.0.0/bin/streamsprofile.sh
+    source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 * Install Apache HBase ([http://hbase.apache.org/]), Apache Hadoop ([http://hadoop.apache.org/]) 
   and Apache Zookeeper ([http://zookeeper.apache.org/]). All of these products are installed as part of IBM InfoSphere BigInsights. 
   * This toolkit supports IBM InfoSphere BigInsights version 3.0.0 and later and HBase 0.96 and later versions.  
@@ -73,17 +73,27 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 # Procedure
 
-1. Configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
-   * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase. For example, for IBM BigInsights version 4.2, set **HBASE_HOME** to `/usr/iop/4.2.0.0/hbase`.
-   * Otherwise, copy the **HBASE_HOME**/`lib` directory to the file system where Streams will be running:
-     * Create a new directory on the file system.
-     * Copy the lib directory of your HBase installation to the directory you just created.
-     * Set **HBASE_HOME** to the directory you created.
-   * **HBASE_HOME**  must be set as an application environment variable on the instance where your application will be running. This can be done using the Streams Console or the `streamtool` utility.
-2. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/`conf` is searched for the `hbase-site.xml`.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
+1. For Apache HBase: configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
+   * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase.
+   * Otherwise, copy the **HBASE_HOME**/`lib` directory to the file system where Streams will be running, making sure to follow symbolic links:
+         cp -Lr path-to-hbase/lib /path-on-streams-host
+   * Set **HBASE_HOME** to the directory you created, for example, to `path-on-streams-host`.
+2. For IBM BigInsights:   
+   * If your Streams application will be running on the same resource where BigInsights is installed: 
+    * Set **HADOOP_HOME**:
+   	 * For BigInsights 3.x, set it to `/BigInsights_install/IHC`. 
+   	 * For BigInsights 4.x, set it to `/biginsights_install/hadoop`.
+    * Set **HBASE_HOME** to `/biginsights_install/hbase`.
+   * If your Streams application will not be running on the same resource as BigInsights, you need to copy the following directories to the file system where Streams will be running:
+     * Create a directory to contain the HBase and Hadoop libraries, for example, `/home/streams/BI_Install/` on the resource where Streams will be running.
+     * For BigInsights 3.x, copy `/BigInsights_install/IHC` and `/BigInsights_install/hbase` to the directory you created, making sure to follow symbolic links. For example,
+         cp -Lr /BigInsights_install/IHC  /path-on-Streams-host
+     * For BigInsights 4.x, copy `/BigInsights_install/hadoop`, `BigInsights_install/hadoop-hdfs` and `BigInsightsInstall/hbase` to the directory you created.
+     * Set **HBASE_HOME** to `/home/streams/BI_Install/hbase` and **HADOOP_HOME** to `/home/streams/BI_install/hadoop` for BigInsights 4.x and `/home/streams/BI_install/IHC` for BigInsights 3.x.
+3. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/`conf` is searched for the `hbase-site.xml`.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
    * Create a `conf` directory in the same directory you created in step 1 and copy the `hbase-site.xml` from your HBase installation to that directory.
    * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation into a directory accessible by your application and use the **hbaseSite** parameter to specify the path to the copied file.
-3. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+4. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
    * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
     or multiple toolkits (with : as a separator).  For example:
        export STREAMS_SPLPATH=$STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase
@@ -92,14 +102,14 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
     where MyMain is the name of the SPL main composite.
     **Note**: These command parameters override the **STREAMS_SPLPATH** environment variable.
    * Add the toolkit location in InfoSphere Streams Studio.
-3. Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
+5. Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
    * For example, you can add the following clause in your SPL source file:
        use com.ibm.streamsx.hbase::*;
      You can also specify a use clause for individual operators by replacing the asterisk (\*) with the operator name. For example: 
        use com.ibm.streamsx.hbase::HBASEDelete;
-4. Build your application.  You can use the **sc** command or Streams Studio.  
-5. Start the InfoSphere Streams instance. 
-6. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
+6. Build your application.  You can use the **sc** command or Streams Studio.  
+7. Start the InfoSphere Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME** if needed as described above as application environment variable on the instance. This can be done using the Streams Console or the `streamtool` utility.
+8. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 </info:description>
     <info:version>2.1.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>

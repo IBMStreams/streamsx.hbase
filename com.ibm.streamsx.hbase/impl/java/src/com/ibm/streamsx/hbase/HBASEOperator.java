@@ -3,48 +3,40 @@
 
 package com.ibm.streamsx.hbase;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.log4j.Logger;
 
-import com.ibm.streams.operator.compile.OperatorContextChecker;
-import com.ibm.streams.operator.meta.TupleType;
-import com.ibm.streams.operator.model.Libraries;
-import com.ibm.streams.operator.model.Parameter;
-import com.ibm.streams.operator.state.ConsistentRegionContext;
-import com.ibm.streams.operator.types.Blob;
-import com.ibm.streams.operator.types.RString;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
-import com.ibm.streams.operator.StreamingData.Punctuation;
-import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.fs.Path;
-import java.io.File;
-import java.net.URI;
+import com.ibm.streams.operator.compile.OperatorContextChecker;
+import com.ibm.streams.operator.model.Libraries;
+import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.state.ConsistentRegionContext;
+import com.ibm.streams.operator.types.Blob;
 
 /**
  * Class for shared code between operators.
  * @author hildrum
  *
  */
-@Libraries({"@HBASE_HOME@/lib/*"})
+@Libraries({"@HBASE_HOME@/lib/*", "@HBASE_HOME@/*"})
 public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
     static final String HBASE_SITE_PARAM_NAME="hbaseSite";
@@ -246,7 +238,23 @@ public abstract class HBASEOperator extends AbstractOperator {
     	// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
-       
+		String hadoopHome = System.getenv("HADOOP_HOME");
+		ArrayList<String> libList = new ArrayList<>();
+		if (hadoopHome != null){
+			libList.add(hadoopHome + "/share/hadoop/hdfs/*");
+			libList.add(hadoopHome + "/share/hadoop/common/*");
+			libList.add(hadoopHome + "/share/hadoop/common/lib/*");
+			libList.add(hadoopHome + "/lib/*");
+			libList.add(hadoopHome + "/client/*");
+			libList.add(hadoopHome + "/*");
+			libList.add(hadoopHome + "/../hadoop-hdfs/*");
+			try {
+				context.addClassLibraries(libList.toArray(new String[0]));
+			} catch (Exception e) {
+				Logger.getLogger(this.getClass()).error("Error adding libraries to classpath");
+
+			}
+		}
     	conf = new Configuration();
 	if (hbaseSite == null) {
 		String hbaseHome = System.getenv("HBASE_HOME");
