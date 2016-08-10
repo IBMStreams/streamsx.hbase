@@ -73,12 +73,12 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 # Procedure
 
-1. For Apache HBase: configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
+1. For Apache HBase, you must configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
    * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase.
-   * Otherwise, copy the **HBASE_HOME**/`lib` directory to the file system where Streams will be running, making sure to follow symbolic links:
+   * Otherwise, copy the `/hbase-install-dir/lib` directory to the file system where Streams will be running, making sure to follow symbolic links:
          cp -Lr path-to-hbase/lib /path-on-streams-host
    * Set **HBASE_HOME** to the directory you created, for example, to `path-on-streams-host`.
-2. For IBM BigInsights:   
+2. For IBM BigInsights, you must configure your development environment by setting **HBASE_HOME** and **HADOOP_HOME** as environment variables.
    * If your Streams application will be running on the same resource where BigInsights is installed: 
     * Set **HADOOP_HOME**:
    	 * For BigInsights 3.x, set it to `/BigInsights_install/IHC`. 
@@ -108,7 +108,7 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
      You can also specify a use clause for individual operators by replacing the asterisk (\*) with the operator name. For example: 
        use com.ibm.streamsx.hbase::HBASEDelete;
 6. Build your application.  You can use the **sc** command or Streams Studio.  
-7. Start the InfoSphere Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME** if needed as described above as application environment variable on the instance. This can be done using the Streams Console or the `streamtool` utility.
+7. Start the InfoSphere Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME** (for BigInsights) as described above as application environment variable(s) on the instance. This can be done using the Streams Console or the `streamtool` utility.
 8. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 </info:description>
     <info:version>2.1.0</info:version>
