@@ -2,7 +2,7 @@ This toolkit is for interacting with Apache HBASE.  It assumes Apache HBASE
 is already installed and running.
 
 To use the operators, you must set HADOOP_HOME and HBASE_HOME in your
-environment before compiling.  
+environment before compiling or use the hbaseSite parameter. 
 
 This toolkit provides Streams operators to work with the HBASE API,
 so the operators are named after the HBASE API calls.  There is another
@@ -27,4 +27,4 @@ the input tuple.  The increment value can be in the tuple, and operator paramete
 or unspecified.  If unspecified, the increment value uses the default. 
 HBASEScan: Scan a table (ie, get all tuples in the table).  The output can be limited to
 specific column families or to a column family, column qualifier pair.  A start row
-and an end row may also be specified.   
+and an end row may also be specified. Optionally a row prefix, or fuzzy row matching can be used.  
