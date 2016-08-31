@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -20,7 +21,10 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.FuzzyRowFilter;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -156,7 +160,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			} else {
 				myScan = new Scan();
 			}
-
+						
 			myTable = operator.connection.getTable(operator.tableNameBytes);
 			// This sets any filters based on operator parameters.
 			resultScanner = operator.startScan(myTable, myScan);
@@ -414,6 +418,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final long rowsPerPermit = 1;
 	private long triggerCount;
 	boolean trigger = false;
+	private String fuzzyRowString = null;
+	
 
 	ConsistentRegionContext ccContext;
 	// / Needs to be checkpointed.
@@ -493,13 +499,22 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	public void setOutAttrName(String name) {
 		outAttrName = name;
 	}
-
+	
+	@Parameter(name="fuzzyRowString", optional = true, description = "This parameter specifies the value for a fuzzy row match."
+			+ " Use ? for bytes that are fuzzy matched - e.g. '???seKey' "
+			+ " Note: Some versions of HBase may have issues with using both Fuzzy Row Filters and Column Filters simultaneously.")
+	public void setFuzzyRowString(String fuzzy) {
+		fuzzyRowString = fuzzy;
+	}
+	
+	
 	// Context checks that apply in all cases.
 	@ContextCheck(compile = true)
 	public static void checks(OperatorContextChecker checker) {
 		checker.checkDependentParameters("endRow", "startRow");
 		checker.checkDependentParameters("maxChannels", "channel");
 		checker.checkDependentParameters("channel", "maxChannels");
+		
 		int numInput = checker.getOperatorContext()
 				.getNumberOfStreamingInputs();
 		if (numInput > 1) {
@@ -951,8 +966,32 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 		}
 
+		// Set filters
+	
 		if (rowPrefix != null) {
 			myScan.setFilter(new PrefixFilter(rowPrefix.getBytes(charset)));
+		}
+		if (fuzzyRowString != null) {
+			// Figure out the filter map - for every ? put a 1 and for non ? put 0
+			byte[] filterMap = new byte[fuzzyRowString.length()];
+			for (int i = 0; i < fuzzyRowString.length(); i++)
+			{
+				filterMap[i] = (fuzzyRowString.charAt(i) == '?')? (byte)1 : (byte)0;
+			}
+			FuzzyRowFilter rowFilter = new FuzzyRowFilter(
+					 Arrays.asList(
+					  new Pair<byte[], byte[]>(
+					    Bytes.toBytesBinary(fuzzyRowString),
+					    filterMap)));
+			if (rowPrefix == null) {
+				myScan.setFilter(rowFilter);
+			} else {
+				FilterList betterf = new FilterList() ;
+				betterf.addFilter(myScan.getFilter());
+				betterf.addFilter(rowFilter);
+				myScan.setFilter(betterf);
+				
+			}
 		}
 
 		if (logger.isInfoEnabled())
