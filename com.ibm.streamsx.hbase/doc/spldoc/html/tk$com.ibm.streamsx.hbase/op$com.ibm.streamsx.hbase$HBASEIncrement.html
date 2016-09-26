@@ -22,8 +22,12 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEIncrement</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEIncrement</p>
 
+</div>
+
+<div class="section splprimop">
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.svg" width="672" height="112"/>
 </div>
 
 <div class="section">
@@ -37,10 +41,6 @@
 <p class="p"> HBASEIncrement is not allowed in a consistent region.
 </p>
 
-</div>
-
-<div class="section splprimop">
-  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.svg" width="672" height="112"/>
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
@@ -61,7 +61,16 @@
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 9 parameters. (<tt class="ph tt">columnFamilyAttrName, columnQualifierAttrName, hbaseSite, increment, incrementAttrName, rowAttrName, staticColumnFamily, staticColumnQualifier, tableName</tt>)
+  <dd class="dd">This operator supports 9 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
+
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__increment">increment</a>, <a class="xref" href="#spldoc_operator__parameter__incrementAttrName">incrementAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>
+
+</p>
 </dd>
 
  
@@ -131,9 +140,19 @@
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 9 parameters.<dl class="dl">
+This operator supports 9 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_columnFamilyAttrName"><tt class="ph tt">columnFamilyAttrName</tt></dt>
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__increment">increment</a>, <a class="xref" href="#spldoc_operator__parameter__incrementAttrName">incrementAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>
+
+</p>
+<dl class="dl">
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__columnFamilyAttrName"><!-- --></a><tt class="ph tt">columnFamilyAttrName</tt></dt>
 
 <dd class="dd">
 <p class="p">Name of the attribute on the input tuple containing the columnFamily.  Cannot be used with staticColumnFmily.
@@ -164,7 +183,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_columnQualifierAttrName"><tt class="ph tt">columnQualifierAttrName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__columnQualifierAttrName"><!-- --></a><tt class="ph tt">columnQualifierAttrName</tt></dt>
 
 <dd class="dd">
 <p class="p">Name of the attribute on the input tuple containing the columnQualifier.  Cannot be used with staticColumnQualifier.
@@ -195,7 +214,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__hbaseSite"><!-- --></a><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
 <p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
@@ -226,7 +245,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_increment"><tt class="ph tt">increment</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__increment"><!-- --></a><tt class="ph tt">increment</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the value by which to increment.  It cannot be specified with incrementAttrName parameter.
@@ -257,7 +276,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_incrementAttrName"><tt class="ph tt">incrementAttrName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__incrementAttrName"><!-- --></a><tt class="ph tt">incrementAttrName</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the attribute that is used to determine the increment. It cannot be used with the increment parameter.
@@ -288,7 +307,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_rowAttrName"><tt class="ph tt">rowAttrName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__rowAttrName"><!-- --></a><tt class="ph tt">rowAttrName</tt></dt>
 
 <dd class="dd">
 <p class="p">Name of the attribute on the input tuple containing the row.  It is required.
@@ -319,7 +338,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnFamily"><!-- --></a><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
 <p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
@@ -347,7 +366,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnQualifier"><!-- --></a><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
 <p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
@@ -375,7 +394,7 @@ This operator supports 9 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__tableName"><!-- --></a><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
 <p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
@@ -419,7 +438,7 @@ This operator supports 9 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, @HBASE_HOME@/lib/*, @HBASE_HOME@/*</tt></dd>
 
  
  </dl>

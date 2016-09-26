@@ -22,8 +22,12 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEScan</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEScan</p>
 
+</div>
+
+<div class="section splprimop">
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg" width="672" height="112"/>
 </div>
 
 <div class="section">
@@ -51,10 +55,6 @@
 
 </div>
 
-<div class="section splprimop">
-  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg" width="672" height="112"/>
-</div>
-
 <div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
 
 <dl class="dl" compact="compact">
@@ -73,7 +73,16 @@
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 16 parameters. (<tt class="ph tt">channel, endRow, hbaseSite, initDelay, maxChannels, maxVersions, maxThreads, minTimestamp, outAttrName, outputCountAttr, rowPrefix, startRow, staticColumnFamily, staticColumnQualifier, tableName, triggerCount</tt>)
+  <dd class="dd">This operator supports 16 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
+
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__channel">channel</a>, <a class="xref" href="#spldoc_operator__parameter__endRow">endRow</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__initDelay">initDelay</a>, <a class="xref" href="#spldoc_operator__parameter__maxChannels">maxChannels</a>, <a class="xref" href="#spldoc_operator__parameter__maxThreads">maxThreads</a>, <a class="xref" href="#spldoc_operator__parameter__maxVersions">maxVersions</a>, <a class="xref" href="#spldoc_operator__parameter__minTimestamp">minTimestamp</a>, <a class="xref" href="#spldoc_operator__parameter__outAttrName">outAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__outputCountAttr">outputCountAttr</a>, <a class="xref" href="#spldoc_operator__parameter__rowPrefix">rowPrefix</a>, <a class="xref" href="#spldoc_operator__parameter__startRow">startRow</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__triggerCount">triggerCount</a>
+
+</p>
 </dd>
 
  
@@ -197,9 +206,19 @@
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 16 parameters.<dl class="dl">
+This operator supports 16 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_channel"><tt class="ph tt">channel</tt></dt>
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__channel">channel</a>, <a class="xref" href="#spldoc_operator__parameter__endRow">endRow</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__initDelay">initDelay</a>, <a class="xref" href="#spldoc_operator__parameter__maxChannels">maxChannels</a>, <a class="xref" href="#spldoc_operator__parameter__maxThreads">maxThreads</a>, <a class="xref" href="#spldoc_operator__parameter__maxVersions">maxVersions</a>, <a class="xref" href="#spldoc_operator__parameter__minTimestamp">minTimestamp</a>, <a class="xref" href="#spldoc_operator__parameter__outAttrName">outAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__outputCountAttr">outputCountAttr</a>, <a class="xref" href="#spldoc_operator__parameter__rowPrefix">rowPrefix</a>, <a class="xref" href="#spldoc_operator__parameter__startRow">startRow</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__triggerCount">triggerCount</a>
+
+</p>
+<dl class="dl">
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__channel"><!-- --></a><tt class="ph tt">channel</tt></dt>
 
 <dd class="dd">
 <p class="p">If this operator is part of a parallel region, it shares the work of scanning with other operators in the region.  To do this, set this parameter value by calling getChannel().  This parameter is required if the maximum number of channels has a value other than zero.
@@ -230,7 +249,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_endRow"><tt class="ph tt">endRow</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__endRow"><!-- --></a><tt class="ph tt">endRow</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the row to use to stop the scan.  The row that you specify is excluded from the scan.
@@ -261,7 +280,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_hbaseSite"><tt class="ph tt">hbaseSite</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__hbaseSite"><!-- --></a><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
 <p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
@@ -292,7 +311,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_initDelay"><tt class="ph tt">initDelay</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__initDelay"><!-- --></a><tt class="ph tt">initDelay</tt></dt>
 
 <dd class="dd">
 <p class="p">Delay, in seconds, before starting scan.
@@ -323,7 +342,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_maxChannels"><tt class="ph tt">maxChannels</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxChannels"><!-- --></a><tt class="ph tt">maxChannels</tt></dt>
 
 <dd class="dd">
 <p class="p">If this operator is part of a parallel region, set this parameter value by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned are divided among the other copies of this operator in the other channels.  If this parameter is set, you must also set the <strong class="ph b">channel</strong> parameter. 
@@ -354,38 +373,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_maxVersions"><tt class="ph tt">maxVersions</tt></dt>
-
-<dd class="dd">
-<p class="p">This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.
-</p>
-<dl class="dl">
-
- <dt class="dt dlterm">Properties </dt>
-
- <dd class="dd">
-  <ul class="sl simple">
-  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
-  </li>
-
-     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
-     </li>
-
-     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
-     </li>
-
-  </ul>
-
- </dd>
-
-
-</dl>
-
-</dd>
-
-
-
-<dt class="dt dlterm" id="spldoc_operator__parameter_maxThreads"><tt class="ph tt">maxThreads</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxThreads"><!-- --></a><tt class="ph tt">maxThreads</tt></dt>
 
 <dd class="dd">
 <p class="p">Maximum number of threads to use to scan the table.  Defaults to one.
@@ -416,7 +404,38 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_minTimestamp"><tt class="ph tt">minTimestamp</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxVersions"><!-- --></a><tt class="ph tt">maxVersions</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__minTimestamp"><!-- --></a><tt class="ph tt">minTimestamp</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the minimum timestamp that is used for queries.  The operator does not return any entries with a timestamp older than this value.  Unless you specify the <strong class="ph b">maxVersions</strong> parameter, the opertor returns only one entry in this time range.
@@ -447,7 +466,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_outAttrName"><tt class="ph tt">outAttrName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__outAttrName"><!-- --></a><tt class="ph tt">outAttrName</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the name of the attribute in which to put the value. It defaults to <tt class="ph tt">value</tt>.  If the attribute is a tuple data type, the attribute names are used as columnQualifiers. If multiple families are included in the scan and they have the same columnQualifiers, there is no way of knowing which columnFamily was used to populate a tuple attribute.
@@ -478,7 +497,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_outputCountAttr"><tt class="ph tt">outputCountAttr</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__outputCountAttr"><!-- --></a><tt class="ph tt">outputCountAttr</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the output attribute in which to put the number of results that are found.  When the result is a tuple, this parameter value is the number attributes that were populated in that tuple.
@@ -509,7 +528,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_rowPrefix"><tt class="ph tt">rowPrefix</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__rowPrefix"><!-- --></a><tt class="ph tt">rowPrefix</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies that the scan only return rows that have this prefix.
@@ -540,7 +559,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_startRow"><tt class="ph tt">startRow</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__startRow"><!-- --></a><tt class="ph tt">startRow</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the row to use to start the scan.  The row that you specify is included in the scan.
@@ -571,7 +590,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_staticColumnFamily"><tt class="ph tt">staticColumnFamily</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnFamily"><!-- --></a><tt class="ph tt">staticColumnFamily</tt></dt>
 
 <dd class="dd">
 <p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
@@ -599,7 +618,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_staticColumnQualifier"><tt class="ph tt">staticColumnQualifier</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnQualifier"><!-- --></a><tt class="ph tt">staticColumnQualifier</tt></dt>
 
 <dd class="dd">
 <p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
@@ -627,7 +646,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_tableName"><tt class="ph tt">tableName</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__tableName"><!-- --></a><tt class="ph tt">tableName</tt></dt>
 
 <dd class="dd">
 <p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
@@ -658,7 +677,7 @@ This operator supports 16 parameters.<dl class="dl">
 
 
 
-<dt class="dt dlterm" id="spldoc_operator__parameter_triggerCount"><tt class="ph tt">triggerCount</tt></dt>
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__triggerCount"><!-- --></a><tt class="ph tt">triggerCount</tt></dt>
 
 <dd class="dd">
 <p class="p">This parameter specifies the number of rows to process before triggering a drain.  This parameter is valid only in a operator-driven consistent region.
@@ -702,7 +721,7 @@ This operator supports 16 parameters.<dl class="dl">
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, @HBASE_HOME@/lib/*, @HBASE_HOME@/*</tt></dd>
 
  
  </dl>
