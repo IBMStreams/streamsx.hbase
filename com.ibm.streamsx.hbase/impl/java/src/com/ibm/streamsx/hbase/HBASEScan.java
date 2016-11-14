@@ -129,7 +129,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
 				byte[] lastRow) throws IOException {
-			operator.logger.debug(Messages.getString("HBASE_SCAN_CREATING_REGION", rawStartBytes, endBytes, lastRow));
+			operator.logger.debug(Messages.getString("HBASE_SCAN_CREATING_REGION_SCAN", rawStartBytes, endBytes, lastRow));
 			this.operator = operator;
 			Scan myScan;
 			byte[] startBytes;
