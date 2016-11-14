@@ -17,6 +17,7 @@ import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
+import com.ibm.streams.operator.logging.LoggerNames;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
@@ -28,6 +29,7 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
+import com.ibm.streamsx.jdbc.Messages;
 
 /**
  * Accepts tuples on input stream and makes the corresponding delete in the
@@ -66,6 +68,8 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 @Icons(location32 = "impl/java/icons/HBASEDelete_32.gif", location16 = "impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {
 
+
+	
 	public static final String consistentCutInfo = HBASEOperator.consistentCutIntroducer
 			+ "The `HBASEDelete` can be in a consistent region, but it cannot be the start of a consistent region.\\n"
 			+ "When in a consistent region, the **deleteAllVersions** parameter must either be unspecified or set to true. "
@@ -113,10 +117,7 @@ public class HBASEDelete extends HBASEPutDelete {
 					|| params.contains(HBASEPutDelete.COL_QUAL_PARAM_NAME)) {
 				// we're okay--
 			} else {
-				checker.setInvalidContext("Parameter " + DELETE_ALL_PARAM_NAME
-						+ " requires that either "
-						+ HBASEOperator.STATIC_COLQ_NAME + " or "
-						+ HBASEPutDelete.COL_QUAL_PARAM_NAME + " be set.", null);
+				checker.setInvalidContext(Messages.getString("HBASE_DEL_INVALID_PARAM", DELETE_ALL_PARAM_NAME, HBASEOperator.STATIC_COLQ_NAME , HBASEPutDelete.COL_QUAL_PARAM_NAME), null);
 			}
 		}
 	}
@@ -135,9 +136,7 @@ public class HBASEDelete extends HBASEPutDelete {
 						.getOperatorContext().getOptionalContext(
 								ConsistentRegionContext.class);
 				if (ccContext != null) {
-					checker.setInvalidContext(
-							"When in a consistent region {0} must be true for {1}",
-							new Object[] { DELETE_ALL_PARAM_NAME, "HBASEDelete" });
+					checker.setInvalidContext(Messages.getString("HBASE_DEL_CONSISTENT_REGION", DELETE_ALL_PARAM_NAME, "HBASEDelete"), null);
 				}
 			}
 		}
@@ -213,7 +212,7 @@ public class HBASEDelete extends HBASEPutDelete {
 			success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
 					checkValue, myDelete);
 		} else if (batchSize == 0) {
-			logger.debug("Deleting " + myDelete);
+			logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
 			myTable.delete(myDelete);
 		} else {
 			synchronized (listLock) {

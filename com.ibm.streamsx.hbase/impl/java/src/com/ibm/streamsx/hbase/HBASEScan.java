@@ -129,8 +129,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
 				byte[] lastRow) throws IOException {
-			operator.logger.debug("Creating a region scan for " + rawStartBytes
-					+ " to " + endBytes + " lastRow " + lastRow);
+			operator.logger.debug(Messages.getString("HBASE_SCAN_CREATING_REGION", rawStartBytes, endBytes, lastRow));
 			this.operator = operator;
 			Scan myScan;
 			byte[] startBytes;
@@ -220,11 +219,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			this.ccContext = parent.ccContext;
 			this.useDelay = useDelay;
 			if (ccContext == null) {
-				parent.logger.info("ScanThread index " + index
-						+ " is not in a consistent region");
+				parent.logger.info(Messages.getString("HBASE_SCAN_NO_CONSISTENT_REGION", index));
 			} else {
-				parent.logger.info("ScanThread index " + index
-						+ " is in a consistent region");
+				parent.logger.info(Messages.getString("HBASE_SCAN_CONSISTENT_REGION", index));
 			}
 			reset = true;
 			rowsPerTrigger = parent.triggerCount;
@@ -246,7 +243,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					Thread.sleep((int) parent.initDelay * 1000);
 				}
 				if (parent.logger.isInfoEnabled())
-					parent.logger.info(index + ": Done sleeping");
+					parent.logger.info(Messages.getString("HBASE_SCAN_SLEEPING", index));
 
 				// as long as the region queue is non empty or we have a region
 				// we're working on, we continue.
@@ -257,19 +254,17 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						try {
 							ccContext.acquirePermit();
 							if (parent.logger.isDebugEnabled()) {
-								parent.logger.debug("Getting permit");
+								parent.logger.debug(Messages.getString("HBASE_SCAN_GETING_PERMIT"));
 							}
 						} catch (InterruptedException e) {
-							parent.logger.info(index
-									+ ": interruptedexception acquring permit");
+							parent.logger.info( Messages.getString("HBASE_SCAN_INTERRUPTED", index));
 						}
 					}
 
 					// If we've reset, our current resultScanner isn't useful
 					// anymore.
 					if (reset) {
-						parent.logger.info("index " + index
-								+ " has been reset or is new.");
+						parent.logger.info( Messages.getString("HBASE_SCAN_RESETED", index));
 						currentRegion = null;
 						reset = false;
 					}
@@ -287,22 +282,17 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						}
 
 						if (thisScan == null) {
-							parent.logger.info("No more work for this thread.");
+							parent.logger.info( Messages.getString("HBASE_SCAN_NO_WORK_THREAD"));
 						} else {
 							byte[] lastRow = parent.lastRow[index];
 
-							parent.logger.info(index
-									+ ": regions starts at "
-									+ thisScan.getFirst()
-									+ " "
-									+ (thisScan.getFirst() == null ? "null"
+							parent.logger.info( Messages.getString("HBASE_SCAN_REGIONS_START", index, thisScan.getFirst(), 
+									 (thisScan.getFirst() == null ? "null"
 											: new String(thisScan.getFirst(),
-													parent.charset))
-									+ " but we will instead fast-forward to "
-									+ lastRow
-									+ " "
-									+ (lastRow == null ? "null" : new String(
-											lastRow, parent.charset)));
+													parent.charset))  , 
+									 lastRow ,									
+									 (lastRow == null ? " null" : new String(
+											lastRow, parent.charset))));
 
 							currentRegion = new ScanRegion(parent,
 									thisScan.getFirst(), thisScan.getSecond(),
@@ -343,7 +333,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 								String lastRowString = parent.lastRow[index] == null ? "null"
 										: new String(parent.lastRow[index],
 												parent.charset);
-								parent.logger.info("Make consistent returned "
+								
+								parent.logger.info(Messages.getString("HBASE_SCAN_MAKE_CONSISTENT",
+										res, currentRegion.rowCount(), lastRow, lastRowString, oldRowString, rowsPerTrigger));
+/*								parent.logger.info("Make consistent returned "
 										+ res + " row count "
 										+ currentRegion.rowCount()
 										+ " lastRow " + lastRow
@@ -351,14 +344,14 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 										+ " (was " + oldRowString
 										+ ") rows per trigger "
 										+ rowsPerTrigger);
-							}
+*/							}
 						}
 					}
 					// release the permit, if needed.
 					if (ccContext != null) {
 						ccContext.releasePermit();
 						if (parent.logger.isDebugEnabled()) {
-							parent.logger.debug("Releasing permit");
+							parent.logger.debug(Messages.getString("HBASE_SCAN_RELEASING_PERMIT"));
 						}
 					}
 				} // end while !scanDoen
@@ -367,10 +360,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					// marker when all threads have finished.
 				parent.threadFinished(index);
 				if (parent.logger.isInfoEnabled())
-					parent.logger.info(index + ": Thread finishing");
+					parent.logger.info(Messages.getString("HBASE_SCAN_THREAD_FINISHING", index));
 			} catch (Exception e) {
 				e.printStackTrace();
-				parent.logger.error("Unexpected exception: " + e, e);
+				parent.logger.error(Messages.getString("HBASE_SCAN_UNEXPECTED_EXC", e));
 			}
 		}
 	}
@@ -505,8 +498,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (numInput > 1) {
 			Object error[] = new Object[1];
 			error[0] = numInput;
-			checker.setInvalidContext("Expected 0 or 1 inputs, found {0}",
-					error);
+			checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_PARAM_1", error), null);
 		} else if (numInput == 1) {
 			// cannot be a consistent region source if we have an input
 			checkConsistentRegionSource(checker, "HBASEScan");
@@ -516,15 +508,11 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		Set<String> params = checker.getOperatorContext().getParameterNames();
 		if (params.contains(TRIGGER_PARAM)
 				&& (ccContext == null || !ccContext.isTriggerOperator())) {
-			checker.setInvalidContext(
-					"Parameter {0} cannot be used except in an operator-driven consistent region",
-					new Object[] { TRIGGER_PARAM });
+			checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_PARAM_NO_CON_REG", TRIGGER_PARAM), null);
 		}
 		if (ccContext != null && ccContext.isTriggerOperator()
 				&& !params.contains(TRIGGER_PARAM)) {
-			checker.setInvalidContext(
-					"Parameter {0} must be used when this operator triggers a consistent region",
-					new Object[] { TRIGGER_PARAM });
+			checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_PARAM_CON_REG", TRIGGER_PARAM), null);
 		}
 	}
 
@@ -539,9 +527,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			int numThreads = Integer.parseInt(checker.getOperatorContext()
 					.getParameterValues(MAXIMUM_SCAN_THREADS).get(0));
 			if (numThreads != 1) {
-				checker.setInvalidContext(
-						"{0} must be 1 (found {1}) when this operator triggers a consistent region",
-						new Object[] { MAXIMUM_SCAN_THREADS, numThreads });
+				checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_PARAM_CON_REG_1", MAXIMUM_SCAN_THREADS, numThreads ), null);
 			}
 		}
 
@@ -551,8 +537,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			String paramName, String why) {
 		Set<String> params = checker.getOperatorContext().getParameterNames();
 		if (params.contains(paramName)) {
-			checker.setInvalidContext("Parameter " + paramName
-					+ " cannot be used " + why, null);
+			checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_PARAM", paramName, why ), null);
 		}
 	}
 
@@ -593,9 +578,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			isValidInputType(checker, rowPrefix.getType().getMetaType(),
 					ROW_PREFIX_PARAM);
 			if (startAttr != null || endAttr != null) {
-				checker.setInvalidContext("Cannot have attribute "
-						+ ROW_PREFIX_PARAM + " when " + START_ROW_PARAM
-						+ " or " + END_ROW_PARAM + " is specified.", null);
+				checker.setInvalidContext(Messages.getString("HBASE_SCAN_INVALID_ATTR", ROW_PREFIX_PARAM, START_ROW_PARAM,  END_ROW_PARAM), null);
 			}
 		}
 	}
@@ -730,7 +713,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 	private void createRegionQueue() throws IOException {
 
-		logger.info("Creating new region queue");
+		logger.info(Messages.getString("HBASE_SCAN_CREATING_REGION"));
 		regionQueue = new ConcurrentLinkedQueue<Pair<byte[], byte[]>>();
 
 		byte startBytes[] = null;
@@ -762,8 +745,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		int numRegions = 0;
 		// In order to get the regions, we need to supply a startrow and an
 		// end row.
-		logger.debug("Start row: " + printBytes(startBytes) + " end row "
-				+ printBytes(endBytes));
+		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", printBytes(startBytes), printBytes(endBytes)));
 
 		// Get a list of regions. We assume the list is always the same.
 		List<HRegionLocation> regionList = myTable.getRegionsInRange(
@@ -778,7 +760,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		// We'd love to use context.getChannel() and
 		// context.getMaxChannel(), but they are
 		// not working as of Streams 3.2.1.
-		logger.debug("This is channel " + channel + " of " + maxChannels);
+		logger.debug(Messages.getString("HBASE_SCAN_CHANNEL", channel, maxChannels));
 
 		// Now, we go through the regionList, check to see if the region is
 		// the responsibility of this
@@ -807,11 +789,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				if (endBytes != null && endBytes.length > 0
 						&& info.containsRow(endBytes)) {
 					endKey = endBytes;
-				}
-				logger.debug("Region " + i + " original range ["
-						+ new String(info.getStartKey()) + ","
-						+ new String(info.getEndKey()) + "), changed to ["
-						+ new String(startKey) + "," + new String(endKey) + ")");
+				}			
+				logger.debug(Messages.getString("HBASE_SCAN_REGION_RANGE", i,				
+						new String(info.getStartKey()),
+						new String(info.getEndKey()), 
+						new String(startKey), 
+						new String(endKey)));
 				regionQueue.add(new Pair<byte[], byte[]>(startKey, endKey));
 			}
 		}
@@ -857,7 +840,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	 */
 	private synchronized void threadFinished(int index) {
 		numFinishedThreads++;
-		logger.info("Thread " + index + " is finished");
+		logger.info(Messages.getString("HBASE_SCAN_THREAD_FINISHED", index));
 		if (numFinishedThreads == actualNumThreads) {
 			final StreamingOutput<OutputTuple> out = getOutput(0);
 			try {
@@ -866,7 +849,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			} catch (Exception e) {
 				// we don't re-throw this exception because this operator is
 				// done anyway at this point.
-				logger.error("Cannot send punctation", e);
+				logger.error(Messages.getString("HBASE_SCAN_NO_PUNCTUATION", e));
 			}
 
 		}
@@ -956,7 +939,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		}
 
 		if (logger.isInfoEnabled())
-			logger.info("Scan set, processing results");
+			logger.info(Messages.getString("HBASE_SCAN_PROCESSING_RESULTS"));
 		// Get a results scanner.
 		return myTable.getScanner(myScan);
 	}
@@ -979,7 +962,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			numRows++;
 			byte[] row = currRow.getRow();
 			if (logger.isDebugEnabled()) {
-				logger.debug("Creating tuples for row " + row);
+				logger.debug(Messages.getString("HBASE_SCAN_CREATING_TUPLE", row));
 			}
 			NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> allValues = currRow
 					.getMap();
@@ -1020,7 +1003,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 							tuple.setInt(resultCountIndex, 1);
 						}
 						if (logger.isDebugEnabled()) {
-							logger.debug("Submitting the tuple " + tuple);
+							logger.debug(Messages.getString("HBASE_SCAN_SUBMITTING_TUPLE",  tuple));
 						}
 						out.submit(tuple);
 					}
@@ -1054,11 +1037,11 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			// All done!
 			results.close();
 			if (logger.isInfoEnabled())
-				logger.info("Closing result set");
+				logger.info(Messages.getString("HBASE_SCAN_CLOSING_RESULT"));
 			return null;
 		} else {
 			if (logger.isInfoEnabled())
-				logger.info(numRows + " processed so far");
+				logger.info(Messages.getString("HBASE_SCAN_PROCESSED", numRows));
 			return currRow.getRow();
 		}
 
@@ -1092,7 +1075,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 			logger.debug(myString);
 			int size = regionQueue.size();
-			logger.debug("Untouched regions: " + size);
+			logger.debug(Messages.getString("HBASE_SCAN_UNTOCHED_REGIONS", size));
 		}
 	}
 
@@ -1104,7 +1087,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private void reviveThreads() {
 		for (int i = 0; i < processThreadArray.length; i++) {
 			if (!processThreadArray[i].isAlive()) {
-				logger.info("Replacing dead thread at index " + i);
+				logger.info(Messages.getString("HBASE_SCAN_REPLACING_DEAD_THREAD", i));
 				scanThreads[i] = new ScanThread(this, i, false);
 				processThreadArray[i] = getOperatorContext().getThreadFactory()
 						.newThread(scanThreads[i]);
@@ -1123,7 +1106,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (processThreadArray == null)
 			return;
 		numFinishedThreads = 0;
-		logger.info("Reset to checkpoint " + checkpoint.getSequenceId());
+		logger.info(Messages.getString("HBASE_SCAN_CHECKPOINT_RESET", checkpoint.getSequenceId()));
 		ObjectInputStream inStream = checkpoint.getInputStream();
 
 		lastRow = (byte[][]) inStream.readObject();
@@ -1139,17 +1122,16 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 			logger.debug(myString);
 			int size = regionQueue.size();
-			logger.debug("Untouched regions: " + size);
+			logger.debug(Messages.getString("HBASE_SCAN_UNTOCHED_REGIONS", size));
 		}
 		currentScan = (List<Pair<byte[], byte[]>>) inStream.readObject();
 		regionQueue = (ConcurrentLinkedQueue<Pair<byte[], byte[]>>) inStream
 				.readObject();
-		if (lastRow == null || currentScan == null || regionQueue == null) {
-			logger.error("Problem recovering from checkpoint "
-					+ checkpoint.getSequenceId());
+		if (lastRow == null || currentScan == null || regionQueue == null) {			
+			logger.error(Messages.getString("HBASE_SCAN_RECOVERING_PROBLEM", checkpoint.getSequenceId()));
 		}
 		reviveThreads();
-		logger.info("Leaving reset");
+		logger.info(Messages.getString("HBASE_SCAN_LIVING_RESET"));
 	}
 
 	@Override
@@ -1158,7 +1140,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (processThreadArray == null)
 			return;
 		numFinishedThreads = 0;
-		logger.info("Reset to initial state");
+		logger.info(Messages.getString("HBASE_SCAN_RESET"));
 		if (regionQueue != null) {
 			regionQueue.clear();
 		}
@@ -1179,11 +1161,11 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				}
 			}
 			logger.debug(myString);
-			int size = regionQueue.size();
-			logger.debug("Untouched regions: " + size);
+			int size = regionQueue.size();			
+			logger.debug(Messages.getString("HBASE_SCAN_UNTOCHED_REGIONS", size));
 		}
 		reviveThreads();
-		logger.info("Leaving resetToInitial");
+		logger.info(Messages.getString("HBASE_SCAN_LEAVING_RESET_INIT"));
 	}
 
 	@Override
