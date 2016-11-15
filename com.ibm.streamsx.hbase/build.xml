@@ -73,7 +73,7 @@
 	</target>
 
 	
-	<target name="compile" depends="init,maven-deps">
+	<target name="compile" depends="init,maven-deps,copyresources">
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="true"
 			includeantruntime="no">
 			<classpath>
@@ -91,6 +91,14 @@
 		</jar>
 		<delete dir="${build.dir}" />
 	</target>
+	
+	<!-- copy properties into the created jar file  -->
+	 <target name="copyresources">
+		<copy todir="${build.dir}">
+		    <fileset dir="${src.dir}" includes="**/*.properties" />
+		</copy>
+	  </target>
+
 
 	<!-- Downloads libraries using maven -->
 	<target name="maven-deps" depends="init,nomaven" if="env.M2_HOME">

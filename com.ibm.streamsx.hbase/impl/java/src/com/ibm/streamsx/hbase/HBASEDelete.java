@@ -29,7 +29,6 @@ import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
-import com.ibm.streamsx.jdbc.Messages;
 
 /**
  * Accepts tuples on input stream and makes the corresponding delete in the
