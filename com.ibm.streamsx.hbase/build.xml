@@ -73,7 +73,7 @@
 	</target>
 
 	
-	<target name="compile" depends="init,maven-deps">
+	<target name="compile" depends="init, maven-deps">
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="true"
 			includeantruntime="no">
 			<classpath>
@@ -84,13 +84,21 @@
 		</javac>
 	</target>
 
-	<target name="jar" depends="compile">
+	<target name="jar" depends="compile, properties">
 		
 		<jar destfile="${impl.lib.dir}/com.ibm.streamsx.hbase.jar" basedir="${build.dir}" includes="com/ibm/streamsx/hbase/**" filesonly="true">
 	
 		</jar>
 		<delete dir="${build.dir}" />
 	</target>
+	
+	 <!-- copy properties into the created jar file  -->
+	 <target name="properties">
+		<copy todir="${build.dir}">
+		    <fileset dir="${src.dir}" includes="**/*.properties" />
+		</copy>
+	  </target>
+
 
 	<!-- Downloads libraries using maven -->
 	<target name="maven-deps" depends="init,nomaven" if="env.M2_HOME">

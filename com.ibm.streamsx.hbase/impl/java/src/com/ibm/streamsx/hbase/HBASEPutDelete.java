@@ -84,9 +84,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		if (params.contains(SUCCESS_PARAM)) {
 
 			if (context.getStreamingOutputs().size() == 0) {
-				checker.setInvalidContext(
-						"Parameter {0} requires an output port",
-						new Object[] { SUCCESS_PARAM });
+				checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_OUT_PARAM", SUCCESS_PARAM ), null);
 			}
 		}
 
@@ -108,8 +106,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		checker.checkDependentParameters(SUCCESS_PARAM, CHECK_ATTR_PARAM);
 		checkConsistentRegionSource(checker, operatorName);
 		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BATCHSIZE_NAME)){
-			checker.setInvalidContext("The " + CHECK_ATTR_PARAM + " parameter cannot be used with the " + BATCHSIZE_NAME + "  parameter", new Object[0]);
-		}
+			checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_PARAM", CHECK_ATTR_PARAM, BATCHSIZE_NAME), null);
+			}
 	}
 
 	protected void establishCheckAttrMatching(Attribute checkAttr)
@@ -121,8 +119,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		StreamSchema checkSchema = checkTuple.getTupleSchema();
 		if (checkSchema.getAttribute("row") != null) {
 			Logger.getLogger(this.getClass())
-					.warn(checkAttr.getName()
-							+ ".row is ignored, as the row for the check must be the same as the row of the put.");
+					.warn(checkAttr.getName() + Messages.getString("HBASE_PUT_DEL_INVALID_ROW"));
 		}
 		checkColQIndex = checkAndGetIndex(checkSchema, "columnQualifier");
 		checkColQType = checkSchema.getAttribute(checkColQIndex).getType()
@@ -167,7 +164,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		HTableInterface table = connection.getTable(tableNameBytes);
 
     	if (null == table) {
-    		Logger.getLogger(this.getClass()).error("Cannot access table, failing.");
+    		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
     		throw new Exception("Cannot access table.  Check configuration");
     	}
 
@@ -270,24 +267,21 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 
 	@Override
 	public void drain() throws Exception {
-		Logger.getLogger(this.getClass()).info(
-				"Flushing pending HBase mutations");
+		Logger.getLogger(this.getClass()).info(Messages.getString("HBASE_PUT_DEL_FLUSHING"));
 		flushBuffer();
 
 	}
 
 	@Override
 	public void reset(Checkpoint checkpoint) throws Exception {
-		Logger.getLogger(this.getClass()).info(
-				"Clearing pending HBase mutations due to reset");
+		Logger.getLogger(this.getClass()).info(Messages.getString("HBASE_PUT_DEL_CLEARING_RESET"));
 		clearBuffer();
 
 	}
 
 	@Override
 	public void resetToInitialState() throws Exception {
-		Logger.getLogger(this.getClass()).info(
-				"Clearing pending HBase mutations due to resetToInitialState");
+		Logger.getLogger(this.getClass()).info(Messages.getString("HBASE_PUT_DEL_CLEARING_RESET_INIT"));
 		clearBuffer();
 
 	}

@@ -102,7 +102,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 	
 	protected static String getNoCCString() {
-		return "ERROR: The following operator is not supported in a consistent region: {0}.";
+		return Messages.getString("HBASE_OP_NO_CONSISTENT_REGION", "HBASEOperator");
 	}
 	
 	protected static void checkConsistentRegionSource(OperatorContextChecker checker,String operatorName) {
@@ -110,9 +110,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	ConsistentRegionContext ccContext = checker.getOperatorContext()
 			.getOptionalContext(ConsistentRegionContext.class);
 	if (ccContext != null && ccContext.isStartOfRegion()) {
-		checker.setInvalidContext(
-				"ERROR: The following operator cannot be the start of a consistent region: {0}.",
-				new Object[]{operatorName});
+		checker.setInvalidContext(Messages.getString("HBASE_OP_NO_CONSISTENT_REGION", "HBASEOperator"), null);
 	}
 	}
 	
@@ -127,7 +125,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		if (!context.getParameterNames().contains(HBASE_SITE_PARAM_NAME)) {
 			String hbaseHome = System.getenv("HBASE_HOME");
 			if (hbaseHome == null) {
-				checker.setInvalidContext("If "+HBASE_SITE_PARAM_NAME+" not specified, then HBASE_HOME must be set in runtime environment",new Object[0]);
+				checker.setInvalidContext(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME), null);
 			}
 		}
 	}
@@ -171,7 +169,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 			return;
 		}
 		else {
-				checker.setInvalidContext("Attribute "+attrName+" has invalid type "+mType, null);
+				checker.setInvalidContext(Messages.getString("HBASE_OP_INVALID_ATTR", attrName, mType), null);
 		}
 	}
 	
@@ -251,8 +249,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 			try {
 				context.addClassLibraries(libList.toArray(new String[0]));
 			} catch (Exception e) {
-				Logger.getLogger(this.getClass()).error("Error adding libraries to classpath");
-
+				Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 			}
 		}
     	conf = new Configuration();

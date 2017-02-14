@@ -158,9 +158,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		OperatorContext context = checker.getOperatorContext();
 		int numOut = context.getNumberOfStreamingOutputs();
 		if (numOut != 1) {
-			checker.setInvalidContext(
-					"Wrong number of outputs; expected 1 found " + numOut,
-					new Object[0]);
+			checker.setInvalidContext(Messages.getString("HBASE_GET_INVALID_OUTPUT", numOut), null);
 		}
 		checkConsistentRegionSource(checker, "HBASEGet");
 	}
@@ -307,8 +305,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		}
 		if (minTimestamp != Long.MIN_VALUE) {
 			if (logger.isInfoEnabled())
-				logger.info("Setting time range to [" + minTimestamp + ", "
-						+ Long.MAX_VALUE + ")");
+				logger.info(Messages.getString("HBASE_GET_SET_TIME_RANGE", minTimestamp, Long.MAX_VALUE));
 			myGet.setTimeRange(minTimestamp, Long.MAX_VALUE);
 		}
 		byte colF[] = null;

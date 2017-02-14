@@ -161,7 +161,7 @@ public class HBASEPut extends HBASEPutDelete {
 	public static void checkDeleteAll(OperatorContextChecker checker) {
 		HBASEPutDelete.compileTimeChecks(checker, "HBASEPut");
 		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BUFFER_PARAM)){
-			checker.setInvalidContext("The " + CHECK_ATTR_PARAM + " parameter cannot be used with the " + BUFFER_PARAM + "  parameter", new Object[0]);
+			checker.setInvalidContext(Messages.getString("HBASE_PUT_INVALID_PARAM", CHECK_ATTR_PARAM, BUFFER_PARAM), null);
 		}
 	}
 	
@@ -207,7 +207,7 @@ public class HBASEPut extends HBASEPutDelete {
 		}
 		
 		if (bufferTransactions) {
-    		Logger.getLogger(this.getClass()).trace("Disabling auto flush");
+    		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
     		cachedTable = connection.getTable(tableNameBytes);
 
     		cachedTable.setAutoFlush(false, true);
@@ -295,7 +295,7 @@ public class HBASEPut extends HBASEPutDelete {
 
 			success = table.checkAndPut(checkRow, checkColF, checkColQ,
 					checkValue, myPut);
-			logger.debug("Result is " + success);
+			logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
 		} else if (!bufferTransactions && batchSize == 0) {
 			table.put(myPut);
 		} else if (bufferTransactions){
@@ -304,7 +304,7 @@ public class HBASEPut extends HBASEPutDelete {
 			synchronized (listLock) {
 				putList.add(myPut);
 				if (putList.size() >= batchSize) {
-					logger.debug("Submitting batch puts");
+					logger.debug(Messages.getString("HBASE_PUT_SUBMITTING_BATCH"));
 					table.put(putList);
 					putList.clear();
 				}
@@ -345,7 +345,7 @@ public class HBASEPut extends HBASEPutDelete {
 	protected void safeFlush() throws IOException {
 		if (connection != null && !connection.isClosed()) {
 			synchronized (tableLock) {
-				logger.debug("Calling hbase internal flush commits");
+				logger.debug(Messages.getString("HBASE_PUT_COMMIT_FLUSH"));
 				cachedTable.flushCommits();
 			}
 		}
@@ -372,7 +372,7 @@ public class HBASEPut extends HBASEPutDelete {
 		HTableInterface table = connection.getTable(tableNameBytes);
 		synchronized (listLock) {
 			if (table != null && putList != null && putList.size() > 0) {
-				logger.debug("Emptying buffer ");
+				logger.debug(Messages.getString("HBASE_PUT_EMPTING_BUFFER"));
 				table.put(putList);
 				table.close();
 			}
@@ -385,7 +385,7 @@ public class HBASEPut extends HBASEPutDelete {
 			clearInternalBuffer();
 		}
 		if (bufferTransactions) {
-			logger.debug("Attempting to submit cached transactions to HBase");
+			logger.debug(Messages.getString("HBASE_PUT_ATTEMPTING"));
 			safeFlush();
 		}
 	}
