@@ -22,9 +22,8 @@ data:
 
 
 distributed: data
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_GET_RECORD) $(SPL_CMD_ARGS)
+	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_GET_RECORD) $(SPL_CMD_ARGS)  --output-dir output_getrecord
 
 clean: 
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE_GET_RECORD)
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE_GET_RECORD) --output-dir output_getrecord
 
