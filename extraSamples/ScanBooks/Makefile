@@ -15,13 +15,10 @@ SPLC = $(STREAMS_INSTALL)/bin/sc
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
 SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::ScanBooks
 
-all: standalone
+all: distributed
 
 data:
 	mkdir data
-
-standalone: data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
 
 distributed: data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)

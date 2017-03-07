@@ -23,7 +23,7 @@ SPL_MAIN_PUT=com.ibm.streamsx.hbase.sample::PutSample
 SPL_MAIN_COMP= BasicUpdate
 SPL_MAIN_CHECK_COMP= CheckAndPut
 SPL_MAIN_EXIST_COMP= PutExistCheck
-SPL_MAIN_PUT_COMP=PutSample
+SPL_MAIN_PUT_COMP= PutSample
 
 all: compile data
 

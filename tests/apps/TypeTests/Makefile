@@ -15,20 +15,13 @@ SPLC = $(STREAMS_INSTALL)/bin/sc
 SPL_CMD_ARGS ?= -t $(STREAMS_HBASE_TOOLKIT)
 SPL_MAIN_COMPOSITE = com.ibm.streamsx.hbase.sample::TypeTests
 
-all: standalone
+all: distributed
 
 data:
 	mkdir data
 
-output/bin/standalone: $(SOURCES) data
-	$(SPLC) $(SPLC_FLAGS) -T -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS) 
-
-output/com.ibm.streamsx.hbase.sample.TypeTests.adl: $(SOURCES) data
+distributed: $(SOURCES) data
 	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE) $(SPL_CMD_ARGS)
-
-standalone: output/bin/standalone
-
-distributed: output/com.ibm.streamsx.hbase.sample.TypeTests.adl
 
 clean: 
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE)
