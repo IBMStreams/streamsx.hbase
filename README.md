@@ -52,6 +52,7 @@ Please enter an issue on GitHub for defects and other problems.
 
 ## Contributing
 This repository is using the fork-and-pull model (https://help.github.com/articles/using-pull-requests).  If you'd like to contribute code, fork a copy of the repository, make changes, and when ready, issue a pull request.  For more details, see the wiki in the IBMStreams/toolkits repository.
+This toolkit implements the NLS feature. Use the guidelines for the message bundle described in [The messages and the NLS for toolkits](https://github.com/IBMStreams/administration/wiki/The-messages-and-the-NLS-for-toolkits)
 
 ## Releases
 We will make releases after major features have been added.  If you wish to request a release, please open an issue.
