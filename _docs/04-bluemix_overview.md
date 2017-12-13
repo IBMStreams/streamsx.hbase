@@ -1,5 +1,5 @@
 ---
-title: "HDFS Toolkit for Bluemix"
+title: "HBASE Toolkit for Bluemix"
 permalink: /docs/bluemix/overview/
 excerpt: "Basic knowledge of the toolkits technical domain."
 last_modified_at: 2017-12-04T12:37:48-04:00
@@ -13,7 +13,7 @@ sidebar:
 
 
 
-The **HDFS Toolkit** for **Bluemix** is a fork of the [HDFS toolkit](https://github.com/IBMStreams/streamsx.hbase).
+The **HBASE Toolkit** for **Bluemix** is a fork of the [HBASE toolkit](https://github.com/IBMStreams/streamsx.hbase).
 The purpose of this fork is to enhance the existing operators to also support interacting with HDFS the BigInsights service in Bluemix. 
 
 Integrating HBase and Bluemix
