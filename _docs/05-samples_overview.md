@@ -14,11 +14,11 @@ sidebar:
 
 Samples
 
-[IncrementSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages/samples/PutSample/doc/spldoc/html/index.html)
+[IncrementSample](http://ibmstreams.github.io/streamsx.hbase/samples/IncrementSample/doc/spldoc/html/index.html)
 
-[PutSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/PutSample/doc/spldoc/html/index.html)
+[PutSample](http://ibmstreams.github.io/streamsx.hbase/samples/PutSample/doc/spldoc/html/index.html)
 
-[TableScan](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/TableScan/doc/spldoc/html/index.html)
+[TableScan](http://ibmstreams.github.io/streamsx.hbase/samples/TableScan/doc/spldoc/html/index.html)
 
 [GetRecord](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/GetRecord/doc/spldoc/html/index.html)
 
