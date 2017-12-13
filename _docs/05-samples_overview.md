@@ -13,11 +13,19 @@ sidebar:
 
 
 Samples
-[IncrementSample](./extraSamples/IncrementSample/doc/spldoc/html/index.html)
-[PutSample](./samples/PutSample/doc/spldoc/html/index.html)
-[TableScan](./extraSamples/TableScan/doc/spldoc/html/index.html)
+[IncrementSample](../extraSamples/IncrementSample/doc/spldoc/html/index.html)
+
+[PutSample](../samples/PutSample/doc/spldoc/html/index.html)
+
+[TableScan](../extraSamples/TableScan/doc/spldoc/html/index.html)
+
 [GetRecord](./samples/GetRecord/doc/spldoc/html/index.html)
-[CustomKey](./extraSamples/CustomKey/doc/spldoc/html/index.html)
-[GetSample](./samples/GetSample/doc/spldoc/html/index.html)GetSample
-[ScanBooks](./extraSamples/ScanBooks/doc/spldoc/html/index.html)
-[PutRecord](./samples/PutRecord/doc/spldoc/html/index.html)
+
+[CustomKey](../extraSamples/CustomKey/doc/spldoc/html/index.html)
+
+[GetSample](../samples/GetSample/doc/spldoc/html/index.html)GetSample
+
+[ScanBooks](../extraSamples/ScanBooks/doc/spldoc/html/index.html)
+
+[PutRecord](../samples/PutRecord/doc/spldoc/html/index.html)
+
