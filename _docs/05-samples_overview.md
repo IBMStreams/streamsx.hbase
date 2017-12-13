@@ -20,13 +20,13 @@ Samples
 
 [TableScan](http://ibmstreams.github.io/streamsx.hbase/samples/TableScan/doc/spldoc/html/index.html)
 
-[GetRecord](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/GetRecord/doc/spldoc/html/index.html)
+[GetRecord](http://ibmstreams.github.io/streamsx.hbase/samples/GetRecord/doc/spldoc/html/index.html)
 
-[CustomKey](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/CustomKey/doc/spldoc/html/index.html)
+[CustomKey](http://ibmstreams.github.io/streamsx.hbase/samples/CustomKey/doc/spldoc/html/index.html)
 
-[GetSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/GetSample/doc/spldoc/html/index.html)GetSample
+[GetSample](http://ibmstreams.github.io/streamsx.hbase/samples/GetSample/doc/spldoc/html/index.html)
 
-[ScanBooks](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/ScanBooks/doc/spldoc/html/index.html)
+[ScanBooks](http://ibmstreams.github.io/streamsx.hbase/samples/ScanBooks/doc/spldoc/html/index.html)
 
-[PutRecord](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/PutRecord/doc/spldoc/html/index.html)
+[PutRecord](http://ibmstreams.github.io/streamsx.hbase/samples/PutRecord/doc/spldoc/html/index.html)
 
