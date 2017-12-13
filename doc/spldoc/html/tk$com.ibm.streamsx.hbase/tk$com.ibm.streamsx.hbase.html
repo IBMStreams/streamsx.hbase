@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="Toolkit com.ibm.streamsx.hbase 2.2.0"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_toolkit"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>Toolkit com.ibm.streamsx.hbase 2.2.0</title>
+</head>
+<body id="spldoc_toolkit">
+
+
+<h1 class="title topictitle1 spltoolkitname">Toolkit <tt class="ph tt">com.ibm.streamsx.hbase 2.2.0</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; com.ibm.streamsx.hbase 2.2.0</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">General Information</h2>
+
+
+<p class="p">The HBase toolkit provides support for interacting with Apache HBase from InfoSphere Streams.
+</p>
+
+<p class="p">HBase is a Hadoop database, a distributed, scalable, big data store.  Tables are partitioned by rows across clusters.   A value in an HBase table is accessed by its row, columnFamily, columnQualifier, and timestamp. Usually the timestamp is left out, and only the latest value is returned. The HBase toolkit currently provides no support related to timestamps.
+</p>
+
+<p class="p">The columnFamily and columnQualifier can collectively be thought of as a column and are sometimes called that in the APIs. The separation of the column into two parts allows for some extra flexibility: the columnFamilies must be defined when the table is established and might be limited,  but new columnQualifiers can be added at run time and there is no limit to their number.
+</p>
+
+<p class="p">Tuples can be added to HBase by using the <tt class="ph tt">HBASEPut</tt> operator (which includes a checkAndPut condition) or incremented with the <tt class="ph tt">HBASEIncrement</tt> operator.  Tuples can be retrieved with the <tt class="ph tt">HBASEGet</tt> operator. The <tt class="ph tt">HBASETableScan</tt> operator can output all tuples, or all tuples in a particular row range. The <tt class="ph tt">HBASEDelete</tt> operator enables tuples to be deleted from HBase.
+</p>
+
+<p class="p">For some operators, such as <tt class="ph tt">HBASEPut</tt>, the row, columnFamily, columnQualifer, and value must all be specified. For other operators, such as <tt class="ph tt">HBASEGet</tt> and <tt class="ph tt">HBASEDelete</tt>, the behavior depends on which of those items are specified. The <tt class="ph tt">HBASEDelete</tt> operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified,  but it can also be used to delete only a single value.
+</p>
+
+<p class="p">The columnFamily and columnQualifier (when relevant) can either be specified as an attribute of the input tuple (columnFamilyAttrName, columnQualifierAttrName), or specified as a single string that is used for all tuples (staticColumnFamily,  staticColumnQualifier).  The the row and the value (when needed) come from the input tuple.
+</p>
+
+<div class="p">HBase supports locking by using a check-and-update mechanism for delete and put. This only locks within a single row, but it allows you to specify either:
+<ul class="ul">
+<li class="li"> a full entry (row, columnFamily, columnQualifier, value). If this entry exists with the given value, HBase makes the pure or delete.</li>
+
+<li class="li"> a partial entry (row, columnFamily, columnQualifier). If there is no value, HBase makes the update.</li>
+
+</ul>
+Note that the row of the put or delete and the row of the check must be the same. These are scenarios are supported by the <tt class="ph tt">HBASEPut</tt> and <tt class="ph tt">HBASEDelete</tt> operators by specifying a checkAttrName as a parameter. This attribute on the input stream must be of type tuple and have an attribute of columnFamily and columnQualifier (with a value if you are doing the first type of check). In this mode, the operator can have an output port with a success attribute to indicate whether the put or delete happened.
+</div>
+
+<p class="p">Except for <tt class="ph tt">HBASEIncrement</tt> and <tt class="ph tt">HBASEGet</tt>, the only data types that are currently supported are rstrings.   <tt class="ph tt">HBASEGet</tt> supports getting a value of type long.   
+</p>
+
+<p class="p">InfoSphere Streams uses the same configuration information from the <tt class="ph tt">hbase-site.xml</tt> file that HBase does. For more information about HBase, see <a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>.
+</p>
+
+  <dl class="dl"><dt class="dt dlterm"><a class="xref" href="tk$com.ibm.streamsx.hbase$1.html">Developing and running applications that use the HBase Toolkit</a>
+</dt>
+<dd class="dd">
+</dd>
+</dl>
+
+<dl class="dl">
+  
+  <dt class="dt dlterm">Version</dt>
+
+  <dd class="dd">2.2.0</dd>
+
+  
+  
+  <dt class="dt dlterm">Required Product Version</dt>
+
+  <dd class="dd">4.0.0.0</dd>
+
+  
+  
+  <dt class="dt dlterm">Author</dt>
+
+  <dd class="dd">IBMStreams Open Source Community at GitHub - https://github.com/IBMStreams/streamsx.hbase</dd>
+
+  
+</dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Indexes</h2>
+  
+  <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    <dt class="dt dlterm"><a class="xref" href="ix$Namespace.html">Namespaces</a></dt>
+<dd class="dd"/>
+
+    <dt class="dt dlterm"><a class="xref" href="ix$Operator.html">Operators</a></dt>
+<dd class="dd"/>
+
+  </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Namespaces</h2>
+  
+  <dl class="dl">
+    
+      <dt class="dt dlterm splpart"><a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a></dt>
+
+      <dd class="dd"/>
+
+      <dd class="dd"><dl class="dl">
+        <dt class="dt dlterm">Operators</dt>
+
+        <dd class="dd">
+<ul class="sl simple">
+<li class="sli"><a class="xref" href="op$com.ibm.streamsx.hbase$HBASEDelete.html">HBASEDelete</a></li>
+
+<li class="sli"><a class="xref" href="op$com.ibm.streamsx.hbase$HBASEGet.html">HBASEGet</a></li>
+
+<li class="sli"><a class="xref" href="op$com.ibm.streamsx.hbase$HBASEIncrement.html">HBASEIncrement</a></li>
+
+<li class="sli"><a class="xref" href="op$com.ibm.streamsx.hbase$HBASEPut.html">HBASEPut</a></li>
+
+<li class="sli"><a class="xref" href="op$com.ibm.streamsx.hbase$HBASEScan.html">HBASEScan</a></li>
+
+</ul>
+
+        </dd>
+
+      </dl>
+</dd>
+
+       </dl>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

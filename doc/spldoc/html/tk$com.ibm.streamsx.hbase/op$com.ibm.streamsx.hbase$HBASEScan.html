@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="Operator HBASEScan"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_operator"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>Operator HBASEScan</title>
+</head>
+<body id="spldoc_operator">
+
+
+<h1 class="title topictitle1">Operator <tt class="ph tt">HBASEScan</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEScan</p>
+
+</div>
+
+<div class="section splprimop">
+  <embed class="image" src="../../image/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.svg" width="872" height="112"/>
+</div>
+
+<div class="section">
+
+<p class="p">The <tt class="ph tt">HBASEScan</tt> operator scans an HBASE table.  Like the <tt class="ph tt">FileSource</tt> operator, it has an optional input port.  If no input port is specifed, then the operator scans the table according to the parameters that you specify, and sends the final punctuation.  If you specify an input  port, the operator does not start a scan until it receives a tuple.  After the operator receives a tuple, it scans according to that tuple and produces a punctuation.   When you use this operator without an input port, the operator might be multi-threaded. One thread is used per HBASE region, up to  the value that you specify in the <strong class="ph b">maxThreads</strong> parameter.  If the operator is in a parallel region, it further divides up the scanning work between other operators in the region, based on the <strong class="ph b">channel</strong> and <strong class="ph b">maxChannel</strong> parameter values, such that each row is scanned exactly once. When the scan is multithreaded or used as part of a parallel region, the tuples are not in order.
+</p>
+
+<p class="p"> By default, when you do not specify an input port, the operator scans the whole table.  If you specify both the <strong class="ph b">startRow</strong> and <strong class="ph b">endRow</strong> parameters, the scan starts at the row specified in the <strong class="ph b">startRow</strong> parameter and ends at the row specified in the  <strong class="ph b">endRow</strong> parameter.  If you specify only the <strong class="ph b">startRow</strong> parameter, the table scan starts there.  If your specify only the <strong class="ph b">endRow</strong> parameter, the table scan starts at the beginning and scans until the row specified in the <strong class="ph b">endRow</strong> parameter.  If you specify the <strong class="ph b">rowPrefix</strong> parameter, the table scans all rows with that row prefix.   When you specify an input port, the operator waits for a tuple to begin the scan.  The operator expects the input tuple to contain either (1) a startRow attribute, (2) an endRow attribute, (3) a startRow and an endRow attribute, or (3) a rowPrefix attribute.   It then scans according to that attribute and outputs punctuation.  The attributes can be any of the valid input types, such as rstring, ustring, long, or blob.  Any other attributes are copied through to the output tuple.  
+</p>
+
+<p class="p"> Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to an InfoSphere Streams tuple.  The row populates the row attribute, the columnFamily populates the columnFamily attribute, the columnQualifier  attribute populates the columnQualifier attribute, and the value populates the value attribute.  The value can either be a long or a string data type; all other values must be rstring data types.
+</p>
+
+<p class="p"> In record mode, the value attribute is of tuple type, and each row produces one InfoSphere Streams tuple.  The value is populated by taking the attribute names in the value tuple as column qualifiers and placing the values in the attributes that are specified by their column qualifiers.
+</p>
+
+<p class="p"><strong class="ph b">Behavior in a consistent region</strong>
+</p>
+
+<p class="p">If the operator has an input port, it may not be the source of a consistent region. If it does not have an input port, it can be the source of a region, and the region may either be operator-driven or periodic.
+</p>
+
+<p class="p">When in a operator-based consistent region, the triggerCount must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain.
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Summary</h2>
+
+<dl class="dl" compact="compact">
+ 
+  <dt class="dt dlterm">Ports</dt>
+
+  <dd class="dd">This operator has 1 input port and 1 output port.</dd>
+
+ 
+ 
+  <dt class="dt dlterm">Windowing</dt>
+
+  <dd class="dd">This operator does not accept any windowing configurations.</dd>
+
+ 
+ 
+  <dt class="dt dlterm">Parameters</dt>
+
+  <dd class="dd">This operator supports 16 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
+
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__channel">channel</a>, <a class="xref" href="#spldoc_operator__parameter__endRow">endRow</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__initDelay">initDelay</a>, <a class="xref" href="#spldoc_operator__parameter__maxChannels">maxChannels</a>, <a class="xref" href="#spldoc_operator__parameter__maxThreads">maxThreads</a>, <a class="xref" href="#spldoc_operator__parameter__maxVersions">maxVersions</a>, <a class="xref" href="#spldoc_operator__parameter__minTimestamp">minTimestamp</a>, <a class="xref" href="#spldoc_operator__parameter__outAttrName">outAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__outputCountAttr">outputCountAttr</a>, <a class="xref" href="#spldoc_operator__parameter__rowPrefix">rowPrefix</a>, <a class="xref" href="#spldoc_operator__parameter__startRow">startRow</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__triggerCount">triggerCount</a>
+
+</p>
+</dd>
+
+ 
+ 
+  <dt class="dt dlterm">Metrics</dt>
+
+  <dd class="dd">This operator does not report any metrics.</dd>
+
+ 
+</dl>
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Properties</h2>
+
+<dl class="dl" compact="compact">
+ 
+  <dt class="dt dlterm">Implementation</dt>
+
+  <dd class="dd">Java</dd>
+
+ 
+</dl>
+
+</div>
+
+<div class="section">
+<p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__input_port_set">Input Ports</a></strong></p>
+<dl class="dl">
+  
+   <dt class="dt dlterm">Ports (0)</dt>
+
+   <dd class="dd">
+
+<p class="p">Tuple describing scan.  Should contain either (1) startRow, (2) endRow, (3) startRow and endRow, or (4) rowPrefix attribute.
+</p>
+   </dd>
+
+  
+    
+      <dt class="dt dlterm">Properties</dt>
+
+      <dd class="dd">
+   <ul class="sl simple">
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__input_port_set__optional">Optional</a>: true
+     </li>
+
+   </ul>
+
+   <ul class="sl simple">
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__input_port_set__controlport">ControlPort</a>: false
+</li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowingmode">WindowingMode</a>: NonWindowed
+</li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__input_port_set__windowpunctuationinputmode">WindowPunctuationInputMode</a>: Oblivious
+</li>
+
+   </ul>
+
+      </dd>
+
+    
+</dl>
+
+</div>
+
+<div class="section">
+<p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__output_port_set">Output Ports</a></strong></p>
+<dl class="dl">
+  
+     <dt class="dt dlterm">Assignments</dt>
+
+       <dd class="dd">Java operators do not support output assignments.
+       </dd>
+
+  
+</dl>
+
+<dl class="dl">
+  
+   <dt class="dt dlterm">Ports (0)</dt>
+
+   <dd class="dd">
+
+<p class="p">If outAttrName is a list or a primitive type, there will be one tuple per HBASE entry.  If outAttrName is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes
+</p>
+
+<p class="p"/>
+
+   <dl class="dl">
+    
+      <dt class="dt dlterm">Properties</dt>
+
+      <dd class="dd">
+   <ul class="sl simple">
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__output_port_set__optional">Optional</a>: false
+     </li>
+
+   </ul>
+
+   <ul class="sl simple">
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__output_port_set__windowpunctuationoutputmode">WindowPunctuationOutputMode</a>: Generating
+     </li>
+
+   </ul>
+
+      </dd>
+
+    
+   </dl>
+
+   <p class="p"/>
+
+   </dd>
+
+  
+</dl>
+
+</div>
+
+<div class="section">
+<p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
+This operator supports 16 parameters.
+<p class="p"> Required: 
+<a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>
+
+</p>
+
+<p class="p"> Optional: 
+<a class="xref" href="#spldoc_operator__parameter__channel">channel</a>, <a class="xref" href="#spldoc_operator__parameter__endRow">endRow</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__initDelay">initDelay</a>, <a class="xref" href="#spldoc_operator__parameter__maxChannels">maxChannels</a>, <a class="xref" href="#spldoc_operator__parameter__maxThreads">maxThreads</a>, <a class="xref" href="#spldoc_operator__parameter__maxVersions">maxVersions</a>, <a class="xref" href="#spldoc_operator__parameter__minTimestamp">minTimestamp</a>, <a class="xref" href="#spldoc_operator__parameter__outAttrName">outAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__outputCountAttr">outputCountAttr</a>, <a class="xref" href="#spldoc_operator__parameter__rowPrefix">rowPrefix</a>, <a class="xref" href="#spldoc_operator__parameter__startRow">startRow</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__triggerCount">triggerCount</a>
+
+</p>
+<dl class="dl">
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__channel"><!-- --></a><tt class="ph tt">channel</tt></dt>
+
+<dd class="dd">
+<p class="p">If this operator is part of a parallel region, it shares the work of scanning with other operators in the region.  To do this, set this parameter value by calling getChannel().  This parameter is required if the maximum number of channels has a value other than zero.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__endRow"><!-- --></a><tt class="ph tt">endRow</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the row to use to stop the scan.  The row that you specify is excluded from the scan.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__hbaseSite"><!-- --></a><tt class="ph tt">hbaseSite</tt></dt>
+
+<dd class="dd">
+<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__initDelay"><!-- --></a><tt class="ph tt">initDelay</tt></dt>
+
+<dd class="dd">
+<p class="p">Delay, in seconds, before starting scan.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: float64
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxChannels"><!-- --></a><tt class="ph tt">maxChannels</tt></dt>
+
+<dd class="dd">
+<p class="p">If this operator is part of a parallel region, set this parameter value by calling getMaxChannels().  If the operator is in a parallel region, then the regions to be scanned are divided among the other copies of this operator in the other channels.  If this parameter is set, you must also set the <strong class="ph b">channel</strong> parameter. 
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxThreads"><!-- --></a><tt class="ph tt">maxThreads</tt></dt>
+
+<dd class="dd">
+<p class="p">Maximum number of threads to use to scan the table.  Defaults to one.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__maxVersions"><!-- --></a><tt class="ph tt">maxVersions</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the maximum number of versions that the operator returns.  It defaults to a value of one.  A value of 0 indicates that the operator gets all versions.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int32
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__minTimestamp"><!-- --></a><tt class="ph tt">minTimestamp</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the minimum timestamp that is used for queries.  The operator does not return any entries with a timestamp older than this value.  Unless you specify the <strong class="ph b">maxVersions</strong> parameter, the opertor returns only one entry in this time range.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int64
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__outAttrName"><!-- --></a><tt class="ph tt">outAttrName</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the name of the attribute in which to put the value. It defaults to <tt class="ph tt">value</tt>.  If the attribute is a tuple data type, the attribute names are used as columnQualifiers. If multiple families are included in the scan and they have the same columnQualifiers, there is no way of knowing which columnFamily was used to populate a tuple attribute.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__outputCountAttr"><!-- --></a><tt class="ph tt">outputCountAttr</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the output attribute in which to put the number of results that are found.  When the result is a tuple, this parameter value is the number attributes that were populated in that tuple.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__rowPrefix"><!-- --></a><tt class="ph tt">rowPrefix</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies that the scan only return rows that have this prefix.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__startRow"><!-- --></a><tt class="ph tt">startRow</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the row to use to start the scan.  The row that you specify is included in the scan.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnFamily"><!-- --></a><tt class="ph tt">staticColumnFamily</tt></dt>
+
+<dd class="dd">
+<p class="p">If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__staticColumnQualifier"><!-- --></a><tt class="ph tt">staticColumnQualifier</tt></dt>
+
+<dd class="dd">
+<p class="p">If this parameter is specified, it will be used as the columnQualifier for all tuples.  HBASEScan allows it to be specified multiple times.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__tableName"><!-- --></a><tt class="ph tt">tableName</tt></dt>
+
+<dd class="dd">
+<p class="p">Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: false
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__triggerCount"><!-- --></a><tt class="ph tt">triggerCount</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the number of rows to process before triggering a drain.  This parameter is valid only in a operator-driven consistent region.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int64
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+</dl>
+
+</div>
+
+<div class="section">
+<p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies">Libraries</a></strong></p>
+
+ <dl class="dl">
+ 
+  <dt class="dt dlterm">Operator class library
+  </dt>
+
+  <dd class="dd"/>
+
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, @HBASE_HOME@/lib/*, @HBASE_HOME@/*</tt></dd>
+
+ 
+ </dl>
+
+</div>
+
+</div>
+
+
+</body>
+</html>
