@@ -13,19 +13,20 @@ sidebar:
 
 
 Samples
-[IncrementSample](../extraSamples/IncrementSample/doc/spldoc/html/index.html)
 
-[PutSample](../samples/PutSample/doc/spldoc/html/index.html)
+[IncrementSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages/samples/PutSample/doc/spldoc/html/index.html)
 
-[TableScan](../extraSamples/TableScan/doc/spldoc/html/index.html)
+[PutSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/PutSample/doc/spldoc/html/index.html)
 
-[GetRecord](./samples/GetRecord/doc/spldoc/html/index.html)
+[TableScan](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/TableScan/doc/spldoc/html/index.html)
 
-[CustomKey](../extraSamples/CustomKey/doc/spldoc/html/index.html)
+[GetRecord](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/GetRecord/doc/spldoc/html/index.html)
 
-[GetSample](../samples/GetSample/doc/spldoc/html/index.html)GetSample
+[CustomKey](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/CustomKey/doc/spldoc/html/index.html)
 
-[ScanBooks](../extraSamples/ScanBooks/doc/spldoc/html/index.html)
+[GetSample](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/GetSample/doc/spldoc/html/index.html)GetSample
 
-[PutRecord](../samples/PutRecord/doc/spldoc/html/index.html)
+[ScanBooks](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//extraSamples/ScanBooks/doc/spldoc/html/index.html)
+
+[PutRecord](https://github.com/IBMStreams/streamsx.hbase/blob/gh-pages//samples/PutRecord/doc/spldoc/html/index.html)
 
