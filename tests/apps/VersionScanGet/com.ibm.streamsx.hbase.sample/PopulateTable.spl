@@ -1,0 +1,61 @@
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+/**
+ * Put some tuples in the table.
+ * For each of the columnQualifers in the list, it puts in entry_v1 up to entry_vk where k is numVersions.
+ * 
+ */
+composite PopulateTable()
+{
+	param
+		expression<rstring> $tableName ;
+		expression<int32> $numVersions : 3 ;
+		expression<boolean> $populate : true ;
+		expression<list<rstring>> $qualifiers ;
+		expression<rstring> $row ;
+	graph
+
+	/* The next two operators load the table.
+ * What we do is that we load each of the columnFamilies with
+ * <code>entry_v1,entry_v2,entry_v3</code>.
+ *
+ */
+
+
+	stream<rstring row, rstring colQ, rstring message> InputStream = Custom() {
+	logic state:
+	 {
+	boolean populate= $populate;
+	int32 numVersions = $numVersions; 
+	rstring row = $row;
+	list<rstring> qualifiers= $qualifiers;
+	}
+	onProcess: {
+	  if(populate) {
+	    mutable int32 versionsSent = 0;
+	    while (versionsSent < numVersions) {
+	       versionsSent++;
+	       for (rstring qual in qualifiers) {
+	       	   submit({row=row,colQ=qual,message="entry_v"+(rstring)versionsSent},InputStream);
+	       }
+	    }
+	  }
+	  submit(Sys.WindowMarker,InputStream);		      
+	  submit(Sys.FinalMarker,InputStream);		      
+        }
+
+ }
+		
+		() as loadTable = HBASEPut(InputStream)
+		{
+			param
+				staticColumnFamily : "all" ;
+				rowAttrName : "row" ;
+				columnQualifierAttrName : "colQ" ;
+				valueAttrName : "message" ;
+				tableName : $tableName ;
+		}
+		// End table loading.
+
+}

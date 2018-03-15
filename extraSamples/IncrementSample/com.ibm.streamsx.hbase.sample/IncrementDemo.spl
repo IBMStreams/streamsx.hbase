@@ -1,0 +1,172 @@
+/*
+ * Copyright (C) 2013-2014, International Business Machines Corporation  
+ * All Rights Reserved                                	                 
+ */
+ 
+namespace com.ibm.streamsx.hbase.sample;
+
+use com.ibm.streamsx.hbase::HBASEIncrement ;
+
+/** Demonstrate how to use HBASEIncrement.
+ * To use this example:
+ * create a table streamsSample_wordCount with column family Iliad.
+ * In hbase shell
+ * `create 'streamsSample_wordCount', 'Iliad'`
+ * 
+ * There are three increment operators in this composite.
+ * tupleIncrement: the row and the increment come from the tuple,
+ * the column family and column qualifier are operator parameters.
+ * 
+ * IncrementWithColumnFromParam: Only the row comes from the tuple.
+ * The column family and column qualifier are given in the operator 
+ * parameters, and the increment is the operator default.
+ * 
+ * IncrementWithColumnFromTuple: the row, column family, and column qualifier
+ * are from the tuple.  The increment is supplied as an operator parameter.
+ * 
+ * Some of the table is reproduced below the composite
+ */
+composite CountProperNouns
+{
+	param
+	// This is a list of words that are capitalized that are not 
+	// proper nouns.  This is not a complete list; if you actually
+	// want to find characters in a novel, we suggest you use
+	// Text Analytics.  
+		expression<list<rstring>> $stopWords : [ "Of", "Nor", "Not", "Never", "Hear",
+			"Hearken", "Good", "Forthwith", "Even", "Come", "Consider", "Be", "Promise",
+			"Yet", "This", "Thou", "Therefore", "Why", "Would", "What", "When",
+			"Whosoever", "We", "Verily", "Unwillingly", "Two", "Ye", "Yea", "She",
+			"Most", "Only", "If", "Let", "But", "Who", "For", "Go", "While", "Is",
+			"Nay", "And", "Though", "With", "They", "It", "To", "Now", "Abide", "There",
+			"Sing", "So", "Then", "He", "The" ] ;
+			// This regular expression is used to search for characters to eliminate.
+		expression<rstring> $ignoreRegex : "\\.|;|,|\"|'" ;
+	graph
+	// Read in book1 of the Iliad, line by line.
+		stream<rstring line> lines = FileSource()
+		{
+			param
+				file : "iliad_book1.txt" ;
+				format : line ;
+		}
+		// Tokenize the line into words. We'll use this word list in
+		// two ways.  First, we'll just count the words.  Second,
+		// we'll take the capitalize words, filter out the stop words,
+		// and put those in the table.
+		stream<list<rstring> words> wordList = Functor(lines)
+		{
+			output
+				wordList : words = spl.string::tokenize(lines.line, " ", false) ;
+		}
+
+		///////////////////////// Word count ///////////////////////////
+		// This section demonstrates the use of the custom increment 
+		// attribute
+		stream<rstring row, int32 count> wordCount = Functor(wordList)
+		{
+			output
+				wordCount : row = "wordTotal", count = size(words) ;
+		}
+
+		// Read the amount to increment from the incrementAttrName
+		() as tupleIncrement = HBASEIncrement(wordCount)
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				rowAttrName : "row" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+				incrementAttrName : "count" ;
+		}
+
+		//  Use default increment.
+		stream<rstring word> wordStream = Custom(wordList)
+		{
+			logic
+				onTuple wordList : for(rstring myword in wordList.words)
+				{
+					rstring cleanWord = regexReplace(myword, $ignoreRegex, "", true) ;
+					submit({ word = cleanWord }, wordStream) ;
+				}
+
+		}
+
+		// Only proper nouns
+		stream<rstring word> properNouns = Filter(wordStream)
+		{
+			param
+				filter : size(regexMatch(wordStream.word, "[A-Z][a-z]+")) > 0 && - 1 ==
+					findFirst($stopWords, wordStream.word) ;
+		}
+
+		// Insert them into HBASE.  Here the column family and 
+		// column qualifier are supplied as parameters, and we
+		// use the default increment of one.  
+		() as IncrementWithColumnFromParam = HBASEIncrement(properNouns)
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				rowAttrName : "word" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+		}
+
+		// In the next two operators, we insert into HBASE, but 
+		// we use a column family and column qualifier that come from
+		// the tuple itself.  The increment provided as a parameter.
+		// Contrast this with the operator above, in which the increment
+		// is implicit, and with the first operator, in which the increment
+		// comes from the tuple itself.
+
+		// Create the tuple
+		stream<rstring word, rstring work, rstring section> fullTuple =
+			Functor(properNouns)
+		{
+			output
+				fullTuple : work = "Iliad", section = "Book1_b" ;
+		}
+
+		// Use the tuple
+		() as IncrementWithColumnFromTuple = HBASEIncrement(fullTuple)
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				rowAttrName : "word" ;
+				columnFamilyAttrName : "work" ;
+				columnQualifierAttrName : "section" ;
+				increment : 1l ;
+		}
+
+}
+/*
+ * For a user-friendly print out of the increment value of a particular row,
+ * from hbase shell, do
+ *  incr 'streamsSample_wordCount', 'wordTotal', 'Iliad:Book1', 0
+ * 
+ * For example, to find out how many times Achilles is mentioned:
+ * hbase(main):042:0> incr 'streamsSample_wordCount', 'Achilles', 'Iliad:Book1', 0
+ * COUNTER VALUE = 20
+ *
+ */
+
+/*
+ * hbase(main):038:0> scan 'streamsSample_wordCount'
+ * ROW                                 COLUMN+CELL
+ * Achaia                             column=Iliad:Book1, timestamp=1383146620432, value=\x00\x00\x00\x00\x00\x00\x00\x01                  
+ * Achaia                             column=Iliad:Book1_b, timestamp=1383146620434, value=\x00\x00\x00\x00\x00\x00\x00\x01                
+ * Achaian                            column=Iliad:Book1, timestamp=1383146620638, value=\x00\x00\x00\x00\x00\x00\x00\x02                  
+ * Achaian                            column=Iliad:Book1_b, timestamp=1383146620640, value=\x00\x00\x00\x00\x00\x00\x00\x02                
+ * Achaians                           column=Iliad:Book1, timestamp=1383146621806, value=\x00\x00\x00\x00\x00\x00\x00'                     
+ * Achaians                           column=Iliad:Book1_b, timestamp=1383146621808, value=\x00\x00\x00\x00\x00\x00\x00'                   
+ * Achilles                           column=Iliad:Book1, timestamp=1383146621800, value=\x00\x00\x00\x00\x00\x00\x00\x14                  
+ * Achilles                           column=Iliad:Book1_b, timestamp=1383146621802, value=\x00\x00\x00\x00\x00\x00\x00\x14 
+ 
+ * ...
+ * 
+ * Zeus?                              column=Iliad:Book1, timestamp=1383146620191, value=\x00\x00\x00\x00\x00\x00\x00\x01                  
+ * Zeus?                              column=Iliad:Book1_b, timestamp=1383146620193, value=\x00\x00\x00\x00\x00\x00\x00\x01                
+ * [Patroklos]                        column=Iliad:Book1, timestamp=1383146620653, value=\x00\x00\x00\x00\x00\x00\x00\x01                  
+ * [Patroklos]                        column=Iliad:Book1_b, timestamp=1383146620655, value=\x00\x00\x00\x00\x00\x00\x00\x01                
+ *  wordTotal                          column=Iliad:Book1, timestamp=1383146622008, value=\x00\x00\x00\x00\x00\x00\x19[                
+ */

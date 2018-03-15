@@ -1,0 +1,55 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+
+/** Demostrate basic updating
+ * To update, you can simply put a new tuple with the same row,
+ * column family, and column qualifier.  Future gets will find the
+ * new value.  See note below.
+ * 
+ * This example assumes you have already run the PutSample.
+ * 
+ * The old one isn't deleted, but will not be accessible unless 
+ * you request all versions, and may be deleted at the next major 
+ * compaction.
+ * 
+ * 
+ * Before update:
+ * 
+ *      Gandalf                            column=location:beginTwoTowers, timestamp=1383069681212, value=dead 
+ *
+ *  After update:
+ * 
+ *       Gandalf                            column=location:beginTwoTowers, timestamp=1383148187041, value=Lothlorien
+ * 
+ * (your timestamps will be different in both cases)
+ */
+ 
+composite BasicUpdate
+{
+	graph
+		stream<rstring row, rstring colF, rstring colQ, rstring value> updates =
+			Beacon()
+		{
+			param
+				iterations : 1 ;
+			output
+				updates : row = "Gandalf", colF = "location", colQ = "beginTwoTowers",
+					value = "Lothlorien" ;
+		}
+
+		() as Update = HBASEPut(updates)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				valueAttrName : "value" ;
+		}
+
+}
+
