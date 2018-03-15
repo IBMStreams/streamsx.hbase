@@ -1,0 +1,7 @@
+#character,columnFamily,columnQualifier,value
+Boromir,location,beginFellowship,travelling
+Boromir,location,beginTwoTowers,dead
+Gandalf,location,beginTwoTowers,dead
+Arwen,appearance,overall,beautiful
+Eowyn,appearance,overall,beautiful
+Aragorn,appearance,height,tall

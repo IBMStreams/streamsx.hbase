@@ -1,0 +1,117 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEScan;
+
+
+/** Demonstrates HBASEScan
+ * This example demonstrates HBASEScan. 
+ * It assumes you've run both the increment sample and 
+ * the put sample, as it reads the table streamsSample_lotr and the 
+ * table streamsSample_wordCount.  
+ * 
+ * It consists of three pieces:
+ * 
+ * *Scan example where the value is a string and all tuple attributes
+ * are populated
+ * * Scan example where the value is an int64.  No columnQualifier on 
+ * the output.
+ * * Scan example where the row set is limited by a startRow and an endRow.
+ * 
+ */
+composite ScanString
+{
+	graph
+		// Read LOTR table, shows reading where value is a string.
+		stream<rstring row, rstring columnFamily, rstring columnQualifier,
+			rstring value> lotrTable = HBASEScan()
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+		}
+		
+		() as lotrSink =  FileSink(lotrTable) {
+		param
+		file: "lotr.out";
+		}
+		
+		// Get all versions of entries in the LOTR table.
+		// The name of the attribute that is a list of tuples is what is referenced in the 
+		// operator (here it's value), but the first attribute of the tuple can be
+		// anything--here we use <code>yourchoice</code> to emphasize that point.  
+		// Likewise, the name of the timestamp attribute can be your choice.
+		
+		stream<rstring row, rstring columnFamily, rstring columnQualifier,
+			list<tuple<rstring yourchoice, int64 ts>> value> lotrTableWithVersions = HBASEScan()
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				maxVersions: 2;
+		}
+		
+		() as lotrSink_versions =  FileSink(lotrTableWithVersions) {
+		param
+		file: "lotr_versions.out";
+		}
+
+	// Read where value is an int64, also, no columnQualifier on the 
+	// output tuple. 
+		stream<rstring row, rstring columnFamily, int64 value> countTable =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+		}
+			
+		() as IliadSink = FileSink(countTable) {
+		param
+		file: "iliad.out";
+		}
+		
+		// Read only a subset of rows.
+				stream<rstring row, rstring columnFamily, int64 value> partialTable =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+				startRow:"K";
+				endRow:"L";
+		}
+
+
+			
+		() as IliadPartialSink = FileSink(partialTable) {
+		param
+		file: "iliad_k.out";
+		}
+
+		// Read only the rows beginning with K.  This works 
+		// the same as the above operator.
+				stream<rstring row, rstring columnFamily, int64 value> prefixScan =
+			HBASEScan()
+		{
+			param
+				tableName : "streamsSample_wordCount" ;
+				staticColumnFamily : "Iliad" ;
+				staticColumnQualifier : "Book1" ;
+				rowPrefix:"K";
+				
+		}
+
+
+			
+		() as IliadPartialSink2 = FileSink(prefixScan) {
+		param
+		file: "iliad_k2.out";
+		}
+
+		() as ScanWithInputSink = ScanWithInput() {
+		}
+
+}

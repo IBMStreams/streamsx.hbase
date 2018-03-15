@@ -1,0 +1,3 @@
+"always true","Frodo","beginFellowship","The Shire",{columnFamily="location",columnQualifier="beginFellowship",value="The Shire"}
+"true first time","Gandalf","beginFellowship","Shire",{columnFamily="location",columnQualifier="beginFellowship",value="The Shire"}
+"never true","Elrond","beginFellowship","Lothlorien",{columnFamily="location",columnQualifier="beginFellowship",value="Shire"}

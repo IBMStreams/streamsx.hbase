@@ -1,0 +1,88 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved  
+ * 
+ */
+ 
+namespace com.ibm.streamsx.hbase.sample;
+
+use com.ibm.streamsx.hbase::HBASEDelete ;
+
+/** Basic delete demo
+ * You can delete entire rows, row + column family, or 
+ * row,column family, column qualifier triples. We have
+ * a demonstration for each.
+ * 
+ * This demo uses the same table as the PutSample, and assumes
+ * you've already run that.
+ * 
+ */
+composite DeleteDemo
+{
+	graph
+	/////////////////////////// Row delete
+	// First create a stream of row tuples.
+		stream<rstring row> rowsToDelete = Beacon()
+		{
+			logic
+				state : list<rstring> toDelete = [ "Frodo" ] ;
+			param
+				iterations : size(toDelete) ;
+			output
+				rowsToDelete : row = toDelete [ IterationCount() ] ;
+		}
+
+		() as RowDelete = HBASEDelete(rowsToDelete)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+		}
+
+		/////////////////////// Row + ColumnFamily delete
+		// Read from a file.
+		// Gandalf, location
+		// Boromir, location
+		//
+		// After the delete, Boromir is gone from the table, but Gandalf has
+		// at least one appearance row.
+		stream<rstring row, rstring columnFamily> familiesToDelete = FileSource()
+		{
+			param
+				file : "rowColumnFamily.csv" ;
+				format : csv ;
+		}
+
+		() as RowColumnFamilyDelete = HBASEDelete(familiesToDelete)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+				columnFamilyAttrName : "columnFamily" ;
+		}
+
+		///////////////////// Row + ColumnFamily + ColumnQualifier delete
+		// Read from a file.  The last one isn't even in teh table.
+		// Arwen,appearance,hair
+		// Eowyn,appearance,hair
+		// Gimli,appearance,height
+		//
+		// After the delete, Arwen and Eowyn still have only appearance:overall,
+		// no appearance::hair.
+		stream<rstring row, rstring columnFamily, rstring columnQualifier>
+			entriesToDelete = FileSource()
+		{
+			param
+				file : "rowColumn.csv" ;
+				format : csv ;
+		}
+
+		() as RowColumnDelete = HBASEDelete(entriesToDelete)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "row" ;
+				columnFamilyAttrName : "columnFamily" ;
+				columnQualifierAttrName : "columnQualifier" ;
+		}
+
+}

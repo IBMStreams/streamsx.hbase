@@ -1,0 +1,57 @@
+/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+type ExistCheckType = rstring columnFamily, rstring columnQualifier ;
+
+/** Use putAndCheck to put an entry only if another entry doesn't exist
+ * 
+ * This demonstrates the put and check interface, where the check
+ * is for the non-existence of a column.  
+ * 
+ * In this mode, the operator has an optional output port with 
+ * a success attribute for saying whether the put succeeded or failed.
+ * 
+ * First run, the checkExist.out file is:
+ * 
+ *      "Gandalf","beard","bushy",false
+ *      "Gandalf","eyebrows","bushy",true
+ *      "Frodo","hairy",false
+ * 
+ * 
+ * The second time, all are false, because <pre>Gandalf appearance:eyebrows</pre>
+ * has already been added to the table.  
+ */
+composite PutExistCheck
+{
+	graph
+		stream<rstring character, rstring feature, rstring desc,
+			ExistCheckType check> appearanceUpdates = FileSource()
+		{
+			param
+				file : "appearanceUpdates.csv" ;
+				format : csv ;
+		}
+
+		stream<rstring character, rstring feature, rstring desc, boolean success>
+			successStream = HBASEPut(appearanceUpdates)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "character" ;
+				staticColumnFamily : "appearance" ;
+				columnQualifierAttrName : "feature" ;
+				valueAttrName : "desc" ;
+				checkAttrName : "check" ;
+				successAttr : "success" ;
+		}
+
+		() as successSink = FileSink(successStream)
+		{
+			param
+				file : "checkExist.out" ;
+		}
+
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2013-2014, International Business Machines Corporation -->
+<!-- All Rights Reserved                                                   -->
+<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
+  <info:identity>
+    <info:name>com.ibm.streamsx.hbase</info:name>
+    <info:description>
+The HBase toolkit provides support for interacting with Apache HBase from InfoSphere Streams.
+
+HBase is a Hadoop database, a distributed, scalable, big data store. 
+Tables are partitioned by rows across clusters.  
+A value in an HBase table is accessed by its row, columnFamily, columnQualifier, and timestamp.
+Usually the timestamp is left out, and only the latest value is returned.
+The HBase toolkit currently provides no support related to timestamps.
+
+The columnFamily and columnQualifier can collectively be thought of as a column
+and are sometimes called that in the APIs.
+The separation of the column into two parts allows for some extra flexibility:
+the columnFamilies must be defined when the table is established and might be limited, 
+but new columnQualifiers can be added at run time and there is no limit to their number.
+
+Tuples can be added to HBase by using the `HBASEPut` operator (which includes a checkAndPut condition)
+or incremented with the `HBASEIncrement` operator.  Tuples can be retrieved with the `HBASEGet` operator.
+The `HBASETableScan` operator can output all tuples, or all tuples in a particular row range.
+The `HBASEDelete` operator enables tuples to be deleted from HBase.
+
+For some operators, such as `HBASEPut`, the row, columnFamily, columnQualifer, and value must all be specified.
+For other operators, such as `HBASEGet` and `HBASEDelete`, the behavior depends on which of those items are specified.
+The `HBASEDelete` operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified, 
+but it can also be used to delete only a single value.
+
+The columnFamily and columnQualifier (when relevant) can either be specified as an attribute of the input tuple
+(columnFamilyAttrName, columnQualifierAttrName), or specified as a single string that is used for all tuples (staticColumnFamily, 
+staticColumnQualifier).  The the row and the value (when needed) come from the input tuple.
+
+HBase supports locking by using a check-and-update mechanism for delete and put.
+This only locks within a single row, but it allows you to specify either:
+ * a full entry (row, columnFamily, columnQualifier, value). If this entry exists with the given value, HBase makes the pure or delete.
+ * a partial entry (row, columnFamily, columnQualifier). If there is no value, HBase makes the update.
+Note that the row of the put or delete and the row of the check must be the same.
+These are scenarios are supported by the `HBASEPut` and `HBASEDelete` operators by specifying a checkAttrName as a parameter.
+This attribute on the input stream must be of type tuple and have an attribute of columnFamily and
+columnQualifier (with a value if you are doing the first type of check).
+In this mode, the operator can have an output port with a success attribute to indicate whether the put or delete happened.
+
+Except for `HBASEIncrement` and `HBASEGet`, the only data types that are currently supported are rstrings.  
+`HBASEGet` supports getting a value of type long.   
+
+The com.ibm.streamsx.hbase uses the same configuration information from the `hbase-site.xml` file that HBase does.
+For more information about HBase, see [http://hbase.apache.org/].
+
++ Developing and running applications that use the HBase Toolkit
+
+To create applications that use the HBase Toolkit, you must configure either Streams Studio
+or the SPL compiler to be aware of the location of the toolkit. 
+
+# Before you begin
+
+* Install the Apache Ambari on you Hadoop server. https://ambari.apache.org/
+  Configure the product environment via ambari and 
+  install Apache Hadoop ([http://hadoop.apache.org/])
+  Install Apache HBase ([http://hbase.apache.org/]), 
+  and Apache Zookeeper ([http://zookeeper.apache.org/]). 
+  All of these products can be configured via ambari.
+
+* The com.ibm.streamsx.hbase toolkit can also access to the:
+  **IBM Biginsighs** https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.welcome.doc/doc/welcome.html
+  **Hortonworks** data platform https://hortonworks.com/products/data-platforms/hdp/
+ 
+# About this task
+
+After the location of the toolkit is communicated to the compiler, the SPL artifacts
+that are specified in the toolkit can be used by an application.
+The application can include a use directive to bring the necessary namespaces into scope.
+Alternatively, you can fully qualify the operators that are provided by toolkit with their namespaces as prefixes.
+
+# Procedure
+
+1. For Apache HBase, you must configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
+   * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase.
+   * Otherwise, copy the `/hbase-install-dir/lib` directory to the file system where Streams will be running, making sure to follow symbolic links:
+         cp -Lr path-to-hbase/lib /path-on-streams-host
+   * Set **HBASE_HOME** to the directory you created, for example, to `path-on-streams-host`.
+
+2. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/`conf` is searched for the `hbase-site.xml`.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
+   * Create a `conf` directory in the same directory you created in step 1 and copy the `hbase-site.xml` from your HBase installation to that directory.
+   * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation into a directory accessible by your application and use the **hbaseSite** parameter to specify the path to the copied file.
+3. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+   * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
+    or multiple toolkits (with : as a separator).  For example:
+       export STREAMS_SPLPATH=$STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase
+   * Specify the **-t** or **--spl-path** command parameter when you run the **sc** command. For example:
+       sc -t $STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase -M MyMain
+    where MyMain is the name of the SPL main composite.
+    **Note**: These command parameters override the **STREAMS_SPLPATH** environment variable.
+   * Add the toolkit location in InfoSphere Streams Studio.
+4. Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
+   * For example, you can add the following clause in your SPL source file:
+       use com.ibm.streamsx.hbase::*;
+     You can also specify a use clause for individual operators by replacing the asterisk (\*) with the operator name. For example: 
+       use com.ibm.streamsx.hbase::HBASEDelete;
+5. Build your application.  You can use the **sc** command or Streams Studio.  
+6. Start the InfoSphere Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME** 
+   This can be done using the Streams Console or the `streamtool` utility.
+7. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
+</info:description>
+    <info:version>3.0.0</info:version>
+    <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
+  </info:identity>
+  <info:dependencies/>
+  <info:sabFiles>
+    <info:exclude path="opt/downloaded"/>
+  </info:sabFiles>
+</info:toolkitInfoModel>

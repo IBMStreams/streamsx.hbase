@@ -1,0 +1,32 @@
+
+#####################################################################
+# Copyright (C)2014, 2016 International Business Machines Corporation and
+# others. All Rights Reserved.
+#####################################################################
+
+.PHONY: all clean
+
+#SPLC_FLAGS = -t $(STREAMS_INSTALL)/toolkits/com.ibm.streamsx.hbase  --data-directory data
+SPLC_FLAGS = -t ../../com.ibm.streamsx.hbase  --data-directory data
+
+SPLC = $(STREAMS_INSTALL)/bin/sc
+
+SPL_CMD_ARGS ?=
+SPL_COMP1NAME=PutSample
+SPL_MAIN_COMPOSITE1 = com.ibm.streamsx.hbase.sample::$(SPL_COMP1NAME)
+BUILD_OUTPUT_DIR = output
+
+all: data clean
+	cd ../../; ant
+	$(SPLC) $(SPLC_FLAGS) -M  $(SPL_MAIN_COMPOSITE1) --output-dir ./$(BUILD_OUTPUT_DIR)  $(SPL_CMD_ARGS)
+	output/bin/standalone
+
+
+data:
+	mkdir data
+clean:
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE1) --output-dir output
+	-rm -rf toolkit.xml
+	-rm -rf data/output.dat
+	-rm -rf output
+
