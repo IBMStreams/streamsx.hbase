@@ -1,0 +1,163 @@
+namespace com.ibm.streamsx.hbase.bluemix;
+
+/* Copyright (C) 2015, International Business Machines Corporation  
+ * All Rights Reserved  
+ */
+use com.ibm.streamsx.inet.http::*;
+use com.ibm.streamsx.bytes.conversion::*;
+
+
+/**
+ * Represents a row in an HBase table.
+*/
+type RowType = rstring rowKey, list<CellType> cells;
+
+/**
+ Represents a cell within a row in an HBase table.
+ */
+type CellType = tuple<rstring column, rstring value, int64 time>;
+
+
+/**
+ * Delete an HBase table.  
+ * @param baseUrl  URL used to access HBase, should be http://.../hbase
+ * @param username Username if access is via the Knox gateway.  May be empty.
+ * @param password Password for the Knox gateway.  Maybe be empty.
+ * @param tableName Name of the table to create.
+ * @return the result of the HttpDelete request.  May contain an exception in the case of an error and will be empty otherwise.
+ */
+
+public rstring hbaseDeleteTable(rstring baseUrl, rstring username, rstring password, rstring tableName) {
+
+    rstring url = baseUrl +"/"+tableName+"/schema";
+    if (isTraceable(Trace.debug)) {
+        appTrc(Trace.debug,"full url: "+url);
+    }
+    mutable int32 error = 0;
+    rstring toReturn = httpDelete(url,(list<rstring>)[],username,password,error);
+    if (isTraceable(Trace.debug)) {
+     	appTrc(Trace.debug, "HBase delete table request returned: "+ toReturn);
+     }	
+    return toReturn;
+
+}
+
+/** Create an HBase table.
+ * @param baseUrl URL used to access HBase
+ * @param username Username if access is via the Knox gateway.
+ * @param password Password if access is via the Knox gateway.
+ * @param tableName tableName to be created.
+ * @param columnFamilies List of column families to put in the table.
+ */
+public void hbaseMakeTable(rstring baseUrl, rstring username, rstring password, rstring tableName, list<rstring>columnFamilies) {
+    rstring url = baseUrl+"/"+tableName+"/schema";
+    appTrc(Trace.debug,"full url: "+url);
+    mutable rstring toPut = "{\"name\":\""+tableName+"\",\"ColumnSchema\":[{\"name\":\""+columnFamilies[0]+"\"}";
+
+    mutable int32 family = 1;
+    while (family < size(columnFamilies)) {
+        toPut = toPut+",{\"name\":\""+columnFamilies[family]+"\"}";
+        family++;
+    }
+    toPut +="]}";
+    if (isTraceable(Trace.debug)) {
+        appTrc(Trace.debug,"Table configuration: "+toPut);
+    }
+    mutable int32 error=0;
+    mutable list<rstring> returnedHeaders=[];
+    rstring toReturn = httpPut(toPut,url,["Accept: application/json","Content-Type: application/json"],username, password,returnedHeaders, error);
+    if (isTraceable(Trace.debug)) {
+        appTrc(Trace.debug,"put request to make HBase table returned "+toReturn);
+    }
+    if (error != 0) {
+        appTrc(Trace.error, "HBase Make table Error code "+(rstring)error);
+    }
+}
+
+/** Put a single entry into an HBase table.
+ * @param baseUrl URL used to access HBase, eg https://host:port/gateway/default/hbase
+ * @param username username for Knox gateway, if needed.
+ * @param password password for the Knox gateway, if needed.
+ * @param row Row for entry to be added.
+ * @param columnFamily Column family of entry to added.
+ * @param columnQualifier Column qualifier of entry to be added.
+ * @param value Value of entry to be added.
+ * @return A string describing the result of the put request. Will be empty on success and may contain an exception otherwise. 
+ */
+
+public rstring hbasePut(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row, rstring columnFamily, rstring columnQualifier, rstring value) {
+    rstring url = baseUrl+"/"+tableName+"/"+row;
+    rstring toPut = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><CellSet><Row key=\""+encodeBase64(row)+"\"><Cell column=\""+encodeBase64(columnFamily+":"+columnQualifier)+"\">"+encodeBase64(value)+"</Cell></Row></CellSet>";
+    mutable int32 error =0;
+    mutable list<rstring> returnedHeaders =[];
+    if (isTraceable(Trace.debug)) {
+        appTrc(Trace.debug,"xml is"+toPut);
+    }
+    rstring toReturn = httpPost(toPut,url,["Accept: text/xml","Content-Type: text/xml"], username, password, returnedHeaders, error);
+    if (error != 0) {
+        appTrc(Trace.error, "Error code for HBase put "+(rstring)error);
+    }
+    if (isTraceable(Trace.debug) ) {
+        appTrc(Trace.debug,"Result for HBase put "+toReturn);
+   }
+    return toReturn;
+}
+
+/** Get all the entries in the given row.
+ * @param baseUrl URL to use https://ipaddr:port/gateway/default/hbase
+ * @param username Username for Knox gateway, if needed.
+ * @param password Password for Knox gateway, if needed.
+ * @param tableName Name of the table
+ * @param row row to get.
+ * @return Tuple containing the row and all values in that row.
+ */
+
+public  RowType hbaseGet(rstring baseUrl, rstring username, rstring password, rstring tableName, rstring row) {
+    rstring url = baseUrl +"/"+tableName+"/"+row;
+    mutable int32 error=0;
+    rstring resultJson = httpGet(url,["Accept: application/json","Content-Type: application/xml"], username, password, error);
+    if (error != 0) {
+        appTrc(Trace.error, "HBase get returned error code "+(rstring)error);
+    }
+    if (isTraceable(Trace.debug)) {
+        appTrc(Trace.debug,"Result is "+resultJson);
+    }
+    int32 keyStart = findFirst(resultJson,"key\":");
+    int32 rowidStart = findFirst(resultJson,":",keyStart)+2;
+    int32 rowidEnd = findFirst(resultJson,"\"",rowidStart);
+    appTrc(Trace.trace, "Rowid start "+(rstring)rowidStart);
+    appTrc(Trace.trace,"Rowid end "+(rstring)rowidEnd);
+    appTrc(Trace.trace,"keyStart "+(rstring)keyStart);
+    rstring encodedRow = substring(resultJson,rowidStart, rowidEnd -rowidStart);
+    rstring rowid = decodeBase64(encodedRow);
+
+    if (isTraceable(Trace.trace)) {
+        appTrc(Trace.trace,"row key is "+rowid);
+    }
+    mutable list<CellType> cellList = [];
+    mutable int32 nextCell = findFirst(resultJson,"{",rowidEnd);
+    while (nextCell != -1) {
+        int32 columnStart =	findFirst(resultJson,"column\":",nextCell) + 9;
+        int32 columnEnd = findFirst(resultJson,"\"",columnStart);
+        rstring column = substring(resultJson,columnStart,columnEnd-columnStart);
+
+        int32 valueStart =	findFirst(resultJson,"$\":",nextCell) + 4;
+        int32 valueEnd = findFirst(resultJson,"\"",valueStart);
+        rstring value = substring(resultJson,valueStart,valueEnd - valueStart);
+
+        int32 timeStart =	findFirst(resultJson,"timestamp\":",nextCell) +11;
+        int32 timeEnd = findFirst(resultJson,",",timeStart);
+        rstring time = substring(resultJson,timeStart,timeEnd-timeStart);
+        if (isTraceable(Trace.trace)) {
+            appTrc(Trace.error,"column: "+column+" value "+value+" ts "+time);
+        }
+        appendM(cellList,{column=decodeBase64(column),value=decodeBase64(value),time=(int64)time});
+        nextCell = findFirst(resultJson,"{",nextCell+1);
+
+    }
+    if (isTraceable(Trace.trace)) {
+        appTrc(Trace.error,"Cell list:"+(rstring)cellList);
+    }
+    return {rowKey= rowid,cells=cellList};
+}
+

@@ -36,8 +36,7 @@ import com.ibm.streams.operator.types.Blob;
  * @author hildrum
  *
  */
-
-//@Libraries({"@HBASE_HOME@/lib/*", "opt/downloaded/*"})
+@Libraries({"@HBASE_HOME@/lib/*", "@HBASE_HOME@/*"})
 public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
     static final String HBASE_SITE_PARAM_NAME="hbaseSite";
@@ -75,6 +74,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String CHARSET_PARAM_NAME = "charset";
 	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
+	
 	
     @Parameter(name=HBASE_SITE_PARAM_NAME, optional=true,description="The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
 	public void setHbaseSite(String name) {
@@ -237,36 +237,24 @@ public abstract class HBASEOperator extends AbstractOperator {
 		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
 		String hadoopHome = System.getenv("HADOOP_HOME");
-		String hbaseHome = System.getenv("HBASE_HOME");
 		ArrayList<String> libList = new ArrayList<>();
-		String default_dir = context.getToolkitDirectory() +"/impl/lib/ext/*";
-		libList.add(default_dir);
-
-	// All needed jar libraies will be download via maven in impl/lib/ext directory
-		System.out.println("initialize ***************");
-//		if (hadoopHome != null){
-//			libList.add(hadoopHome + "/share/hadoop/hdfs/*");
-//			libList.add(hadoopHome + "/share/hadoop/common/*");
-//			libList.add(hadoopHome + "/share/hadoop/common/lib/*");
-//			libList.add(hadoopHome + "/lib/*");
-//			libList.add(hadoopHome + "/client/*");
-//			libList.add(hbaseHome + "/lib/*");
-//			libList.add(hadoopHome + "/*");
-//			libList.add(hadoopHome + "/../hadoop-hdfs/*");
-//                }
-
-		try {
-			context.addClassLibraries(libList.toArray(new String[0]));
-		} catch (Exception e) {
-			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+		if (hadoopHome != null){
+			libList.add(hadoopHome + "/share/hadoop/hdfs/*");
+			libList.add(hadoopHome + "/share/hadoop/common/*");
+			libList.add(hadoopHome + "/share/hadoop/common/lib/*");
+			libList.add(hadoopHome + "/lib/*");
+			libList.add(hadoopHome + "/client/*");
+			libList.add(hadoopHome + "/*");
+			libList.add(hadoopHome + "/../hadoop-hdfs/*");
+			try {
+				context.addClassLibraries(libList.toArray(new String[0]));
+			} catch (Exception e) {
+				Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+			}
 		}
-
-
- 
-
-		conf = new Configuration();
+    	conf = new Configuration();
 	if (hbaseSite == null) {
-	//	String hbaseHome = System.getenv("HBASE_HOME");
+		String hbaseHome = System.getenv("HBASE_HOME");
 		File hbaseConfig = new File(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
        		conf.addResource(new Path(hbaseConfig.toURI()));
 	}
@@ -285,15 +273,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 	connection = HConnectionManager.createConnection(conf);
 	tableNameBytes = tableName.getBytes(charset);
-	// Just check to see if the table exists.  Might as well fail on initialize instead of process.
-/*
-	HTableInterface tempTable = connection.getTable(tableNameBytes);
-    	if (null == tempTable) {
-    		Logger.getLogger(this.getClass()).error("Cannot access table, failing.");
-    		throw new Exception("Cannot access table.  Check configuration");
-    	}
-	tempTable.close();
-*/
+	
 	}
 	
 	/**
