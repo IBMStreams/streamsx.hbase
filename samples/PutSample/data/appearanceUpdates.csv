@@ -1,3 +1,0 @@
-"Gandalf","beard","bushy",{columnFamily="appearance",columnQualifier="beard"}
-"Gandalf","eyebrows","bushy",{columnFamily="appearance",columnQualifier="eyebrows"}
-"Frodo","feet","hairy",{columnFamily="location",columnQualifier="beginFellowship"}

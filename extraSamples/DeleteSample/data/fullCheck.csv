@@ -1,2 +1,0 @@
-"false always","Frodo","appearance","height",{columnFamily="appearance",columnQualifier="height",value="tall"}
-"true when the tuple is in the table--ie, before running any deletes","Frodo","appearance","height",{columnFamily="appearance",columnQualifier="height",value="short"}
