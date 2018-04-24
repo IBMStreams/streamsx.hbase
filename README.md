@@ -5,7 +5,8 @@ This toolkit allows Streams to write tuples into HBase and to read tuples from [
 Download the latest (version 2.0) [release](https://github.com/IBMStreams/streamsx.hbase/releases/tag/streams_4.1.0) of the toolkit for Streams 4.1.0.
 
 ## Connecting to HBase on  Bluemix with Streams 
-Connecting to HBase in the BigInsights on Bluemix service requires the [HBase Toolkit for Bluemix](https://github.com/IBMStreams/streamsx.hbase/blob/bluemix/README.md).
+Connecting to HBase in the Analytic Engine on IBM Cloud service https://console.bluemix.net/catalog/services/analytics-engine
+requires the [HBase Toolkit for Cloud](https://github.com/IBMStreams/streamsx.hbase/blob/bluemix/README.md).
 
 ## Overview
 The toolkit includes the following operators, and at least one sample per operator:
@@ -20,7 +21,7 @@ See the [documentation for operators and samples](http://ibmstreams.github.io/st
 The toolkit has been tested with HBase 0.94.3 and Hadoop 1.1.0, but is expected to work for any later version of Hadoop or HBase.  
 
 ## Setup
-To run these operators, you must install Apache HBase and its dependencies. An installation of IBM's BigInsights includes everything you need.  
+To run these operators, you must install Apache HBase , Apache Hadoop, Apache Zookeeper and their dependencies.   
 Please see the individual product pages for instructions on installation. 
 Once you have HBase installed, the operators need HBase configuration information in order to run.  It uses `hbase-site.xml` to do that.   You can supply that in two ways:
 * You can set `HBASE_HOME`, the operator will look under `HBASE_HOME/conf/hbase-site.xml` for HBase configuration information.  This is probably the easiest thing to do if the operator is running on the HBase host.  
@@ -40,6 +41,7 @@ The following applications in the `samples` directory are good starting points:
 The toolkit uses [Maven](http://maven.apache.org/) to download the needed dependencies.
 * Set M2_HOME to point to the maven directory.
 * Pick the correct pom file for your install.  In com.ibm.streamsx.hbase, there are three example pom files: 
+      *  pom-v1.2-hadoop2.xml : Apache HBase 1.2 and Apache Hadoop 2.7 
       *  pom-v094.xml: HBase 0.94, hadoop 1
       *  pom-v096-hadoop1.xml, HBase 0.96, hadoop 1
       *  pom-v096-hadoop2.xml, HBase 0.96, hadoop 2
