@@ -48,7 +48,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ "You can specify the columnQualifier by using the **staticColumnQualifer** or **columnQualiferAttrName** parameters."
 		+ HBASEOperator.DOC_BLANKLINE 
 		+ "To support locking, you can perform a conditional delete operation in HBASE."
-		+ "To use the conditional delete functionality in InfoSphere Streams, you must set "
+		+ "To use the conditional delete functionality in IBM Streams, you must set "
 		+ HBASEPutDelete.CHECK_ATTR_PARAM
 		+ ".  This parameter must specify the attribute on the input port that contains a the tuple that describes the check."
 		+ "If the check fails, the deletion does not occur."

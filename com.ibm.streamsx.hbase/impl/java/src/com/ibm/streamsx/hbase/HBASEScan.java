@@ -97,12 +97,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ " It then scans according to that attribute and outputs punctuation.  The attributes can be any of the valid input types, such as rstring, ustring,"
 			+ " long, or blob.  Any other attributes are copied through to the output tuple.  "
 			+ HBASEOperator.DOC_BLANKLINE
-			+ " Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to an InfoSphere Streams tuple. "
+			+ " Two output modes are supported.  In tuple mode, each row/columnFamily/columnQualifer/value entry is mapped to an IBM Streams tuple. "
 			+ " The row populates the row attribute, the columnFamily populates the columnFamily attribute, the columnQualifier "
 			+ " attribute populates the columnQualifier attribute, and the value populates the value attribute.  The value can either be"
 			+ " a long or a string data type; all other values must be rstring data types."
 			+ HBASEOperator.DOC_BLANKLINE
-			+ " In record mode, the value attribute is of tuple type, and each row produces one InfoSphere Streams tuple.  The value is populated by taking the "
+			+ " In record mode, the value attribute is of tuple type, and each row produces one IBM Streams tuple.  The value is populated by taking the "
 			+ "attribute names in the value tuple as column qualifiers and placing the values in the attributes that are specified by their column qualifiers."
 			+ "\\n" + consistentCutDesc + DOC_BLANKLINE + commonDesc;
 
