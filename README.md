@@ -40,10 +40,12 @@ The following applications in the `samples` directory are good starting points:
 The toolkit uses [Maven](http://maven.apache.org/) to download the needed dependencies.
 * Set M2_HOME to point to the maven directory.
 * Pick the correct pom file for your install.  In com.ibm.streamsx.hbase, there are three example pom files: 
+
       *  pom-v094.xml: HBase 0.94, hadoop 1
       *  pom-v096-hadoop1.xml, HBase 0.96, hadoop 1
       *  pom-v096-hadoop2.xml, HBase 0.96, hadoop 2
       *  pom-v1.2-hadoop2.xml, HBase 1.2, hadoop 2.7
+      
   Copy the correct file for your HBase and Hadoop install to pom.xml
 * Run `ant` at the top level.  This will build the toolkit, but also download all the necessary jars into `opt/downloaded`.  These jars are used at toolkit build time, but also at the toolkit runtime.
 
