@@ -23,9 +23,9 @@ for my $s (@samples) {
     
     for my $app (@apps) {
 	chomp $app;
-	print "Running ../samples/$s/$app/bin/standalone\n";
-	system("../samples/$s/$app/bin/standalone");
-	(($? >> 8) == 0) or die "Could not not run ../samples/$s/$app/bin/standalone";
+	print "Running ../samples/$s/$app/$s/bin/standalone\n";
+	system("../samples/$s/$app/$s/bin/standalone");
+	(($? >> 8) == 0) or die "Could not not run ../samples/$s/$app/$s/bin/standalone";
 	$appCount++;
     }
     
