@@ -1,6 +1,4 @@
-﻿#!/usr/bin/perl
-# NOTE: THIS IS A TEMPORARY TEST SCRIPT. 
-
+#!/usr/bin/perl
 # It runs the HBASE samples GetRecord  GetSample  PutRecord  PutSample
 # in samples directory
 # before you begin with you have to create 2 sample tables on hbase
@@ -14,10 +12,13 @@
 # hbase(main):027:0> scan 'streamsSample_lotr'
 
 use strict;
+use Getopt::Long;
 
 die "Must have HBASE_HOME specified in environment before running" if  ($ENV{HBASE_HOME} eq "");
 
 die "Must have HADOOP_HOME specified in environment before running" if  ($ENV{HADOOP_HOME} eq "");
+
+die "Must have STREAMS_INSTALL specified in environment before running" if ($ENV{STREAMS_INSTALL} eq "");
 
 
 my @samples = `ls ../samples | grep -v  README`;
