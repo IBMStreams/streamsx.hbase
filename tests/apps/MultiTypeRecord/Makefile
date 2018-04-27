@@ -7,7 +7,15 @@
 .PHONY: all clean 
 
 # Fill in HBASE_TOOLKIT location here.
-STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
+#STREAMS_HBASE_TOOLKIT ?= ../../../com.ibm.streamsx.hbase
+#STREAMS_HBASE_TOOLKIT ?= $(STREAMS_INSTALL)/toolkits/com.ibm.streamsx.hbase
+
+OOLKIT_NAME=com.ibm.streamsx.hbase
+STREAMS_HBASE_TOOLKIT ?= $(shell  ([ -e "../../$(TOOLKIT_NAME)/toolkit.xml" ] && echo ../../$(TOOLKIT_NAME)) ||\
+                 ([ -e "../../../$(TOOLKIT_NAME)" ] && echo ../../../$(TOOLKIT_NAME)) ||\
+                 ([ -e "../$(TOOLKIT_NAME)" ] && echo ../$(TOOLKIT_NAME)) ||\
+                         echo $(STREAMS_INSTALL)/toolkits/$(TOOLKIT_NAME))
+
 SOURCES = com.ibm.streamsx.hbase.sample/MultiTypeGet.spl com.ibm.streamsx.hbase.sample/MultiTypeRecord.spl com.ibm.streamsx.hbase.sample/PutBookRecord.spl com.ibm.streamsx.hbase.sample/ScanTableWithBlob.spl com.ibm.streamsx.hbase.sample/WriteTuples.spl
 SPLC_FLAGS ?= --data-directory data -a 
 SPLC = $(STREAMS_INSTALL)/bin/sc

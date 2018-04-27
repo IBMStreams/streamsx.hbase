@@ -7,7 +7,15 @@
 .PHONY: all clean 
 
 # Fill in HBASE_TOOLKIT location here.
-STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
+OOLKIT_NAME=com.ibm.streamsx.hbase
+STREAMS_HBASE_TOOLKIT ?= $(shell  ([ -e "../../$(TOOLKIT_NAME)/toolkit.xml" ] && echo ../../$(TOOLKIT_NAME)) ||\
+	         ([ -e "../../../$(TOOLKIT_NAME)" ] && echo ../../../$(TOOLKIT_NAME)) ||\
+                 ([ -e "../$(TOOLKIT_NAME)" ] && echo ../$(TOOLKIT_NAME)) ||\
+	                 echo $(STREAMS_INSTALL)/toolkits/$(TOOLKIT_NAME))
+
+#STREAMS_HBASE_TOOLKIT ?= ../../../com.ibm.streamsx.hbase
+#STREAMS_HBASE_TOOLKIT ?= $(STREAMS_INSTALL)/toolkits/com.ibm.streamsx.hbase
+
 SRC=$(wildcard com.ibm.streamsx.hbase.sample/*.spl)
 SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc
@@ -22,8 +30,8 @@ data:
 
 
 distributed: data
-	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_GET_RECORD) $(SPL_CMD_ARGS)  --output-dir output_getrecord
+	$(SPLC) $(SPLC_FLAGS) -M $(SPL_MAIN_COMPOSITE_GET_RECORD) $(SPL_CMD_ARGS)  --output-dir output/VersionScanGet
 
 clean: 
-	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE_GET_RECORD) --output-dir output_getrecord
+	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE_GET_RECORD) --output-dir output/VersionScanGet
 
