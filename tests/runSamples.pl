@@ -1,13 +1,10 @@
 #!/usr/bin/perl
 # It runs the HBASE samples GetRecord  GetSample  PutRecord  PutSample
 # in samples directory
-# before you begin with you have to create 2 sample tables on hbase
-# login in hbase (hdp or iop) server
-# $> su - hbsae
-# $> hbase shell
+# before it begin with test, it creates 2 sample tables on hbase database
 # hbase(main):026:0> create 'streamsSample_books', 'all'
 # hbase(main):027:0> create 'streamsSample_lotr','appearance','location'
-# after tests you can check the contain of tables with hbase shall
+# after the tests it checks the contain of tables with hbase shall
 # hbase(main):026:0> scan 'streamsSample_books'
 # hbase(main):027:0> scan 'streamsSample_lotr'
 
@@ -20,6 +17,58 @@ die "Must have HADOOP_HOME specified in environment before running" if  ($ENV{HA
 
 die "Must have STREAMS_INSTALL specified in environment before running" if ($ENV{STREAMS_INSTALL} eq "");
 
+print "\n  $0 runs the the HBASE samples in samples directory\n";
+
+print "\n*****************************************************\n";
+print "Drop and create tables on Hbase databse\n";
+
+my $cmd;
+my $result;
+
+
+$cmd = "echo \"disable 'streamsSample_lotr'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+if (index($result, "hbase(main)") == -1) 
+{
+    print "Hbase shell cannot connect to the Hbase server\n";
+    exit;
+} 
+
+$cmd = "echo \"drop 'streamsSample_lotr'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+$cmd = "echo \"create 'streamsSample_lotr','appearance','location'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+$cmd = "echo \"disable 'streamsSample_books'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+$cmd = "echo \"drop 'streamsSample_books'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+$cmd = "echo \"create 'streamsSample_books', 'all'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+
+
+$cmd = "echo \"list\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n\n";
+
 
 my @samples = `ls ../samples | grep -v  README`;
 print "Tests in samples directory: \n";
@@ -28,8 +77,9 @@ print "@samples\n";
 my $sampleCount = 0;
 my $appCount = 0;
 for my $s (@samples) {
-    # try the make
     chomp $s;
+    print "\n**************************  Sample $s  *************************\n";
+    # try the make
     system("cd ../samples/$s; make");
     (($? >> 8) == 0) or die "Could not make sample $s";
     $sampleCount++;
@@ -44,7 +94,21 @@ for my $s (@samples) {
     }
 
 }
-print "Found $sampleCount samples, ran $appCount apps\n";
-exit 0;
+print "\n*****************************************************\n";
+print "\nFound $sampleCount samples, ran $appCount apps\n\n";
+print "*****************************************************\n";
 
+$cmd = "echo \"scan 'streamsSample_lotr'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n*****************************************************\n";
+
+
+$cmd = "echo \"scan 'streamsSample_books'\" | hbase shell";
+print "$cmd\n";
+$result = `$cmd`;
+print "$result \n\n*****************************************************\n";
+
+
+exit 0;
 
