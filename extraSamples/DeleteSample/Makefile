@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2014, International Business Machines Corporation  
+# Copyright (C) 2014, 2018, International Business Machines Corporation  
 # All Rights Reserved                                	                 
 
 # NOTE: To compile, you must have HBASE_HOME and HBASE_HOME set in your
@@ -7,7 +7,11 @@
 .PHONY: all clean 
 
 # Fill in HBASE_TOOLKIT location here.
-STREAMS_HBASE_TOOLKIT ?= ../../com.ibm.streamsx.hbase
+TOOLKIT_NAME=com.ibm.streamsx.hbase
+STREAMS_HBASE_TOOLKIT ?= $(shell ([ -e "../../$(TOOLKIT_NAME)/toolkit.xml" ] && echo ../../$(TOOLKIT_NAME)) ||\
+			         ([ -e "../../../$(TOOLKIT_NAME)/toolkit.xml" ] && echo ../../../$(TOOLKIT_NAME)) ||\
+			         ([ -e "../$(TOOLKIT_NAME)/toolkit.xml" ] && echo ../$(TOOLKIT_NAME)) ||\
+			           echo $(STREAMS_INSTALL)/toolkits/$(TOOLKIT_NAME))
 
 SPLC_FLAGS ?= -a --data-directory data 
 SPLC = $(STREAMS_INSTALL)/bin/sc

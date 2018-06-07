@@ -1,4 +1,12 @@
 #!/usr/bin/perl
+# Copyright (C) 2014, 2018, International Business Machines Corporation  
+# All Rights Reserved	  
+#
+# NOTE: To run this script, you must have HBASE_HOME and HBASE_HOME set in your
+# environment.
+# This script test the Hbase samples.
+# It creates tables via Hbase shell in Hbase database.
+# Makes the spl application and runs the standalone files.
 # It runs the HBASE samples GetRecord  GetSample  PutRecord  PutSample
 # in samples directory
 # before it begin with test, it creates 2 sample tables on hbase database
@@ -25,19 +33,19 @@ print "Drop and create tables on Hbase databse\n";
 my $cmd;
 my $result;
 
-
-$cmd = "echo \"disable 'streamsSample_lotr'\" | hbase shell";
+$cmd = "echo \"list\" | hbase shell";
 print "$cmd\n";
 $result = `$cmd`;
-print "$result \n*****************************************************\n";
+print "$result \n*****************************************************\n\n";
 
 if (index($result, "hbase(main)") == -1) 
 {
-    print "Hbase shell cannot connect to the Hbase server\n";
-    exit;
+	print "Hbase shell cannot connect to the Hbase server\n";
+	exit;
 } 
 
-$cmd = "echo \"drop 'streamsSample_lotr'\" | hbase shell";
+
+$cmd = "echo \"disable 'streamsSample_lotr' ; drop 'streamsSample_lotr'\" | hbase shell";
 print "$cmd\n";
 $result = `$cmd`;
 print "$result \n*****************************************************\n";
@@ -47,12 +55,7 @@ print "$cmd\n";
 $result = `$cmd`;
 print "$result \n*****************************************************\n";
 
-$cmd = "echo \"disable 'streamsSample_books'\" | hbase shell";
-print "$cmd\n";
-$result = `$cmd`;
-print "$result \n*****************************************************\n";
-
-$cmd = "echo \"drop 'streamsSample_books'\" | hbase shell";
+$cmd = "echo \"disable 'streamsSample_books' ; drop 'streamsSample_books'\" | hbase shell";
 print "$cmd\n";
 $result = `$cmd`;
 print "$result \n*****************************************************\n";
@@ -77,21 +80,21 @@ print "@samples\n";
 my $sampleCount = 0;
 my $appCount = 0;
 for my $s (@samples) {
-    chomp $s;
-    print "\n**************************  Sample $s  *************************\n";
-    # try the make
-    system("cd ../samples/$s; make");
-    (($? >> 8) == 0) or die "Could not make sample $s";
-    $sampleCount++;
-    my @apps = `ls ../samples/$s | grep output`;
+	chomp $s;
+	print "\n**************************  Sample $s  *************************\n";
+	# try the make
+	system("cd ../samples/$s; make");
+	(($? >> 8) == 0) or die "Could not make sample $s";
+	$sampleCount++;
+	my @apps = `ls ../samples/$s | grep output`;
 
-    for my $app (@apps) {
-        chomp $app;
-        print "Running ../samples/$s/$app/$s/bin/standalone\n";
-        system("../samples/$s/$app/$s/bin/standalone");
-        (($? >> 8) == 0) or die "Could not not run ../samples/$s/$app/$s/bin/standalone";
-        $appCount++;
-    }
+	for my $app (@apps) {
+		chomp $app;
+		print "Running ../samples/$s/$app/$s/bin/standalone\n";
+		system("../samples/$s/$app/$s/bin/standalone");
+		(($? >> 8) == 0) or die "Could not not run ../samples/$s/$app/$s/bin/standalone";
+		$appCount++;
+	}
 
 }
 print "\n*****************************************************\n";

@@ -39,7 +39,7 @@ composite ConfigTest
 				columnFamilyAttrName : "colF" ;
 				columnQualifierAttrName : "colQ" ;
 				valueAttrName : "value" ;
-                hbaseSite: $hbaseSite;
+                		hbaseSite: $hbaseSite;
 		}
 
 }

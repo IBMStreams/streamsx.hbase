@@ -1,1 +1,2 @@
-"getRecord",3,{austen="entry_v3",bronte="entry_v3",chaucer=[{entry="entry_v3",time=TIMESTAMP},{entry="entry_v2",time=TIMESTAMP},{entry="entry_v1",time=TIMESTAMP}]}
+"getRecord",3,{austen="entry_v3",bronte="entry_v3",chaucer=[{entry="entry_v3",time=TIMESTAMP}]}
+"getRecord",3,{austen="entry_v3",bronte="entry_v3",chaucer=[{entry="entry_v3",time=TIMESTAMP}]}

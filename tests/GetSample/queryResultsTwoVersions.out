@@ -1,4 +1,6 @@
 "Harry","location","beginFellowship",[]
 "Aragorn","location","beginFellowship",[]
 "Gandalf","appearance","beard",[{v="bushy",ts=TIMESTAMP}]
+"Gandalf","appearance","beard",[{v="bushy",ts=TIMESTAMP}]
+"Frodo","location","beginFellowship",[{v="The Shire",ts=TIMESTAMP}]
 "Frodo","location","beginFellowship",[{v="The Shire",ts=TIMESTAMP}]
