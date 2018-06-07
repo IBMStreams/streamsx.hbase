@@ -121,6 +121,7 @@ sub runCommand(%) {
 	my $command=$args{"command"};
 	my $resultKey=$args{"resultKey"};
 
+	print ("\ncommand: $command \n");
 	my $results = `$command`;
 	chomp $results;
 	print ("Result of command $command is $results, putting it in under $resultKey\n");
