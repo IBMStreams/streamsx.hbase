@@ -38,7 +38,7 @@ print "$cmd\n";
 $result = `$cmd`;
 print "$result \n*****************************************************\n\n";
 
-if (index($result, "hbase(main)") == -1) 
+if (index($result, "TABLE") == -1) 
 {
 	print "Hbase shell cannot connect to the Hbase server\n";
 	exit;
