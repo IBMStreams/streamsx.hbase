@@ -16,7 +16,7 @@
 	<property name="hadoop_home" value="${env.HADOOP_HOME}" />
         <property name="hbase_home" value="${env.HBASE_HOME}" />
 	<property name="maven.bin" value="${env.M2_HOME}/bin/mvn" />
-	<property name="ext.downloads.dir" value="opt/downloaded" />
+	<property name="ext.downloads.dir" value="impl/lib/ext" />
 	<property name="src.dir" value="impl/java/src" />
 	<property name="build.dir" value="impl/java/classes" />
 	<property name="override.dir" value="opt/local_override" />

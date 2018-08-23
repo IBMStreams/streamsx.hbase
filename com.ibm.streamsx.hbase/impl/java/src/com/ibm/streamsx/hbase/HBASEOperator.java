@@ -10,13 +10,20 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
@@ -63,14 +70,19 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected Charset charset = RSTRING_CHAR_SET;
 	private String tableName = null;
 	protected byte tableNameBytes[] = null;
-        private String hbaseSite =null;
-	protected HConnection connection =null;
+    private String hbaseSite =null;
+    private String fAuthPrincipal = null;
+	private String fAuthKeytab = null;
+	protected Connection connection =null;
 	private Configuration conf;
  
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
+	static final String AUTH_PRINCIPAL = "authPrincipal";
+	static final String AUTH_KEYTAB = "authKeytab";
+	
 	static final String CHARSET_PARAM_NAME = "charset";
 	static final String VALID_TYPE_STRING="rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE/Byte.SIZE;
@@ -100,10 +112,29 @@ public abstract class HBASEOperator extends AbstractOperator {
 	public void setStaticColumnQualifier(List<String> name) {
 		staticColumnQualifierList = name;
 	}
+
+	@Parameter(name=AUTH_PRINCIPAL, optional = true,description="The **authPrincipal** parameter specifies the Kerberos principal, which is typically the principal that is created for the Streams instance owner.") 
+	public void setAuthPrincipal(String authPrincipal) {
+		this.fAuthPrincipal = authPrincipal;
+	}
+
+	public String getAuthPrincipal() {
+		return fAuthPrincipal;
+	}
+
+	@Parameter(name=AUTH_KEYTAB, optional = true,description="The **authKeytab** parameter specifies the keytab file that is created for the principal.") 
+	public void setAuthKeytab(String authKeytab) {
+		this.fAuthKeytab = authKeytab;
+	}
+
+	public String getAuthKeytab() {
+		return fAuthKeytab;
+	}
 	
 	protected static String getNoCCString() {
 		return Messages.getString("HBASE_OP_NO_CONSISTENT_REGION", "HBASEOperator");
 	}
+	
 	
 	protected static void checkConsistentRegionSource(OperatorContextChecker checker,String operatorName) {
 	// Now we check whether we're in a consistent region.  
@@ -225,6 +256,9 @@ public abstract class HBASEOperator extends AbstractOperator {
 		}
 		return attr.getIndex();
 	}
+
+	
+		
 	
 	/**
 	 * Loads the configuration, and creates an HTable instance.  If the table doesn't not exist, or cannot be
@@ -235,13 +269,22 @@ public abstract class HBASEOperator extends AbstractOperator {
 			throws Exception {
     	// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
 		String hadoopHome = System.getenv("HADOOP_HOME");
+		String hbaseHome = System.getenv("HBASE_HOME");
 		ArrayList<String> libList = new ArrayList<>();
+		String default_dir = context.getToolkitDirectory() +"/impl/lib/ext/*";
+		libList.add(default_dir);
+		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
 		if (hadoopHome != null){
 			libList.add(hadoopHome + "/share/hadoop/hdfs/*");
 			libList.add(hadoopHome + "/share/hadoop/common/*");
 			libList.add(hadoopHome + "/share/hadoop/common/lib/*");
+			libList.add(hadoopHome + "/conf/*");
+			libList.add(hbaseHome + "/lib/*");
+			libList.add(hbaseHome + "/*");
+			libList.add(hbaseHome + "/conf/*");
 			libList.add(hadoopHome + "/lib/*");
 			libList.add(hadoopHome + "/client/*");
 			libList.add(hadoopHome + "/*");
@@ -252,29 +295,90 @@ public abstract class HBASEOperator extends AbstractOperator {
 				Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 			}
 		}
-    	conf = new Configuration();
+
+			
 	if (hbaseSite == null) {
-		String hbaseHome = System.getenv("HBASE_HOME");
-		File hbaseConfig = new File(hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml");
-       		conf.addResource(new Path(hbaseConfig.toURI()));
-	}
+		hbaseSite = hbaseHome+File.separator+"conf"+File.separator+"hbase-site.xml";
+  	}
 	else {
-        // We need to pass the conf a Path.  Seems the safest way to do that is to create a path from a URI.
-        // We want to handle both relative and absolute paths, adn I don't want to futz around prepending
-        // file:/// to a string.
-        // First get a URI for the application directory
-	    URI toolkitRoot = context.getPE().getApplicationDirectory().toURI();
-        // now, resolve the hbase site against that
-        URI hbaseSiteURI = toolkitRoot.resolve(hbaseSite);
-        // make a path out of it.
-	    Path hbaseSitePath = new Path(hbaseSiteURI);
-        // add the resource.  finally.
-	    conf.addResource(hbaseSitePath);
+        // We need to pass the absolute paths hbase-site.xml configuration file to the conf.
+		if (hbaseSite.charAt(0) != '/') {
+			hbaseSite = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + hbaseSite;
+		}
 	}
-	connection = HConnectionManager.createConnection(conf);
-	tableNameBytes = tableName.getBytes(charset);
+        
 	
-	}
+    if ((fAuthKeytab != null) && (fAuthKeytab.charAt(0) != '/')){
+    	    // We need to pass the absolute paths keytab file to the conf.
+        fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;                	
+    }        
+	
+	getConnection();
+	tableNameBytes = tableName.getBytes(charset);
+}
+
+	
+protected void getConnection() throws IOException{	
+
+   System.out.println("hbaseSite:\t" + hbaseSite);
+   Configuration conf = HBaseConfiguration.create();
+   conf.addResource(new Path(hbaseSite));
+   if ((fAuthPrincipal != null) && (fAuthKeytab != null))
+   {
+	   // kerberos authentication
+	   System.out.println("fAuthKeytab:\t" + fAuthKeytab);
+	   System.out.println("fAuthPrincipal:\t" + fAuthPrincipal);
+	   conf.set("hadoop.security.authentication", "kerberos");
+	   conf.set("hbase.security.authentication", "kerberos");
+	   UserGroupInformation.setConfiguration(conf);
+	   UserGroupInformation.loginUserFromKeytab(fAuthPrincipal, fAuthKeytab);
+   }
+   connection = new ConnectionGetter(conf).getConnection();
+   System.out.println("connection:\t" + connection.toString());
+/*   Admin admin = connection.getAdmin();
+   System.out.println("admin:\t" + admin.toString());
+   TableName[] names = admin.listTableNames();
+   for (TableName name:names) {
+     System.out.println("table name:\t"+name.getNameAsString());
+   }
+*/
+}
+	
+	
+
+
+void runCmd(String cmd)
+{ 
+try {
+String s="";
+ System.out.println("Here the command: "+ cmd);
+ Process p = Runtime.getRuntime().exec(cmd);
+ 
+ BufferedReader stdInput = new BufferedReader(new 
+ InputStreamReader(p.getInputStream()));
+
+ BufferedReader stdError = new BufferedReader(new 
+ InputStreamReader(p.getErrorStream()));
+
+ System.out.println("Here is the standard output of the command:\n");
+ while ((s = stdInput.readLine()) != null) {
+ System.out.println(s);
+ }
+ 
+ System.out.println("Here is the standard error of the command (if any):\n");
+ while ((s = stdError.readLine()) != null) {
+ System.out.println(s);
+ }
+ 
+ // System.exit(0);
+ }
+ catch (IOException e) {
+ System.out.println("exception happened - here's what I know: ");
+ e.printStackTrace();
+// System.exit(-1);
+ }
+}
+	
 	
 	/**
 	 * Subclasses should not generally use this.  The should instead create HTableInterface via 
@@ -286,9 +390,22 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * @return HTable object.
 	 * @throws IOException
 	 */
-	protected HTable getHTable() throws  IOException {
-		return new HTable(conf,tableNameBytes);
+	protected Table getHTable() throws  IOException {
+		final TableName tableName = TableName.valueOf(tableNameBytes);
+		return connection.getTable(tableName);
+//		return new HTable(conf,tableNameBytes);
 	}
+	
+	
+	protected TableName getTableName() throws  IOException {
+		final TableName Tablename = TableName.valueOf(tableNameBytes);
+		return Tablename;
+//		return connection.getTable(tableName);
+//		return new HTable(conf,tableNameBytes);
+	}
+	
+	
+	
 	
 	 /**
      * Shutdown this operator.

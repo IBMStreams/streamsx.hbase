@@ -17,9 +17,11 @@ import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.log4j.Logger;
@@ -121,7 +123,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private static class ScanRegion implements Closeable {
 
 		final ResultScanner resultScanner;
-		final HTableInterface myTable;
+		final Table myTable;
 		boolean hasMore;
 		HBASEScan operator;
 		long rowsScanned;
@@ -156,9 +158,11 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan = new Scan();
 			}
 
-			myTable = operator.connection.getTable(operator.tableNameBytes);
+		//	myTable = operator.connection.getTable(operator.tableNameBytes);
+			myTable = operator.getHTable();
+			
 			// This sets any filters based on operator parameters.
-			resultScanner = operator.startScan(myTable, myScan);
+			resultScanner = myTable.getScanner(myScan);
 			if (resultScanner != null) {
 				hasMore = true;
 			} else {
@@ -732,8 +736,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		// Need to get the start and end keys if these aren't part of the
 		// input.
 
-		HTable myTable = getHTable();
-		Pair<byte[][], byte[][]> startEndKeys = myTable.getStartEndKeys();
+		Table myTable = getHTable();
+		RegionLocator regionLocator = null;
+		regionLocator = (RegionLocator) myTable;
+		Pair<byte[][], byte[][]> startEndKeys = regionLocator.getStartEndKeys();
+		   
+//		Pair<byte[][], byte[][]> startEndKeys = myTable.getScanner(arg0)getStartEndKeys();
 
 		if (startBytes == null) {
 			startBytes = startEndKeys.getFirst()[0];
@@ -748,8 +756,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", printBytes(startBytes), printBytes(endBytes)));
 
 		// Get a list of regions. We assume the list is always the same.
-		List<HRegionLocation> regionList = myTable.getRegionsInRange(
-				startBytes, endBytes);
+		List<HRegionLocation> regionList =  regionLocator.getAllRegionLocations();
+	//	myTable.getgetgetRegionsInRange(
+	//			startBytes, endBytes);
 		myTable.close();
 		// Check that the combinatin of channel and maxChannels makes sense
 		assert ((channel == -1 && maxChannels == 0) || // it's the default
@@ -888,8 +897,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throw new Exception("Internal error.  Unknown input mode "
 					+ inputMode);
 		}
-		HTableInterface myTable = connection.getTable(tableNameBytes);
-		ResultScanner resultScanner = startScan(myTable, myScan);
+//		HTableInterface myTable = connection.getTable(tableNameBytes);
+		Table myTable = getHTable();
+		
+		ResultScanner resultScanner = myTable.getScanner(myScan);
 		submitResults(tuple, resultScanner, (long) -1);
 		myTable.close();
 		out.punctuate(Punctuation.WINDOW_MARKER);

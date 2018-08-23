@@ -6,9 +6,8 @@ package com.ibm.streamsx.hbase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -188,7 +187,9 @@ public class HBASEPut extends HBASEPutDelete {
 	 * When enableBuffer is true and we are disabling autoflush,
 	 * keep a pointer to the hbase table. This value will be null otherwise
 	 */
-	private HTableInterface cachedTable;
+//	private HTableInterface cachedTable;
+	private Table cachedTable;
+	
 
 	/**
 	 * Initialize this operator. Create the list to store the batch.
@@ -208,9 +209,10 @@ public class HBASEPut extends HBASEPutDelete {
 		
 		if (bufferTransactions) {
     		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
-    		cachedTable = connection.getTable(tableNameBytes);
+    		cachedTable= getHTable();
+   // 		cachedTable = connection.getTable(tableNameBytes);
 
-    		cachedTable.setAutoFlush(false, true);
+  //  		cachedTable.setAutoFlush(false, true);
     	}
 		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
 		StreamSchema schema = inputPort.getStreamSchema();
@@ -257,21 +259,25 @@ public class HBASEPut extends HBASEPutDelete {
 		byte colF[] = getColumnFamily(tuple);
 		boolean success = false;
 		Put myPut = new Put(row);
-		HTableInterface table = null;
+//		HTableInterface table = null;
+		Table table = null;
 		if (!bufferTransactions) {
-			table = connection.getTable(tableNameBytes);
+//			table = connection.getTable(tableNameBytes);
+			table = getHTable();
 		}
 		switch (putMode) {
 
 		case ENTRY:
 			byte colQ[] = getColumnQualifier(tuple);
 			byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
-			myPut.add(colF, colQ, value);
+			myPut.addColumn(colF, colQ, value);
+////			myPut.add(colF, colQ, value);
 			break;
 		case RECORD:
 			Tuple values = tuple.getTuple(valueAttr);
 			for (int i = 0; i < qualifierArray.length; i++) {
-				myPut.add(colF, qualifierArray[i],
+				myPut.addColumn(colF, qualifierArray[i],
+//				myPut.add(colF, qualifierArray[i],
 						getBytes(values, i, attrType[i]));
 			}
 			break;
@@ -346,7 +352,7 @@ public class HBASEPut extends HBASEPutDelete {
 		if (connection != null && !connection.isClosed()) {
 			synchronized (tableLock) {
 				logger.debug(Messages.getString("HBASE_PUT_COMMIT_FLUSH"));
-				cachedTable.flushCommits();
+/////				cachedTable.flushCommits();
 			}
 		}
 	}
@@ -369,7 +375,8 @@ public class HBASEPut extends HBASEPutDelete {
 	 * Flush the internal list of puts we keep when using our own batch puts instead of autoflush
 	 */
 	protected synchronized void flushInternalBuffer() throws IOException {
-		HTableInterface table = connection.getTable(tableNameBytes);
+//		HTableInterface table = connection.getTable(tableNameBytes);
+		Table table = getHTable();
 		synchronized (listLock) {
 			if (table != null && putList != null && putList.size() > 0) {
 				logger.debug(Messages.getString("HBASE_PUT_EMPTING_BUFFER"));

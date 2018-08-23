@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -161,7 +162,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		super.initialize(context);
 		
 		
-		HTableInterface table = connection.getTable(tableNameBytes);
+//		HTableInterface table = connection.getTable(tableNameBytes);
+		Table table = getHTable();
 
     	if (null == table) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));

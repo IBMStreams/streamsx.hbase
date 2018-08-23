@@ -10,10 +10,9 @@ import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
-
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
@@ -131,7 +130,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private static final String defaultOutAttrName = "value";
 	private String outAttrName = defaultOutAttrName;;
 	private String successAttr = null;
-	private SingleOutputMapper primativeOutputMapper = null;
 
 	@Parameter(name = SUCCESS_PARAM_NAME, description = "This parameter specifies the name of attribute of the output port where the operator puts a count of the values it populated.", optional = true)
 	public void setSuccessAttr(String name) {
@@ -319,7 +317,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-		HTableInterface myTable = connection.getTable(tableNameBytes);
+	//	HTableInterface myTable = connection.getTable(tableNameBytes);
+		Table myTable = getHTable();
 		Result r = myTable.get(myGet);
 
 		int numResults = r.size();
