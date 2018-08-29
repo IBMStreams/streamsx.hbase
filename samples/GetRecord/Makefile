@@ -26,5 +26,4 @@ data:
 	mkdir data
 clean: 
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE) --output-dir output/GetRecord
-	rm data/*.out
 

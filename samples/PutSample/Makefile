@@ -44,5 +44,4 @@ clean:
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_CHECK) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_CHECK_COMP)
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_EXIST_CHECK) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_EXIST_COMP) 
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_PUT) $(SPL_CMD_ARGS) --output-dir output/$(SPL_MAIN_PUT_COMP)
-	rm data/*.out
 

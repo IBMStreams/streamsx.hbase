@@ -29,5 +29,4 @@ distributed: data
 
 clean: 
 	$(SPLC) $(SPLC_FLAGS) -C -M $(SPL_MAIN_COMPOSITE)
-	rm data/*.out
 
