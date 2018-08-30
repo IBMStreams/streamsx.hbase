@@ -179,7 +179,7 @@ sub main() {
 	print "$cmd\n";
 	my $result = `$cmd`;
 
-	if (index($result, "hbase(main)") == -1) 
+	if (index($result, "HBase") == -1) 
 	{
 			print "Hbase shell cannot connect to the Hbase server\n";
 			exit;
