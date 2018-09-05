@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -18,7 +17,6 @@ import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
-import com.ibm.streams.operator.logging.LoggerNames;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;

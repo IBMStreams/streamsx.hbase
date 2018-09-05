@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 

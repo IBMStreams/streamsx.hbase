@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -757,8 +755,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 		// Get a list of regions. We assume the list is always the same.
 		List<HRegionLocation> regionList =  regionLocator.getAllRegionLocations();
-	//	myTable.getgetgetRegionsInRange(
-	//			startBytes, endBytes);
+//		myTable.get
+		//		myTable.getgetgetRegionsInRange(
+//				startBytes, endBytes);
 		myTable.close();
 		// Check that the combinatin of channel and maxChannels makes sense
 		assert ((channel == -1 && maxChannels == 0) || // it's the default
@@ -899,8 +898,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		}
 //		HTableInterface myTable = connection.getTable(tableNameBytes);
 		Table myTable = getHTable();
-		
-		ResultScanner resultScanner = myTable.getScanner(myScan);
+		ResultScanner resultScanner = startScan(myTable, myScan);
 		submitResults(tuple, resultScanner, (long) -1);
 		myTable.close();
 		out.punctuate(Punctuation.WINDOW_MARKER);
@@ -918,7 +916,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	 *            The scan. The start and the end should be set.
 	 * @returns a result scanner.
 	 */
-	private ResultScanner startScan(HTableInterface myTable, Scan myScan)
+	private ResultScanner startScan(Table myTable, Scan myScan)
 			throws IOException {
 		// Set scan attributes
 		if (maxVersions == 0) {

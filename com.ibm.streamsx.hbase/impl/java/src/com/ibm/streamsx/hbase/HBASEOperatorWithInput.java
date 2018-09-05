@@ -1,7 +1,5 @@
-// Licensed Materials - Property of IBM
-// Streams Toolkit for HBASE access
-// (c) Copyright IBM Corp. 2013
-// All rights reserved.
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 

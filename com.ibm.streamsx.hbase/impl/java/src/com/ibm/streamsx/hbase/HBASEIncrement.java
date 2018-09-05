@@ -1,9 +1,8 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -146,7 +145,6 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 			}
 		}
 		Table myTable = getHTable();
-//		HTableInterface myTable = connection.getTable(tableNameBytes);
 		long newValue = myTable.incrementColumnValue(row, colF, colQ, incr);
 		myTable.close();
 	}

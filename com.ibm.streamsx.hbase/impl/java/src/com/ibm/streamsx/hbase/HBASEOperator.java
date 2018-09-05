@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -269,7 +269,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 			throws Exception {
     	// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId() );
 		String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
@@ -313,8 +312,8 @@ public abstract class HBASEOperator extends AbstractOperator {
         fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;                	
     }        
 	
-	getConnection();
 	tableNameBytes = tableName.getBytes(charset);
+	getConnection();
 }
 
 	
@@ -333,51 +332,19 @@ protected void getConnection() throws IOException{
 	   UserGroupInformation.setConfiguration(conf);
 	   UserGroupInformation.loginUserFromKeytab(fAuthPrincipal, fAuthKeytab);
    }
-   connection = new ConnectionGetter(conf).getConnection();
+   
+   connection = ConnectionFactory.createConnection(HBaseConfiguration.create(conf));
    System.out.println("connection:\t" + connection.toString());
-/*   Admin admin = connection.getAdmin();
+   Admin admin = connection.getAdmin();
    System.out.println("admin:\t" + admin.toString());
    TableName[] names = admin.listTableNames();
    for (TableName name:names) {
      System.out.println("table name:\t"+name.getNameAsString());
    }
-*/
+
 }
 	
-	
 
-
-void runCmd(String cmd)
-{ 
-try {
-String s="";
- System.out.println("Here the command: "+ cmd);
- Process p = Runtime.getRuntime().exec(cmd);
- 
- BufferedReader stdInput = new BufferedReader(new 
- InputStreamReader(p.getInputStream()));
-
- BufferedReader stdError = new BufferedReader(new 
- InputStreamReader(p.getErrorStream()));
-
- System.out.println("Here is the standard output of the command:\n");
- while ((s = stdInput.readLine()) != null) {
- System.out.println(s);
- }
- 
- System.out.println("Here is the standard error of the command (if any):\n");
- while ((s = stdError.readLine()) != null) {
- System.out.println(s);
- }
- 
- // System.exit(0);
- }
- catch (IOException e) {
- System.out.println("exception happened - here's what I know: ");
- e.printStackTrace();
-// System.exit(-1);
- }
-}
 	
 	
 	/**
@@ -393,20 +360,30 @@ String s="";
 	protected Table getHTable() throws  IOException {
 		final TableName tableName = TableName.valueOf(tableNameBytes);
 		return connection.getTable(tableName);
-//		return new HTable(conf,tableNameBytes);
 	}
+	
+	protected Table getHTable(String sTableName) throws  IOException {
+		byte TableNameBytes[]  = sTableName.getBytes(charset);
+		final TableName tableName = TableName.valueOf(TableNameBytes);
+		return connection.getTable(tableName);
+	}
+
 	
 	
 	protected TableName getTableName() throws  IOException {
 		final TableName Tablename = TableName.valueOf(tableNameBytes);
 		return Tablename;
-//		return connection.getTable(tableName);
-//		return new HTable(conf,tableNameBytes);
+	}
+	
+	protected TableName getTableName(String sTableName) throws  IOException {
+		byte TableNameBytes[]  = sTableName.getBytes(charset);
+		final TableName Tablename = TableName.valueOf(TableNameBytes);
+		return Tablename;
 	}
 	
 	
 	
-	
+		
 	 /**
      * Shutdown this operator.
      * @throws Exception Operator failure, will cause the enclosing PE to terminate.
