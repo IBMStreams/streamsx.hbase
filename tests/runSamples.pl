@@ -75,7 +75,7 @@ print "$result \n*****************************************************\n\n";
 
 my @samples = `ls ../samples | grep -v  README`;
 print "Tests in samples directory: \n";
-print "@samples\n";
+print " @samples\n";
 
 my $sampleCount = 0;
 my $appCount = 0;
