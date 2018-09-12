@@ -13,8 +13,8 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
+import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -160,7 +160,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			myTable = operator.getHTable();
 			
 			// This sets any filters based on operator parameters.
-			resultScanner = myTable.getScanner(myScan);
+			resultScanner = operator.startScan(myTable, myScan);
 			if (resultScanner != null) {
 				hasMore = true;
 			} else {
@@ -310,8 +310,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						} else {
 							maxRows = rowsPerPermit;
 						}
-						byte[] lastRow = currentRegion.submitRows(maxRows);
-						parent.lastRow[index] = lastRow;
+						
+							byte[] lastRow = currentRegion.submitRows(maxRows);
+							parent.lastRow[index] = lastRow;
+						
+							currentRegion.resetRowsSinceConsistent();
+							
 						if (!currentRegion.hasMore()) {
 							// mark nothing in progress
 							parent.currentScan.set(index, null);
@@ -410,6 +414,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private long triggerCount;
 	boolean trigger = false;
 
+
+	
+	
 	ConsistentRegionContext ccContext;
 	// / Needs to be checkpointed.
 	private byte[] lastRow[];
@@ -713,6 +720,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		return buff.toString();
 	}
 
+	
 	private void createRegionQueue() throws IOException {
 
 		logger.info(Messages.getString("HBASE_SCAN_CREATING_REGION"));
@@ -735,12 +743,10 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		// input.
 
 		Table myTable = getHTable();
-		RegionLocator regionLocator = null;
-		regionLocator = (RegionLocator) myTable;
+	
+		RegionLocator regionLocator = connection.getRegionLocator(myTable.getName());	
 		Pair<byte[][], byte[][]> startEndKeys = regionLocator.getStartEndKeys();
 		   
-//		Pair<byte[][], byte[][]> startEndKeys = myTable.getScanner(arg0)getStartEndKeys();
-
 		if (startBytes == null) {
 			startBytes = startEndKeys.getFirst()[0];
 		}
@@ -752,14 +758,14 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		// In order to get the regions, we need to supply a startrow and an
 		// end row.
 		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", printBytes(startBytes), printBytes(endBytes)));
-
 		// Get a list of regions. We assume the list is always the same.
-		List<HRegionLocation> regionList =  regionLocator.getAllRegionLocations();
-//		myTable.get
-		//		myTable.getgetgetRegionsInRange(
-//				startBytes, endBytes);
-		myTable.close();
-		// Check that the combinatin of channel and maxChannels makes sense
+		List<HRegionLocation> regionList;
+		  try (RegionLocator locator = connection.getRegionLocator(myTable.getName())) {
+			  regionList = locator.getAllRegionLocations();
+		  }
+		
+		
+		// Check that the combination of channel and maxChannels makes sense
 		assert ((channel == -1 && maxChannels == 0) || // it's the default
 		// or maxChannels is positive, and channel is between 0 and
 		// maxChannels
@@ -804,11 +810,13 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						new String(startKey), 
 						new String(endKey)));
 				regionQueue.add(new Pair<byte[], byte[]>(startKey, endKey));
+				
 			}
 		}
 		// The actual number of threads is the minimum of the maxThreads and
 		// the number of regions
 		actualNumThreads = Math.min(numRegions, maxThreads);
+
 		logger.debug("MaxThreads = " + maxThreads + " numRegions = "
 				+ numRegions + " actualNumThreads " + actualNumThreads);
 	}
