@@ -30,15 +30,13 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  */
 
 @PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEIncrement` operator increments the specified HBASE entry.  The operator uses the `HTable.increment` function.  You can specify the value to increment as an operator parameter or as an attribute in the input tuple."
-		+ HBASEIncrement.CONSISTENT_REGION_INFO
-		+ HBASEOperator.DOC_BLANKLINE
-		+ HBASEOperator.commonDesc)
-@InputPorts({ @InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
+		+ HBASEIncrement.CONSISTENT_REGION_INFO + HBASEOperator.DOC_BLANKLINE + HBASEOperator.commonDesc)
+@InputPorts({
+		@InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @Icons(location32 = "impl/java/icons/HBASEIncrement_32.gif", location16 = "impl/java/icons/HBASEIncrement_16.gif")
 public class HBASEIncrement extends HBASEOperatorWithInput {
 
-	static final String CONSISTENT_REGION_INFO = HBASEOperator.consistentCutIntroducer
-			+ " HBASEIncrement is not allowed in a consistent region.";
+	static final String CONSISTENT_REGION_INFO = HBASEOperator.consistentCutIntroducer + " HBASEIncrement is not allowed in a consistent region.";
 	String incrAttr = null;
 	MetaType incrAttrType = null;
 	int incrAttrIndex = -1;
@@ -47,32 +45,26 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	private static final String STATIC_INCREMENT_VALUE = "increment";
 
 	@Parameter(name = INCREMENT_ATTR_PARAM, optional = true, description = "This parameter specifies the attribute that is used to determine the increment. It cannot be used with the "
-			+ STATIC_INCREMENT_VALUE
-            + " parameter.")
+			+ STATIC_INCREMENT_VALUE + " parameter.")
 	public void setIncrAttr(String name) {
 		incrAttr = name;
 	}
 
 	@Parameter(name = STATIC_INCREMENT_VALUE, optional = true, description = "This parameter specifies the value by which to increment.  It cannot be specified with "
-			+ INCREMENT_ATTR_PARAM
-            + " parameter.")
+			+ INCREMENT_ATTR_PARAM + " parameter.")
 	public void setIncr(long _inc) {
 		defaultIncr = _inc;
 	}
 
 	@ContextCheck(compile = true)
 	public static void checkIncrement(OperatorContextChecker checker) {
-		checker.checkExcludedParameters(INCREMENT_ATTR_PARAM,
-				STATIC_INCREMENT_VALUE);
-		checker.checkExcludedParameters(STATIC_INCREMENT_VALUE,
-				INCREMENT_ATTR_PARAM);
+		checker.checkExcludedParameters(INCREMENT_ATTR_PARAM, STATIC_INCREMENT_VALUE);
+		checker.checkExcludedParameters(STATIC_INCREMENT_VALUE, INCREMENT_ATTR_PARAM);
 
 		// Now we check whether we're in a consistent region.
-		ConsistentRegionContext ccContext = checker.getOperatorContext()
-				.getOptionalContext(ConsistentRegionContext.class);
+		ConsistentRegionContext ccContext = checker.getOperatorContext().getOptionalContext(ConsistentRegionContext.class);
 		if (ccContext != null) {
-			checker.setInvalidContext(getNoCCString(),
-					new Object[] { "HBASEIncrement" });
+			checker.setInvalidContext(getNoCCString(), new Object[] { "HBASEIncrement" });
 		}
 	}
 
@@ -87,31 +79,23 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	 *             Operator failure, will cause the enclosing PE to terminate.
 	 */
 	@Override
-	public synchronized void initialize(OperatorContext context)
-			throws Exception {
+	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName() + " initializing in PE: "
-						+ context.getPE().getPEId() + " in Job: "
-						+ context.getPE().getJobId());
+				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 
 		if (incrAttr != null) {
 			StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
 			StreamSchema inputSchema = input.getStreamSchema();
 			Attribute attr = inputSchema.getAttribute(incrAttr);
 			if (attr == null) {
-				throw new Exception("Expected to find " + incrAttr
-						+ " in input tuple, but did not");
+				throw new Exception("Expected to find " + incrAttr + " in input tuple, but did not");
 			}
 			incrAttrIndex = attr.getIndex();
 			incrAttrType = attr.getType().getMetaType();
-			if (MetaType.INT16 != incrAttrType
-					&& MetaType.INT32 != incrAttrType
-					&& MetaType.INT64 != incrAttrType) {
-				throw new Exception("Incrementing with attributes of type "
-						+ incrAttrType
-						+ " not supported; use int16, int32, or int645");
+			if (MetaType.INT16 != incrAttrType && MetaType.INT32 != incrAttrType && MetaType.INT64 != incrAttrType) {
+				throw new Exception("Incrementing with attributes of type " + incrAttrType + " not supported; use int16, int32, or int645");
 			}
 		}
 	}
@@ -127,8 +111,7 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	 *             Operator failure, will cause the enclosing PE to terminate.
 	 */
 	@Override
-	public final void process(StreamingInput<Tuple> inputStream, Tuple tuple)
-			throws Exception {
+	public final void process(StreamingInput<Tuple> inputStream, Tuple tuple) throws Exception {
 
 		byte row[] = getRow(tuple);
 		byte colF[] = getColumnFamily(tuple);

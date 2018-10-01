@@ -179,21 +179,20 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-//		HTableInterface myTable = connection.getTable(tableNameBytes);
 		Table myTable = getHTable();
 		byte row[] = getRow(tuple);
 		Delete myDelete = new Delete(row);
 
 		if (DeleteMode.COLUMN_FAMILY == deleteMode) {
 			byte colF[] = getColumnFamily(tuple);
-			myDelete.deleteFamily(colF);
+			myDelete.addFamily(colF);
 		} else if (DeleteMode.COLUMN == deleteMode) {
 			byte colF[] = getColumnFamily(tuple);
 			byte colQ[] = getColumnQualifier(tuple);
 			if (deleteAll) {
-				myDelete.deleteColumns(colF, colQ);
+				myDelete.addColumns(colF, colQ);
 			} else {
-				myDelete.deleteColumn(colF, colQ);
+				myDelete.addColumn(colF, colQ);
 			}
 		}
 

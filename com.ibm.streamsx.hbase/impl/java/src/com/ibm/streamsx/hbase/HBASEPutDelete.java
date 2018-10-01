@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 

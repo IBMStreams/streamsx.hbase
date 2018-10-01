@@ -317,7 +317,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-	//	HTableInterface myTable = connection.getTable(tableNameBytes);
 		Table myTable = getHTable();
 		Result r = myTable.get(myGet);
 

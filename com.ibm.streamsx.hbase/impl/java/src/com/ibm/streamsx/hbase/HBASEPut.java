@@ -187,7 +187,6 @@ public class HBASEPut extends HBASEPutDelete {
 	 * When enableBuffer is true and we are disabling autoflush,
 	 * keep a pointer to the hbase table. This value will be null otherwise
 	 */
-//	private HTableInterface cachedTable;
 	private Table cachedTable;
 	
 
@@ -210,7 +209,7 @@ public class HBASEPut extends HBASEPutDelete {
 		if (bufferTransactions) {
     		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
     		cachedTable= getHTable();
-   // 		cachedTable = connection.getTable(tableNameBytes);
+    // 		cachedTable = connection.getTable(tableNameBytes);
 
   //  		cachedTable.setAutoFlush(false, true);
     	}
