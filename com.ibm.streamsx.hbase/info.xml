@@ -140,7 +140,7 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
        {
             param
                 authKeytab         : "etc/hbase.service.keytab";
-                authPrincipal      : "hbase.kerberos.principal;
+                authPrincipal      : "hbase/myhdp26.ibm.com@HDP2.COM";
                 hbaseSite          : "etc/hbase-site.xml";
                 rowAttrName        : "key" ;
                 tableName          : "streamsSample_books" ;
