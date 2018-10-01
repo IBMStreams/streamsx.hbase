@@ -119,10 +119,16 @@ All operators have now 2 additional parameters:
 The **authKeytab** parameter specifies the keytab file that is created for the principal.
 The **authPrincipal** parameter specifies the Kerberos principal, which is typically the principal that is created for the HBase server.
 
-If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to enable the kerberos authentication.
-https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/
-https://www.cloudera.com/documentation/enterprise/5-7-x/topics/cdh_sg_hbase_authentication.html
-https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html
+If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
+
+
+
+[https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/]
+
+[https://www.cloudera.com/documentation/enterprise/5-7-x/topics/cdh_sg_hbase_authentication.html]
+
+[https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html]
+
 
 
 After enabling the Kerberos authentication copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
@@ -130,19 +136,17 @@ After enabling the Kerberos authentication copy the hbase server keytab and hbas
 Here is an example to connect to the HBase server with Kerberos Authentication:
 
 
-                () as writeToHbase = HBASEPut(inPut)
-                {
-                        param
-                                authKeytab     : "etc/hbase.service.keytab";
-                                authPrincipal  : "hbase.kerberos.principal;
-                                hbaseSite      : "etc/hbase-site.xml";
-                                tableName      : "testTable";
-   								...
-   								...
-                  }
-
-
-
+       () as putsink = HBASEPut(toHBASE)
+       {
+            param
+                authKeytab         : "etc/hbase.service.keytab";
+                authPrincipal      : "hbase.kerberos.principal;
+                hbaseSite          : "etc/hbase-site.xml";
+                rowAttrName        : "key" ;
+                tableName          : "streamsSample_books" ;
+                staticColumnFamily : "all" ;
+                valueAttrName      : "bookData" ;
+       }
 
 
 </info:description>
