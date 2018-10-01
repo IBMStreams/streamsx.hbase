@@ -319,6 +319,19 @@
                         </exclusions>
                 </dependency>
 
+                <dependency>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-all</artifactId>
+                        <version>4.0.52.Final </version>
+                        <exclusions>
+                                <exclusion>
+                                        <groupId>*</groupId>
+                                        <artifactId>*</artifactId>
+                                </exclusion>
+                        </exclusions>
+                </dependency>
+
+
         </dependencies>
 
         <build>
