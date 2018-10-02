@@ -6,6 +6,8 @@ package com.ibm.streamsx.hbase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.hadoop.hbase.client.BufferedMutator;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
@@ -351,10 +353,19 @@ public class HBASEPut extends HBASEPutDelete {
 		if (connection != null && !connection.isClosed()) {
 			synchronized (tableLock) {
 				logger.debug(Messages.getString("HBASE_PUT_COMMIT_FLUSH"));
-/////				cachedTable.flushCommits();
+				
+				
+			    try( final BufferedMutator mutator = connection.getBufferedMutator(cachedTable.getName());) {
+			            mutator.flush();
+			        } catch(Exception ex) {
+			            final String errorMsg = String.format("Failed with a [%s] when writing to table [%s] ", ex.getMessage(),
+			            		cachedTable.getName().getNameAsString());
+			            throw new IOException(errorMsg, ex);
+			        }
 			}
 		}
 	}
+	
 	/**
 	 * Empty the buffer. Called by shutdown and processPunctuation.
 	 */
