@@ -1,21 +1,22 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                	                 */
 
-namespace com.ibm.streamsx.hbase.sample;
-use com.ibm.streamsx.hbase::HBASEGet;
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEGet ;
 
 /**
  * The type this get will use.  Notice that our PutRecord type doesn't exactly match this type--we are missing rating
  * 
  */
-type GetBookType = rstring title,rstring author_fname, rstring author_lname, rstring year, rstring fiction;
+type GetBookType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction ;
 
 /**
  * The type this get will use.  Notice that here we have an extra field, fiction, which was not populated in the 
  * put example.  We will use this to demonstrate the  results parameter.
  * 
  */
-type GetBookPlusType = rstring title,rstring author_fname, rstring author_lname, rstring year, rstring fiction;
+type GetBookPlusType = rstring title, rstring author_fname, rstring author_lname, rstring year, rstring fiction ;
 
 /**
  * Demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.
@@ -52,42 +53,48 @@ type GetBookPlusType = rstring title,rstring author_fname, rstring author_lname,
  * "Dracula:1897",{title="",author_fname="",author_lname="",year="",fiction=""\},0
  * </code>
  */
-composite GetRecord {
-param 
-expression $keyList: ["War and Peace:1869",
-					"Jane Eyre:1847",
-					 "Twilight:2005",
-					 "Dracula:1897"];
-graph
-				 
-stream<rstring key> keyStream = Beacon() {
-param 
-iterations: size($keyList);
-output keyStream:
-	key = $keyList[IterationCount()];
-}
+composite GetRecord
+{
+	param
+		expression $keyList : [ "War and Peace:1869", "Jane Eyre:1847", "Twilight:2005", "Dracula:1897" ] ;
+	graph
+		stream<rstring key> keyStream = Beacon()
+		{
+			param
+				iterations : size($keyList) ;
+			output
+				keyStream : key = $keyList [ IterationCount() ] ;
+		}
 
-stream<rstring key,GetBookType value> enriched = HBASEGet(keyStream) {
-param
-rowAttrName: "key";
-tableName: "streamsSample_books";
-staticColumnFamily: "all";
-outAttrName: "value";
-}
+		stream<rstring key, GetBookType value> enriched = HBASEGet(keyStream)
+		{
+			param
+				rowAttrName : "key" ;
+				tableName : "streamsSample_books" ;
+				staticColumnFamily : "all" ;
+				outAttrName : "value" ;
+		}
 
-() as BookSink = FileSink(enriched) {
-param file: "books.out";
-}
+		() as BookSink = FileSink(enriched)
+		{
+			param
+				file : "books.out" ;
+		}
 
-stream<rstring key,GetBookPlusType value, int32 numResults> missingFiction = HBASEGet(keyStream) {
-param
-rowAttrName: "key";
-tableName: "streamsSample_books";
-staticColumnFamily: "all";
-outputCountAttr: "numResults";
-outAttrName: "value";
-}
-() as BookPlusSink = FileSink(missingFiction) {
-param file: "bookPlusType.out";
-}
+		stream<rstring key, GetBookPlusType value, int32 numResults> missingFiction = HBASEGet(keyStream)
+		{
+			param
+				rowAttrName : "key" ;
+				tableName : "streamsSample_books" ;
+				staticColumnFamily : "all" ;
+				outputCountAttr : "numResults" ;
+				outAttrName : "value" ;
+		}
+
+		() as BookPlusSink = FileSink(missingFiction)
+		{
+			param
+				file : "bookPlusType.out" ;
+		}
+
 }

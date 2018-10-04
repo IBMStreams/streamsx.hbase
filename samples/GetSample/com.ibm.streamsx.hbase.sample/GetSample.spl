@@ -1,7 +1,6 @@
 
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
 /* All Rights Reserved                                	                 */
-
 namespace com.ibm.streamsx.hbase.sample ;
 
 use com.ibm.streamsx.hbase::HBASEGet ;
@@ -22,8 +21,7 @@ composite GetSample
 	// In this sample, row, column family and column qualifier are all supplied.
 
 	// Read queries from a file.
-		stream<rstring who, rstring infoType, rstring requestedDetail> queries =
-			FileSource()
+		stream<rstring who, rstring infoType, rstring requestedDetail> queries = FileSource()
 		{
 			param
 				file : "queries.csv" ;
@@ -40,8 +38,7 @@ composite GetSample
 		// "Aragorn","location","beginFellowship","",0  -- no entry for Aragorn location:beginFellowship
 		// "Gandalf","appearance","beard","bushy",1
 		// "Frodo","location","beginFellowship","The Shire",1
-		stream<rstring who, rstring infoType, rstring requestedDetail, rstring value,
-			int32 numResults> queryResults = HBASEGet(queries)
+		stream<rstring who, rstring infoType, rstring requestedDetail, rstring value, int32 numResults> queryResults = HBASEGet(queries)
 		{
 			param
 				tableName : "streamsSample_lotr" ;
@@ -57,13 +54,13 @@ composite GetSample
 			param
 				file : "queryResults.out" ;
 		}
-		
+
 		/// Now get the most recent two versions
 		/// To do this, we make the type of value a list of rstring-int64 tuples
 		/// We don't really need numResults any more, because we can tell that no values
 		/// were returned when the list is empty.
-		
-	stream<rstring who, rstring infoType, rstring requestedDetail, list<tuple<rstring v, int64 ts>> value> queryResultsWithVersions = HBASEGet(queries)
+		stream<rstring who, rstring infoType, rstring requestedDetail, list<tuple<rstring v, int64 ts>> value> queryResultsWithVersions =
+			HBASEGet(queries)
 		{
 			param
 				tableName : "streamsSample_lotr" ;
@@ -71,7 +68,7 @@ composite GetSample
 				columnFamilyAttrName : "infoType" ;
 				columnQualifierAttrName : "requestedDetail" ;
 				outAttrName : "value" ;
-				maxVersions: 2;
+				maxVersions : 2 ;
 		}
 
 		() as querySinkv2 = FileSink(queryResultsWithVersions)
@@ -79,14 +76,13 @@ composite GetSample
 			param
 				file : "queryResultsTwoVersions.out" ;
 		}
-		
+
 		///////////////// Get all results for a row ////////////////
 		// Generate all rows
 		stream<rstring who> whoStream = Beacon()
 		{
 			logic
-				state : list<rstring> charList = [ "Aragorn", "Arwen", "Elrond", "Eowyn",
-					"Bilbo", "Boromir", "Frodo", "Gandalf", "Tom Bombadil" ] ;
+				state : list<rstring> charList = [ "Aragorn", "Arwen", "Elrond", "Eowyn", "Bilbo", "Boromir", "Frodo", "Gandalf", "Tom Bombadil" ] ;
 			param
 				iterations : size(charList) ;
 			output
@@ -94,8 +90,7 @@ composite GetSample
 		}
 
 		// Note the results type is a map mappinf rstrings to maps
-		stream<rstring who, map<rstring, map<rstring, rstring>> results> allDetails =
-			HBASEGet(whoStream)
+		stream<rstring who, map<rstring, map<rstring, rstring>> results> allDetails = HBASEGet(whoStream)
 		{
 			param
 				tableName : "streamsSample_lotr" ;
@@ -111,16 +106,14 @@ composite GetSample
 		}
 
 		// Unfold the maps
-		stream<rstring who, rstring colF, rstring colQ, rstring value> expanded =
-			Custom(allDetails)
+		stream<rstring who, rstring colF, rstring colQ, rstring value> expanded = Custom(allDetails)
 		{
 			logic
 				onTuple allDetails : for(rstring infoType in allDetails.results)
 				{
 					for(rstring qual in allDetails.results [ infoType ])
 					{
-						submit({ who = who, colF = infoType, colQ = qual, value =
-							allDetails.results [ infoType ] [ qual ] }, expanded) ;
+						submit({ who = who, colF = infoType, colQ = qual, value = allDetails.results [ infoType ] [ qual ] }, expanded) ;
 					}
 
 				}
@@ -138,8 +131,7 @@ composite GetSample
 
 		// This example uses the row and columnFamily only, no 
 		// columnQualifier.  The result in this case is a map.
-		stream<rstring who, map<rstring, rstring> results> locationResults =
-			HBASEGet(whoStream)
+		stream<rstring who, map<rstring, rstring> results> locationResults = HBASEGet(whoStream)
 		{
 			param
 				tableName : "streamsSample_lotr" ;

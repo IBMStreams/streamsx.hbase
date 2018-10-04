@@ -1,8 +1,8 @@
+
 /*
- * Copyright (C) 2013-2014, International Business Machines Corporation  
+ * Copyright (C) 2013-2018, International Business Machines Corporation  
  * All Rights Reserved                                	                 
  */
-
 namespace com.ibm.streamsx.hbase.sample ;
 
 use com.ibm.streamsx.hbase::HBASEPut ;
@@ -19,15 +19,14 @@ type CheckType = rstring columnFamily, rstring columnQualifier, rstring value ;
 composite CheckAndPut
 {
 	graph
-		stream<rstring expected, rstring character, rstring when, rstring where,
-			CheckType check> updateStream = FileSource()
+		stream<rstring expected, rstring character, rstring when, rstring where, CheckType check> updateStream = FileSource()
 		{
 			param
 				file : "checkAndPut.csv" ;
 		}
 
-		stream<boolean success, rstring expected, rstring character, rstring when,
-			rstring where, CheckType check> resultStream = HBASEPut(updateStream)
+		stream<boolean success, rstring expected, rstring character, rstring when, rstring where, CheckType check> resultStream =
+			HBASEPut(updateStream)
 		{
 			param
 				tableName : "streamsSample_lotr" ;
