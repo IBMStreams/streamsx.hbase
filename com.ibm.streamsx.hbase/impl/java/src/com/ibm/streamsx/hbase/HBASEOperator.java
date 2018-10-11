@@ -62,7 +62,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected Charset charset = RSTRING_CHAR_SET;
 	private String tableName = null;
 	protected byte tableNameBytes[] = null;
-	private String hbaseSite = null;
+	private static String hbaseSite = null;
 	private String fAuthPrincipal = null;
 	private String fAuthKeytab = null;
 	protected Connection connection = null;
@@ -144,7 +144,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
 		if (!context.getParameterNames().contains(HBASE_SITE_PARAM_NAME)) {
 			String hbaseHome = System.getenv("HBASE_HOME");
-			if (hbaseHome == null) {
+			if ((hbaseSite == null) && (hbaseHome == null)){
 				checker.setInvalidContext(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME), null);
 			}
 		}
@@ -276,23 +276,19 @@ public abstract class HBASEOperator extends AbstractOperator {
 		Logger.getLogger(this.getClass()).trace(
 				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 		if (hbaseHome != null) {
-			libList.add(hadoopHome + "/share/hadoop/hdfs/*");
-			libList.add(hadoopHome + "/share/hadoop/common/*");
-			libList.add(hadoopHome + "/share/hadoop/common/lib/*");
-			libList.add(hadoopHome + "/conf/*");
 			libList.add(hbaseHome + "/lib/*");
 			libList.add(hbaseHome + "/*");
-			libList.add(hbaseHome + "/conf/*");
 			libList.add(hadoopHome + "/lib/*");
 			libList.add(hadoopHome + "/client/*");
 			libList.add(hadoopHome + "/*");
-			libList.add(hadoopHome + "/../hadoop-hdfs/*");
-			try {
-				context.addClassLibraries(libList.toArray(new String[0]));
-			} catch (Exception e) {
-				Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
-			}
 		}
+		
+		try {
+			context.addClassLibraries(libList.toArray(new String[0]));
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+		}
+		
 
 		if (hbaseSite == null) {
 			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
