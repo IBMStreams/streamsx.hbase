@@ -39,7 +39,7 @@ import com.ibm.streams.operator.types.Blob;
  * 
  * @author hildrum
  */
-@Libraries({ "@HBASE_HOME@/lib/*", "@HBASE_HOME@/*" })
+// @Libraries({ "@HBASE_HOME@/lib/*", "@HBASE_HOME@/*" })
 public abstract class HBASEOperator extends AbstractOperator {
 	public static final String DOC_BLANKLINE = "\\n\\n";
 	static final String HBASE_SITE_PARAM_NAME = "hbaseSite";
