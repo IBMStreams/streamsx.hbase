@@ -73,7 +73,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String AUTH_PRINCIPAL = "authPrincipal";
 	static final String AUTH_KEYTAB = "authKeytab";
-	static final String JAR_LIBS_PATH = "impl/lib/ext/*";
+	static final String JAR_LIBS_PATH = "/impl/lib/ext/*";
 
 	static final String CHARSET_PARAM_NAME = "charset";
 	static final String VALID_TYPE_STRING = "rstring, ustring, blob, or int64";
