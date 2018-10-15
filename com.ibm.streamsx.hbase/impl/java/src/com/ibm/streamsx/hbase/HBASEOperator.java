@@ -73,6 +73,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String AUTH_PRINCIPAL = "authPrincipal";
 	static final String AUTH_KEYTAB = "authKeytab";
+	static final String JAR_LIBS_PATH = "impl/lib/ext/*";
 
 	static final String CHARSET_PARAM_NAME = "charset";
 	static final String VALID_TYPE_STRING = "rstring, ustring, blob, or int64";
@@ -268,28 +269,8 @@ public abstract class HBASEOperator extends AbstractOperator {
 		super.initialize(context);
 		Logger.getLogger(this.getClass()).trace(
 				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
-		String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
-		ArrayList<String> libList = new ArrayList<>();
-		String default_dir = context.getToolkitDirectory() + "/impl/lib/ext/*";
-		libList.add(default_dir);
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
-		if (hbaseHome != null) {
-			libList.add(hbaseHome + "/lib/*");
-			libList.add(hbaseHome + "/*");
-			libList.add(hadoopHome + "/lib/*");
-			libList.add(hadoopHome + "/client/*");
-			libList.add(hadoopHome + "/*");
-		}
-		
-		try {
-			context.addClassLibraries(libList.toArray(new String[0]));
-		} catch (Exception e) {
-			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
-		}
-		
-
+		addClassLib(context);
 		if (hbaseSite == null) {
 			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
 		} else {
@@ -308,6 +289,32 @@ public abstract class HBASEOperator extends AbstractOperator {
 		getConnection();
 	}
 
+	// add class library
+	void addClassLib(OperatorContext context) throws Exception {
+		String hadoopHome = System.getenv("HADOOP_HOME");
+		String hbaseHome = System.getenv("HBASE_HOME");
+		ArrayList<String>libList = new ArrayList<>();
+		String default_dir = context.getToolkitDirectory() + JAR_LIBS_PATH;
+		libList.add(default_dir);
+		if (hbaseHome != null) {
+			libList.add(hbaseHome + "/lib/*");
+			libList.add(hbaseHome + "/*");
+			libList.add(hadoopHome + "/lib/*");
+			libList.add(hadoopHome + "/client/*");
+			libList.add(hadoopHome + "/*");
+		}
+		
+		try {
+			context.addClassLibraries(libList.toArray(new String[0]));
+		} catch (Exception e) {
+			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+		}
+	
+	}
+
+	
+	
+	
 	protected void getConnection() throws IOException {
 
 		System.out.println("hbaseSite:\t" + hbaseSite);
@@ -340,6 +347,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 		 */
 	}
 
+	
+	
+	
+	
 	/**
 	 * Subclasses should not generally use this. The should instead create HTableInterface via
 	 * connection.getTable(tableNameBytes).
