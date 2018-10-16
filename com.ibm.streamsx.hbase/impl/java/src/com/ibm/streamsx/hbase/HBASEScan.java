@@ -15,13 +15,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionLocation;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -726,7 +729,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		return buff.toString();
 	}
 
-	
+	 
 	private void createRegionQueue() throws IOException {
 
 		logger.info(Messages.getString("HBASE_SCAN_CREATING_REGION"));
@@ -744,31 +747,35 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (endRow != null) {
 			endBytes = endRow.getBytes(charset);
 		}
-
-		// Need to get the start and end keys if these aren't part of the
-		// input.
-
 		Table myTable = getHTable();
-	
 		RegionLocator regionLocator = connection.getRegionLocator(myTable.getName());	
-		Pair<byte[][], byte[][]> startEndKeys = regionLocator.getStartEndKeys();
-		   
-		if (startBytes == null) {
-			startBytes = startEndKeys.getFirst()[0];
-		}
-		if (endBytes == null) {
-			endBytes = startEndKeys.getSecond()[startEndKeys.getSecond().length - 1];
-		}
 
+		
+		// Need to get the start and end keys if these aren't part of the input.
+		Pair<byte[][], byte[][]> startEndKeys = regionLocator.getStartEndKeys(); 
+		for (int n = 0; n < startEndKeys.getFirst().length; n++) {
+			if (startBytes == null) {
+				startBytes = startEndKeys.getFirst()[n];
+				}
+			if (endBytes == null) {
+				endBytes = startEndKeys.getSecond()[n];
+			}
+			System.out.println("[" + (n + 1) + "]" +
+					" startRow: " +
+					(startBytes.length == 8 ? Bytes.toLong(startBytes) : Bytes.toStringBinary(startBytes)) + 
+					", endRow: " +
+					(endBytes.length == 8 ? Bytes.toLong(endBytes) : Bytes.toStringBinary(endBytes)));
+			}
+
+		 		  
 		int numRegions = 0;
-		// In order to get the regions, we need to supply a startrow and an
-		// end row.
-		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", printBytes(startBytes), printBytes(endBytes)));
+		// In order to get the regions, we need to supply a startRow and an endRow.
+		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", startBytes, endBytes));
 		// Get a list of regions. We assume the list is always the same.
 		List<HRegionLocation> regionList;
-		  try (RegionLocator locator = connection.getRegionLocator(myTable.getName())) {
+		try (RegionLocator locator = connection.getRegionLocator(myTable.getName())) {
 			  regionList = locator.getAllRegionLocations();
-		  }
+			  }
 		
 		
 		// Check that the combination of channel and maxChannels makes sense
