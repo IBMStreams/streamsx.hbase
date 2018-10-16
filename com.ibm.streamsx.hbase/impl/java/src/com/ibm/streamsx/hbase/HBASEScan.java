@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -167,6 +168,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				hasMore = false;
 			}
 			rowsScanned = 0;
+			
 		}
 
 		byte[] submitRows(long numRows) throws IOException, Exception {
@@ -215,6 +217,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		ScanRegion currentRegion = null;
 		final long rowsPerTrigger;
 
+		
+		
+		
 		ScanThread(HBASEScan parent, int index, boolean useDelay) {
 			this.parent = parent;
 			this.index = index;
@@ -227,7 +232,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 			reset = true;
 			rowsPerTrigger = parent.triggerCount;
+
 		}
+
 
 		private void reset() {
 			reset = true;
@@ -413,7 +420,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final long rowsPerPermit = 1;
 	private long triggerCount;
 	boolean trigger = false;
-
 
 	
 	
@@ -605,7 +611,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-
 		// Now check that the output is the proper format.
 		StreamingOutput<OutputTuple> output = getOutput(0);
 		StreamSchema outSchema = output.getStreamSchema();
@@ -615,6 +620,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					MetaType.INT32, true);
 		}
 
+		
 		outMapper = OutputMapper.createOutputMapper(outSchema, outAttrName,
 				charset);
 
@@ -883,6 +889,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
 
+	
 		Scan myScan;
 		switch (inputMode) {
 		case START:

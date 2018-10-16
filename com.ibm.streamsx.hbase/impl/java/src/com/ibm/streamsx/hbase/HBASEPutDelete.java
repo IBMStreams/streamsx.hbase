@@ -36,11 +36,11 @@ import com.ibm.streams.operator.state.StateHandler;
  * 
  * 
  */
-
+ 
 public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		StateHandler {
 
-	// These are used by Put and Delete for checkAndPut and checkAndDelete
+	// These are  used by Put and Delete for checkAndPut and checkAndDelete
 	protected int checkColFIndex = -1;
 	protected int checkColQIndex = -1;
 	protected int checkValueIndex = -1;
@@ -159,9 +159,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		
-		
-//		HTableInterface table = connection.getTable(tableNameBytes);
+
 		Table table = getHTable();
 
     	if (null == table) {
