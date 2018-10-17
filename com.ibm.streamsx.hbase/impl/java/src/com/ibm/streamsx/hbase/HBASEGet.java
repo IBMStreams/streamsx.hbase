@@ -56,7 +56,7 @@ import com.ibm.streams.operator.types.RString;
  * columnQualifers to values.
  * 
  */
-@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from HBASE. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
+@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from an HBASE table. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
 		+ HBASEGet.OUT_PARAM_NAME
 		   + " parameter. The operator accepts four types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry. \\n"
 +"    stream<rstring who, rstring infoType, rstring requestedDetail, rstring value, \\n"

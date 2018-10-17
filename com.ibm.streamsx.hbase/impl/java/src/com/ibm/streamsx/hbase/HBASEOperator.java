@@ -81,7 +81,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING = "rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE / Byte.SIZE;
 
-	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
+	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The **hbaseSite** parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
 	public void setHbaseSite(String name) {
 		hbaseSite = name;
 	}

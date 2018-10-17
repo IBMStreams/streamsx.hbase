@@ -39,7 +39,7 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
  * 
  */
 
-@PrimitiveOperator(name = "HBASEPut", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEPut` operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,"
+@PrimitiveOperator(name = "HBASEPut", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEPut` operator puts tuples into an Hbase table. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,"
 		+ "and value specified.  The row and value are derived from the input tuple, which is specified by the "
 		+ HBASEOperator.ROW_PARAM_NAME
 		+ " and "

@@ -34,7 +34,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * HBASE table. .
  * <P>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE.  It can also optionally do a checkAndDelete operation."
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from an HBase table.  It can also optionally do a checkAndDelete operation."
 		+ HBASEOperator.DOC_BLANKLINE
 		+ "The behavior of the operator depends on its parameters:"
 		+HBASEOperator.DOC_BLANKLINE
