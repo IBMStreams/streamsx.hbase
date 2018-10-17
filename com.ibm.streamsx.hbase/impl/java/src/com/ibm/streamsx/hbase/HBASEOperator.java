@@ -115,7 +115,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		return fAuthPrincipal;
 	}
 
-	@Parameter(name = AUTH_KEYTAB, optional = true, description = "The **authKeytab** parameter specifies the keytab file that is created for the principal.")
+	@Parameter(name = AUTH_KEYTAB, optional = true, description = "The **authKeytab** parameter specifies the kerberos keytab file that is created for the principal.")
 	public void setAuthKeytab(String authKeytab) {
 		this.fAuthKeytab = authKeytab;
 	}
