@@ -29,7 +29,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * from the tuples.
  */
 
-@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEIncrement` operator increments the specified HBASE entry.  The operator uses the `HTable.increment` function.  You can specify the value to increment as an operator parameter or as an attribute in the input tuple."
+@PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEIncrement` operator increments the specified HBase entry.  The operator uses the `HTable.increment` function.  You can specify the value to increment as an operator parameter or as an attribute in the input tuple."
 		+ HBASEIncrement.CONSISTENT_REGION_INFO + HBASEOperator.DOC_BLANKLINE + HBASEOperator.commonDesc)
 @InputPorts({
 		@InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })

@@ -83,7 +83,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ TRIGGER_PARAM
 	    + " must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain.";
 
-	static final String operatorDescription = "The `HBASEScan` operator scans an HBASE table.  Like the `FileSource` operator, it has an optional input port.  If no input port is"
+	static final String operatorDescription = "The `HBASEScan` operator scans an HBase table.  Like the `FileSource` operator, it has an optional input port.  If no input port is"
 			+ " specifed, then the operator scans the table according to the parameters that you specify, and sends the final punctuation.  If you specify an input "
 			+ " port, the operator does not start a scan until it receives a tuple.  After the operator receives a tuple, it"
 			+ " scans according to that tuple and produces a punctuation.  "
