@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.OperatorContext;
@@ -17,7 +17,6 @@ import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
-import com.ibm.streams.operator.logging.LoggerNames;
 import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
@@ -35,7 +34,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
  * HBASE table. .
  * <P>
  */
-@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from HBASE.  It can also optionally do a checkAndDelete operation."
+@PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from an HBase table.  It can also optionally do a checkAndDelete operation."
 		+ HBASEOperator.DOC_BLANKLINE
 		+ "The behavior of the operator depends on its parameters:"
 		+HBASEOperator.DOC_BLANKLINE
@@ -180,20 +179,20 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-		HTableInterface myTable = connection.getTable(tableNameBytes);
+		Table myTable = getHTable();
 		byte row[] = getRow(tuple);
 		Delete myDelete = new Delete(row);
 
 		if (DeleteMode.COLUMN_FAMILY == deleteMode) {
 			byte colF[] = getColumnFamily(tuple);
-			myDelete.deleteFamily(colF);
+			myDelete.addFamily(colF);
 		} else if (DeleteMode.COLUMN == deleteMode) {
 			byte colF[] = getColumnFamily(tuple);
 			byte colQ[] = getColumnQualifier(tuple);
 			if (deleteAll) {
-				myDelete.deleteColumns(colF, colQ);
+				myDelete.addColumns(colF, colQ);
 			} else {
-				myDelete.deleteColumn(colF, colQ);
+				myDelete.addColumn(colF, colQ);
 			}
 		}
 
@@ -237,7 +236,8 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	protected void flushBuffer() throws IOException {
 		if (connection != null && !connection.isClosed()) {
-			HTableInterface myTable = connection.getTable(tableNameBytes);
+	//		HTableInterface myTable = connection.getTable(tableNameBytes);
+			Table myTable =getHTable();
 			if (myTable != null && deleteList != null && deleteList.size() > 0) {
 				synchronized (listLock) {
 					if (deleteList != null && deleteList.size() > 0) {

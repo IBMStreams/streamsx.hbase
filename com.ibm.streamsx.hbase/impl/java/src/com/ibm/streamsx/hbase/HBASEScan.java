@@ -1,9 +1,10 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,14 +14,17 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HRegionLocation;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.HRegionInfo;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -79,7 +83,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			+ TRIGGER_PARAM
 	    + " must be set to the number of rows to process before triggering a drain.  The operator will process approximately that many rows before starting a drain.";
 
-	static final String operatorDescription = "The `HBASEScan` operator scans an HBASE table.  Like the `FileSource` operator, it has an optional input port.  If no input port is"
+	static final String operatorDescription = "The `HBASEScan` operator scans an HBase table.  Like the `FileSource` operator, it has an optional input port.  If no input port is"
 			+ " specifed, then the operator scans the table according to the parameters that you specify, and sends the final punctuation.  If you specify an input "
 			+ " port, the operator does not start a scan until it receives a tuple.  After the operator receives a tuple, it"
 			+ " scans according to that tuple and produces a punctuation.  "
@@ -121,7 +125,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private static class ScanRegion implements Closeable {
 
 		final ResultScanner resultScanner;
-		final HTableInterface myTable;
+		final Table myTable;
 		boolean hasMore;
 		HBASEScan operator;
 		long rowsScanned;
@@ -156,7 +160,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan = new Scan();
 			}
 
-			myTable = operator.connection.getTable(operator.tableNameBytes);
+		//	myTable = operator.connection.getTable(operator.tableNameBytes);
+			myTable = operator.getHTable();
+			
 			// This sets any filters based on operator parameters.
 			resultScanner = operator.startScan(myTable, myScan);
 			if (resultScanner != null) {
@@ -165,6 +171,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				hasMore = false;
 			}
 			rowsScanned = 0;
+			
 		}
 
 		byte[] submitRows(long numRows) throws IOException, Exception {
@@ -213,6 +220,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		ScanRegion currentRegion = null;
 		final long rowsPerTrigger;
 
+		
+		
+		
 		ScanThread(HBASEScan parent, int index, boolean useDelay) {
 			this.parent = parent;
 			this.index = index;
@@ -225,7 +235,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 			reset = true;
 			rowsPerTrigger = parent.triggerCount;
+
 		}
+
 
 		private void reset() {
 			reset = true;
@@ -308,8 +320,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						} else {
 							maxRows = rowsPerPermit;
 						}
-						byte[] lastRow = currentRegion.submitRows(maxRows);
-						parent.lastRow[index] = lastRow;
+						
+							byte[] lastRow = currentRegion.submitRows(maxRows);
+							parent.lastRow[index] = lastRow;
+						
+							currentRegion.resetRowsSinceConsistent();
+							
 						if (!currentRegion.hasMore()) {
 							// mark nothing in progress
 							parent.currentScan.set(index, null);
@@ -408,6 +424,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private long triggerCount;
 	boolean trigger = false;
 
+	
+	
 	ConsistentRegionContext ccContext;
 	// / Needs to be checkpointed.
 	private byte[] lastRow[];
@@ -596,7 +614,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-
 		// Now check that the output is the proper format.
 		StreamingOutput<OutputTuple> output = getOutput(0);
 		StreamSchema outSchema = output.getStreamSchema();
@@ -606,6 +623,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					MetaType.INT32, true);
 		}
 
+		
 		outMapper = OutputMapper.createOutputMapper(outSchema, outAttrName,
 				charset);
 
@@ -711,6 +729,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		return buff.toString();
 	}
 
+	 
 	private void createRegionQueue() throws IOException {
 
 		logger.info(Messages.getString("HBASE_SCAN_CREATING_REGION"));
@@ -728,30 +747,38 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (endRow != null) {
 			endBytes = endRow.getBytes(charset);
 		}
+		Table myTable = getHTable();
+		RegionLocator regionLocator = connection.getRegionLocator(myTable.getName());	
 
-		// Need to get the start and end keys if these aren't part of the
-		// input.
+		
+		// Need to get the start and end keys if these aren't part of the input.
+		Pair<byte[][], byte[][]> startEndKeys = regionLocator.getStartEndKeys(); 
+		for (int n = 0; n < startEndKeys.getFirst().length; n++) {
+			if (startBytes == null) {
+				startBytes = startEndKeys.getFirst()[n];
+				}
+			if (endBytes == null) {
+				endBytes = startEndKeys.getSecond()[n];
+			}
+			System.out.println("[" + (n + 1) + "]" +
+					" startRow: " +
+					(startBytes.length == 8 ? Bytes.toLong(startBytes) : Bytes.toStringBinary(startBytes)) + 
+					", endRow: " +
+					(endBytes.length == 8 ? Bytes.toLong(endBytes) : Bytes.toStringBinary(endBytes)));
+			}
 
-		HTable myTable = getHTable();
-		Pair<byte[][], byte[][]> startEndKeys = myTable.getStartEndKeys();
-
-		if (startBytes == null) {
-			startBytes = startEndKeys.getFirst()[0];
-		}
-		if (endBytes == null) {
-			endBytes = startEndKeys.getSecond()[startEndKeys.getSecond().length - 1];
-		}
-
+		 		  
 		int numRegions = 0;
-		// In order to get the regions, we need to supply a startrow and an
-		// end row.
-		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", printBytes(startBytes), printBytes(endBytes)));
-
+		// In order to get the regions, we need to supply a startRow and an endRow.
+		logger.debug(Messages.getString("HBASE_SCAN_START_END_ROW", startBytes, endBytes));
 		// Get a list of regions. We assume the list is always the same.
-		List<HRegionLocation> regionList = myTable.getRegionsInRange(
-				startBytes, endBytes);
-		myTable.close();
-		// Check that the combinatin of channel and maxChannels makes sense
+		List<HRegionLocation> regionList;
+		try (RegionLocator locator = connection.getRegionLocator(myTable.getName())) {
+			  regionList = locator.getAllRegionLocations();
+			  }
+		
+		
+		// Check that the combination of channel and maxChannels makes sense
 		assert ((channel == -1 && maxChannels == 0) || // it's the default
 		// or maxChannels is positive, and channel is between 0 and
 		// maxChannels
@@ -796,11 +823,13 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 						new String(startKey), 
 						new String(endKey)));
 				regionQueue.add(new Pair<byte[], byte[]>(startKey, endKey));
+				
 			}
 		}
 		// The actual number of threads is the minimum of the maxThreads and
 		// the number of regions
 		actualNumThreads = Math.min(numRegions, maxThreads);
+
 		logger.debug("MaxThreads = " + maxThreads + " numRegions = "
 				+ numRegions + " actualNumThreads " + actualNumThreads);
 	}
@@ -867,6 +896,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
 
+	
 		Scan myScan;
 		switch (inputMode) {
 		case START:
@@ -888,7 +918,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throw new Exception("Internal error.  Unknown input mode "
 					+ inputMode);
 		}
-		HTableInterface myTable = connection.getTable(tableNameBytes);
+//		HTableInterface myTable = connection.getTable(tableNameBytes);
+		Table myTable = getHTable();
 		ResultScanner resultScanner = startScan(myTable, myScan);
 		submitResults(tuple, resultScanner, (long) -1);
 		myTable.close();
@@ -907,7 +938,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	 *            The scan. The start and the end should be set.
 	 * @returns a result scanner.
 	 */
-	private ResultScanner startScan(HTableInterface myTable, Scan myScan)
+	private ResultScanner startScan(Table myTable, Scan myScan)
 			throws IOException {
 		// Set scan attributes
 		if (maxVersions == 0) {

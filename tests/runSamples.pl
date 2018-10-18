@@ -38,7 +38,7 @@ print "$cmd\n";
 $result = `$cmd`;
 print "$result \n*****************************************************\n\n";
 
-if (index($result, "TABLE") == -1) 
+if (index($result, "HBase") == -1) 
 {
 	print "Hbase shell cannot connect to the Hbase server\n";
 	exit;
@@ -75,7 +75,7 @@ print "$result \n*****************************************************\n\n";
 
 my @samples = `ls ../samples | grep -v  README`;
 print "Tests in samples directory: \n";
-print "@samples\n";
+print " @samples\n";
 
 my $sampleCount = 0;
 my $appCount = 0;

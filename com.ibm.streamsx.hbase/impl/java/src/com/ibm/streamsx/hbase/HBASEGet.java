@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -10,10 +10,9 @@ import java.util.NavigableMap;
 import java.util.Set;
 
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
-
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
@@ -57,7 +56,7 @@ import com.ibm.streams.operator.types.RString;
  * columnQualifers to values.
  * 
  */
-@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from HBASE. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
+@PrimitiveOperator(name = "HBASEGet", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEGet` operator gets tuples from an HBase table. It is similar to the `ODBCEnrich` operator in the Database Toolkit.  It puts the result in the attribute of the output port that is specified in the "
 		+ HBASEGet.OUT_PARAM_NAME
 		   + " parameter. The operator accepts four types of queries.  In the simplest case, you specify a row, columnFamily, and columnQualifier, and the output value is the single value in that entry. \\n"
 +"    stream<rstring who, rstring infoType, rstring requestedDetail, rstring value, \\n"
@@ -131,7 +130,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private static final String defaultOutAttrName = "value";
 	private String outAttrName = defaultOutAttrName;;
 	private String successAttr = null;
-	private SingleOutputMapper primativeOutputMapper = null;
 
 	@Parameter(name = SUCCESS_PARAM_NAME, description = "This parameter specifies the name of attribute of the output port where the operator puts a count of the values it populated.", optional = true)
 	public void setSuccessAttr(String name) {
@@ -319,7 +317,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-		HTableInterface myTable = connection.getTable(tableNameBytes);
+		Table myTable = getHTable();
 		Result r = myTable.get(myGet);
 
 		int numResults = r.size();

@@ -1,6 +1,6 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                	                 */
 
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
 namespace com.ibm.streamsx.hbase.sample ;
 
 use com.ibm.streamsx.hbase::HBASEPut ;
@@ -53,12 +53,10 @@ use com.ibm.streamsx.hbase::HBASEPut ;
 </code>
 * (NOTE: Gandalf is of course not dead at the end of the two Towers; see the update example.) 
  */
-
 composite PutSample
 {
 	graph
-		stream<rstring character, rstring colF, rstring colQ, rstring value> full =
-			FileSource()
+		stream<rstring character, rstring colF, rstring colQ, rstring value> full = FileSource()
 		{
 			param
 				file : "allAttributes.csv" ;
@@ -77,8 +75,7 @@ composite PutSample
 
 		// Here we enter a bunch of attributes about the appearance of characters.
 		// We know these are all appearance-related, so we can use a static column family.
-		stream<rstring character, rstring feature, rstring description> description =
-			FileSource()
+		stream<rstring character, rstring feature, rstring description> description = FileSource()
 		{
 			param
 				file : "appearance.csv" ;

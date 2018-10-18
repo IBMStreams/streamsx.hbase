@@ -1,6 +1,6 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                	                 */
 
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
 namespace com.ibm.streamsx.hbase.sample ;
 
 use com.ibm.streamsx.hbase::HBASEPut ;
@@ -27,16 +27,14 @@ type ExistCheckType = rstring columnFamily, rstring columnQualifier ;
 composite PutExistCheck
 {
 	graph
-		stream<rstring character, rstring feature, rstring desc,
-			ExistCheckType check> appearanceUpdates = FileSource()
+		stream<rstring character, rstring feature, rstring desc, ExistCheckType check> appearanceUpdates = FileSource()
 		{
 			param
 				file : "appearanceUpdates.csv" ;
 				format : csv ;
 		}
 
-		stream<rstring character, rstring feature, rstring desc, boolean success>
-			successStream = HBASEPut(appearanceUpdates)
+		stream<rstring character, rstring feature, rstring desc, boolean success> successStream = HBASEPut(appearanceUpdates)
 		{
 			param
 				tableName : "streamsSample_lotr" ;

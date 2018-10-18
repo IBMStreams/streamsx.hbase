@@ -23,10 +23,12 @@ die "Must have STREAMS_INSTALL specified in environment before running" if ($ENV
 
 
 
-my $numDiff =0;
-my $numMakeAndRun =0;
-my $numRunCommand = 0;
-my $numClearTable = 0;
+my $numDiffs       = 0;
+my $succeededDiffs = 0;
+my $failedDiffs    = 0;
+my $numMakeAndRun  = 0;
+my $numRunCommand  = 0;
+my $numClearTable  = 0;
 my $runPattern;
 my $disableTableCreation;
 my $debug;
@@ -36,6 +38,22 @@ GetOptions ("runPattern=s" => \$runPattern,
 			"debug" => \$debug);
 
 my %commandResults;
+
+
+sub dropTable(%) {
+
+	my %args = @_;
+	my $tableName = $args{"tableName"};
+
+	print "\ndrop table $tableName \n";
+    my $cmd = "echo \"disable '$tableName'\; drop '$tableName'\" | \$HBASE_HOME/bin/hbase shell > shellResults";
+    print "$cmd\n";
+	system("echo \"disable '$tableName'; drop '$tableName'\" | \$HBASE_HOME/bin/hbase shell > shellResults");
+	die "Problems droping table" unless ($? >> 8 == 0) ;
+	print ("Table $tableName droped.\n\n");
+
+}
+
 
 sub clearTable(%) {
 	if ($disableTableCreation) {
@@ -81,6 +99,7 @@ sub makeAndRun(%) {
 
 
 	# first make.
+	print ("\n***************** Sample: $dir *********************\n");
 	my $makeString = "cd $dir; make $target";
 	print "\ncommand:  $makeString\n\n";
 	system($makeString);
@@ -132,7 +151,7 @@ sub runCommand(%) {
 
 sub diff(%) {
 	my %args = @_;
-	$numDiff++;
+	$numDiffs++;
 	my $expected = $args{"expected"};
 	my $actual= $args{"actual"};
 	my $replaceTS = exists $args{"replaceTimestamp"};
@@ -151,9 +170,11 @@ sub diff(%) {
 
 	if (length( $result ) > 1)
 	{
-		print "diff failed: $expected and $actual not the same\n";
+		$failedDiffs++;
+		print "ERROR   diff failed: $expected and $actual not the same\n";
 	}
 	else {
+		$succeededDiffs++;
 		print "diff succeeded: $expected and $actual are the same\n";
 	}
 
@@ -175,7 +196,7 @@ sub main() {
 	print ("It makes the spl application and runs the standalone files.\n"); 
 	print ("At the end, it compares the produced files via spl applications and expected files.\n\n");
 	print ("Check if Hbase shell is available.\n"); 
-	my $cmd = "echo \"list'\" | hbase shell";
+	my $cmd = "echo 'list' | hbase shell";
 	print "$cmd\n";
 	my $result = `$cmd`;
 
@@ -184,6 +205,29 @@ sub main() {
 			print "Hbase shell cannot connect to the Hbase server\n";
 			exit;
 	} 
+
+
+	$cmd = " echo 'list' | hbase shell | grep '^streamsSample'";
+	print "$cmd\n";
+	$result = `$cmd`;
+#	print "$result\n";
+	
+	my @tables = split('\n', $result);
+	
+	
+	foreach my $table (@tables) {
+	    print "drop Table $table\n";
+	    my %currentArgs; 
+	    $currentArgs{"tableName"} = $table;
+	    dropTable(%currentArgs);
+	    sleep(10);
+	 }
+	 
+	$cmd = " echo 'list' | hbase shell";
+	print "$cmd\n";
+	$result = `$cmd`;
+	print "$result\n";
+	
 
 	print ("\n*****************************  test files  *****************************\n");
 	my @tests = `ls *.cfg`;
@@ -245,11 +289,15 @@ sub main() {
 
 		print ("*****************************  results  *****************************\n");
 
-		print "$numPassed out of $numTests passed\n";
-		print "\tDIFF: $numDiff\n";
-		print "\tMAKE_AND_RUN: $numMakeAndRun\n";
-		print "\tRUN_COMMAND: $numRunCommand\n";
-		print "\tCLEAR_TABLE: $numClearTable\n";
+		print "\t$numPassed from : $numTests passed\n";
+		print "\tnumTests        : $numTests\n";
+		print "\tnumTests        : $numPassed\n";
+		print "\tDIFFs           : $numDiffs\n";
+		print "\tSucceeded DIFFs : $succeededDiffs\n";
+		print "\tfailed DIFFs    : $failedDiffs\n";
+		print "\tMAKE_AND_RUN    : $numMakeAndRun\n";
+		print "\tRUN_COMMAND     : $numRunCommand\n";
+		print "\tCLEAR_TABLE     : $numClearTable\n";
 
 	}
 }

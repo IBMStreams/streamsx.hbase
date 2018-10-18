@@ -19,14 +19,14 @@ The separation of the column into two parts allows for some extra flexibility:
 the columnFamilies must be defined when the table is established and might be limited, 
 but new columnQualifiers can be added at run time and there is no limit to their number.
 
-Tuples can be added to HBase by using the `HBASEPut` operator (which includes a checkAndPut condition)
-or incremented with the `HBASEIncrement` operator.  Tuples can be retrieved with the `HBASEGet` operator.
-The `HBASETableScan` operator can output all tuples, or all tuples in a particular row range.
-The `HBASEDelete` operator enables tuples to be deleted from HBase.
+* Tuples can be added to a HBase table by using the **HBASEPut** operator (which includes a checkAndPut condition) or incremented with the **HBASEIncrement** operator.  
+* Tuples can be retrieved with the **HBASEGet** operator from an HBase table.
+* The **HBASEScan** operator can output all tuples, or all tuples in a particular row range from an HBase table.
+* The **HBASEDelete** operator enables tuples to be deleted from an HBase table.
 
-For some operators, such as `HBASEPut`, the row, columnFamily, columnQualifer, and value must all be specified.
-For other operators, such as `HBASEGet` and `HBASEDelete`, the behavior depends on which of those items are specified.
-The `HBASEDelete` operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified, 
+For some operators, such as **HBASEPut**, the row, columnFamily, columnQualifer, and value must all be specified.
+For other operators, such as **HBASEGet** and **HBASEDelete**, the behavior depends on which of those items are specified.
+The **HBASEDelete** operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified, 
 but it can also be used to delete only a single value.
 
 The columnFamily and columnQualifier (when relevant) can either be specified as an attribute of the input tuple
@@ -38,15 +38,15 @@ This only locks within a single row, but it allows you to specify either:
  * a full entry (row, columnFamily, columnQualifier, value). If this entry exists with the given value, HBase makes the pure or delete.
  * a partial entry (row, columnFamily, columnQualifier). If there is no value, HBase makes the update.
 Note that the row of the put or delete and the row of the check must be the same.
-These are scenarios are supported by the `HBASEPut` and `HBASEDelete` operators by specifying a checkAttrName as a parameter.
+These are scenarios are supported by the **HBASEPut** and **HBASEDelete** operators by specifying a checkAttrName as a parameter.
 This attribute on the input stream must be of type tuple and have an attribute of columnFamily and
 columnQualifier (with a value if you are doing the first type of check).
 In this mode, the operator can have an output port with a success attribute to indicate whether the put or delete happened.
 
-Except for `HBASEIncrement` and `HBASEGet`, the only data types that are currently supported are rstrings.  
-`HBASEGet` supports getting a value of type long.   
+Except for **HBASEIncrement** and **HBASEGet**, the only data types that are currently supported are rstrings.  
+**HBASEGet** supports getting a value of type long.   
 
-The com.ibm.streamsx.hbase uses the same configuration information from the `hbase-site.xml` file that HBase does.
+The com.ibm.streamsx.hbase uses the same configuration information from the **hbase-site.xml** file that HBase does.
 For more information about HBase, see [http://hbase.apache.org/].
 
 + Developing and running applications that use the HBase Toolkit
@@ -78,13 +78,13 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 1. For Apache HBase, you must configure your compile and runtime environment by setting the **HBASE_HOME** environment variable:
    * If your Streams application will be running on the same resource where HBase is installed, set **HBASE_HOME** to the directory that contains HBase.
-   * Otherwise, copy the `/hbase-install-dir/lib` directory to the file system where Streams will be running, making sure to follow symbolic links:
+   * Otherwise, copy the **/hbase-install-dir/lib** directory to the file system where Streams will be running, making sure to follow symbolic links:
          cp -Lr path-to-hbase/lib /path-on-streams-host
-   * Set **HBASE_HOME** to the directory you created, for example, to `path-on-streams-host`.
+   * Set **HBASE_HOME** to the directory you created, for example, to **path-on-streams-host**.
 
-2. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/`conf` is searched for the `hbase-site.xml`.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
-   * Create a `conf` directory in the same directory you created in step 1 and copy the `hbase-site.xml` from your HBase installation to that directory.
-   * Copy the `hbase-site.xml` file from the `conf` directory in your HBase installation into a directory accessible by your application and use the **hbaseSite** parameter to specify the path to the copied file.
+2. Supply the operator with HBase configuration information. By default, **HBASE_HOME**/**conf** is searched for the **hbase-site.xml**.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
+   * Create a **conf** directory in the same directory you created in step 1 and copy the **hbase-site.xml** from your HBase installation to that directory.
+   * Copy the **hbase-site.xml** file from the **conf** directory in your HBase installation into a directory accessible by your application and use the **hbaseSite** parameter to specify the path to the copied file.
 
 3. Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
    * Set the **STREAMS_SPLPATH** environment variable to the root directory of a toolkit
@@ -104,17 +104,57 @@ Alternatively, you can fully qualify the operators that are provided by toolkit 
 
 5. Build your application.  You can use the **sc** command or Streams Studio.  
 
-6. Start the IBM Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME** 
-   This can be done using the Streams Console or the `streamtool` utility.
+6. Start the IBM Streams instance. Remember to set **HBASE_HOME** and **HADOOP_HOME**
+   This can be done using the Streams Console or the **streamtool** utility.
+   The streamsx.hbase toolkit from version 3.1.0 delivers all needed apache clint jar libaries. 
+   If you use the **hbaseSite** parameter to specify the hbase-site.xml file, it is not necessary to set the **HBASE_HOME** and **HADOOP_HOME** environment variables.    
+ 
 
 7. Run the application. You can submit the application as a job by using the **streamtool submitjob** command or by using Streams Studio. 
 
+**Kerberos Authentication**
+
+Kerberos authentication is a network protocol to provide strong authentication for client/server applications.
+
+The streamsx.hbase toolkit support from version 3.1.0 kerberos authentication.
+All operators have now 2 additional parameters:
+
+The **authKeytab** parameter specifies the kerberos keytab file that is created for the principal.
+The **authPrincipal** parameter specifies the Kerberos principal, which is typically the principal that is created for the HBase server.
+
+If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
+
+
+
+[https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/]
+
+[https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html]
+
+[https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html]
+
+
+
+After enabling the Kerberos authentication copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
+
+Here is an example to connect to the HBase server with Kerberos Authentication:
+
+
+       () as putsink = HBASEPut(toHBASE)
+       {
+            param
+                authKeytab         : "etc/hbase.service.keytab";
+                authPrincipal      : "hbase/myhdp26.ibm.com@HDP2.COM";
+                hbaseSite          : "etc/hbase-site.xml";
+                rowAttrName        : "key" ;
+                tableName          : "streamsSample_books" ; 
+                staticColumnFamily : "all" ;
+                valueAttrName      : "bookData" ;
+       }
+
+
 </info:description>
-    <info:version>3.0.0</info:version>
+    <info:version>3.1.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
-  <info:sabFiles>
-    <info:exclude path="opt/downloaded"/>
-  </info:sabFiles>
 </info:toolkitInfoModel>

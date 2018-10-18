@@ -1,5 +1,5 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                                 */
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                                   */
 
 package com.ibm.streamsx.hbase;
 
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -36,11 +36,11 @@ import com.ibm.streams.operator.state.StateHandler;
  * 
  * 
  */
-
+ 
 public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		StateHandler {
 
-	// These are used by Put and Delete for checkAndPut and checkAndDelete
+	// These are  used by Put and Delete for checkAndPut and checkAndDelete
 	protected int checkColFIndex = -1;
 	protected int checkColQIndex = -1;
 	protected int checkValueIndex = -1;
@@ -159,9 +159,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		
-		
-		HTableInterface table = connection.getTable(tableNameBytes);
+
+		Table table = getHTable();
 
     	if (null == table) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));

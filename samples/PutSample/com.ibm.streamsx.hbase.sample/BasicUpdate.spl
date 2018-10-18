@@ -1,6 +1,6 @@
-/* Copyright (C) 2013-2014, International Business Machines Corporation  */
-/* All Rights Reserved                                	                 */
 
+/* Copyright (C) 2013-2018, International Business Machines Corporation  */
+/* All Rights Reserved                                	                 */
 namespace com.ibm.streamsx.hbase.sample ;
 
 use com.ibm.streamsx.hbase::HBASEPut ;
@@ -27,18 +27,15 @@ use com.ibm.streamsx.hbase::HBASEPut ;
  * 
  * (your timestamps will be different in both cases)
  */
- 
 composite BasicUpdate
 {
 	graph
-		stream<rstring row, rstring colF, rstring colQ, rstring value> updates =
-			Beacon()
+		stream<rstring row, rstring colF, rstring colQ, rstring value> updates = Beacon()
 		{
 			param
 				iterations : 1 ;
 			output
-				updates : row = "Gandalf", colF = "location", colQ = "beginTwoTowers",
-					value = "Lothlorien" ;
+				updates : row = "Gandalf", colF = "location", colQ = "beginTwoTowers", value = "Lothlorien" ;
 		}
 
 		() as Update = HBASEPut(updates)
