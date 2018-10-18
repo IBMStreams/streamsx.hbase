@@ -102,7 +102,7 @@
 
 	<!-- Downloads libraries using maven -->
 	<target name="maven-deps" depends="init,nomaven" if="env.M2_HOME">
-		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.hbase in order to use maven to download necessary dependencies.  Three sample pom files are included: pom-v094.xml (hbase 0.94, hadoop 1),pom-v096-hadoop1.xml (hbase 0.96, hadoop 1), and  pom-v096-hadoop2.xml (hbase 0.96, hadoop 2).  Please rename the correct one for your install to pom.xml"/> 
+		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.hbase in order to use maven to download necessary dependencies."/> 
 		<exec executable="${maven.bin}"  failonerror="true">
 			<arg value="dependency:copy-dependencies"/>
 			<arg value="-DoutputDirectory=${ext.downloads.dir}"/>
