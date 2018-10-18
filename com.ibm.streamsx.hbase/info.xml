@@ -157,7 +157,4 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
-  <info:sabFiles>
-    <info:exclude path="opt/download"/>
-  </info:sabFiles>
 </info:toolkitInfoModel>

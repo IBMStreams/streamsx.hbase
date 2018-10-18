@@ -41,7 +41,7 @@ The toolkit uses [Maven](http://maven.apache.org/) to download the needed depend
 * Set M2_HOME to point to the maven directory.
 * The pom.xml file has ‘exclusion’ section and download only needed jar libraries from apache.org.repositories. 
 * It is possible to change the pom.xml file to download another version of hadoop or hbase jar libraries.
-* Run `ant` at the top level.  This will build the toolkit, but also download all the necessary jars into `impl/lib/ext`.  These jars are used at toolkit build time, but also at the toolkit runtime.
+* Run `ant` at the top level.  This will build the toolkit, but also download all the necessary jars into `opt/download`.  These jars are used at toolkit build time, but also at the toolkit runtime.
 
 ## Troubleshooting
 Please enter an issue on GitHub for defects and other problems.   
