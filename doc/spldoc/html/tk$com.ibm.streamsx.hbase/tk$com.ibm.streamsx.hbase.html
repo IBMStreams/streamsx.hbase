@@ -7,29 +7,29 @@
 <meta name="copyright" content="(C) Copyright 2005"/>
 <meta name="DC.rights.owner" content="(C) Copyright 2005"/>
 <meta name="DC.Type" content="reference"/>
-<meta name="DC.Title" content="Toolkit com.ibm.streamsx.hbase 2.2.0"/>
+<meta name="DC.Title" content="Toolkit com.ibm.streamsx.hbase 3.1.0"/>
 <meta name="DC.Format" content="XHTML"/>
 <meta name="DC.Identifier" content="spldoc_toolkit"/>
 <link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
 <link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
-<title>Toolkit com.ibm.streamsx.hbase 2.2.0</title>
+<title>Toolkit com.ibm.streamsx.hbase 3.1.0</title>
 </head>
 <body id="spldoc_toolkit">
 
 
-<h1 class="title topictitle1 spltoolkitname">Toolkit <tt class="ph tt">com.ibm.streamsx.hbase 2.2.0</tt></h1>
+<h1 class="title topictitle1 spltoolkitname">Toolkit <tt class="ph tt">com.ibm.streamsx.hbase 3.1.0</tt></h1>
 
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; com.ibm.streamsx.hbase 2.2.0</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; com.ibm.streamsx.hbase 3.1.0</p>
 
 </div>
 
 <div class="section"><h2 class="title sectiontitle splhead-1">General Information</h2>
 
 
-<p class="p">The HBase toolkit provides support for interacting with Apache HBase from InfoSphere Streams.
+<p class="p">The HBase toolkit provides support for interacting with Apache HBase from IBM Streams.
 </p>
 
 <p class="p">HBase is a Hadoop database, a distributed, scalable, big data store.  Tables are partitioned by rows across clusters.   A value in an HBase table is accessed by its row, columnFamily, columnQualifier, and timestamp. Usually the timestamp is left out, and only the latest value is returned. The HBase toolkit currently provides no support related to timestamps.
@@ -38,10 +38,21 @@
 <p class="p">The columnFamily and columnQualifier can collectively be thought of as a column and are sometimes called that in the APIs. The separation of the column into two parts allows for some extra flexibility: the columnFamilies must be defined when the table is established and might be limited,  but new columnQualifiers can be added at run time and there is no limit to their number.
 </p>
 
-<p class="p">Tuples can be added to HBase by using the <tt class="ph tt">HBASEPut</tt> operator (which includes a checkAndPut condition) or incremented with the <tt class="ph tt">HBASEIncrement</tt> operator.  Tuples can be retrieved with the <tt class="ph tt">HBASEGet</tt> operator. The <tt class="ph tt">HBASETableScan</tt> operator can output all tuples, or all tuples in a particular row range. The <tt class="ph tt">HBASEDelete</tt> operator enables tuples to be deleted from HBase.
-</p>
+<div class="p">
+<ul class="ul">
+<li class="li"> Tuples can be added to a HBase table by using the <strong class="ph b">HBASEPut</strong> operator (which includes a checkAndPut condition) or incremented with the <strong class="ph b">HBASEIncrement</strong> operator.  </li>
 
-<p class="p">For some operators, such as <tt class="ph tt">HBASEPut</tt>, the row, columnFamily, columnQualifer, and value must all be specified. For other operators, such as <tt class="ph tt">HBASEGet</tt> and <tt class="ph tt">HBASEDelete</tt>, the behavior depends on which of those items are specified. The <tt class="ph tt">HBASEDelete</tt> operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified,  but it can also be used to delete only a single value.
+<li class="li"> Tuples can be retrieved with the <strong class="ph b">HBASEGet</strong> operator from an HBase table.</li>
+
+<li class="li"> The <strong class="ph b">HBASEScan</strong> operator can output all tuples, or all tuples in a particular row range from an HBase table.</li>
+
+<li class="li"> The <strong class="ph b">HBASEDelete</strong> operator enables tuples to be deleted from an HBase table.</li>
+
+</ul>
+
+</div>
+
+<p class="p">For some operators, such as <strong class="ph b">HBASEPut</strong>, the row, columnFamily, columnQualifer, and value must all be specified. For other operators, such as <strong class="ph b">HBASEGet</strong> and <strong class="ph b">HBASEDelete</strong>, the behavior depends on which of those items are specified. The <strong class="ph b">HBASEDelete</strong> operator, for example, deletes the whole row if columnFamily and columnQualifier are not specified,  but it can also be used to delete only a single value.
 </p>
 
 <p class="p">The columnFamily and columnQualifier (when relevant) can either be specified as an attribute of the input tuple (columnFamilyAttrName, columnQualifierAttrName), or specified as a single string that is used for all tuples (staticColumnFamily,  staticColumnQualifier).  The the row and the value (when needed) come from the input tuple.
@@ -54,13 +65,13 @@
 <li class="li"> a partial entry (row, columnFamily, columnQualifier). If there is no value, HBase makes the update.</li>
 
 </ul>
-Note that the row of the put or delete and the row of the check must be the same. These are scenarios are supported by the <tt class="ph tt">HBASEPut</tt> and <tt class="ph tt">HBASEDelete</tt> operators by specifying a checkAttrName as a parameter. This attribute on the input stream must be of type tuple and have an attribute of columnFamily and columnQualifier (with a value if you are doing the first type of check). In this mode, the operator can have an output port with a success attribute to indicate whether the put or delete happened.
+Note that the row of the put or delete and the row of the check must be the same. These are scenarios are supported by the <strong class="ph b">HBASEPut</strong> and <strong class="ph b">HBASEDelete</strong> operators by specifying a checkAttrName as a parameter. This attribute on the input stream must be of type tuple and have an attribute of columnFamily and columnQualifier (with a value if you are doing the first type of check). In this mode, the operator can have an output port with a success attribute to indicate whether the put or delete happened.
 </div>
 
-<p class="p">Except for <tt class="ph tt">HBASEIncrement</tt> and <tt class="ph tt">HBASEGet</tt>, the only data types that are currently supported are rstrings.   <tt class="ph tt">HBASEGet</tt> supports getting a value of type long.   
+<p class="p">Except for <strong class="ph b">HBASEIncrement</strong> and <strong class="ph b">HBASEGet</strong>, the only data types that are currently supported are rstrings.   <strong class="ph b">HBASEGet</strong> supports getting a value of type long.   
 </p>
 
-<p class="p">InfoSphere Streams uses the same configuration information from the <tt class="ph tt">hbase-site.xml</tt> file that HBase does. For more information about HBase, see <a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>.
+<p class="p">The com.ibm.streamsx.hbase uses the same configuration information from the <strong class="ph b">hbase-site.xml</strong> file that HBase does. For more information about HBase, see <a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>.
 </p>
 
   <dl class="dl"><dt class="dt dlterm"><a class="xref" href="tk$com.ibm.streamsx.hbase$1.html">Developing and running applications that use the HBase Toolkit</a>
@@ -73,7 +84,7 @@ Note that the row of the put or delete and the row of the check must be the same
   
   <dt class="dt dlterm">Version</dt>
 
-  <dd class="dd">2.2.0</dd>
+  <dd class="dd">3.1.0</dd>
 
   
   

@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.2.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEPut</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.1.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEPut</p>
 
 </div>
 
@@ -32,7 +32,7 @@
 
 <div class="section">
 
-<p class="p">The <tt class="ph tt">HBASEPut</tt> operator puts tuples in HBASE. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,and value specified.  The row and value are derived from the input tuple, which is specified by the rowAttrName and valueAttrName parameters.  The columnFamily and columnQualifier can be specified in the same way, by using the columnFamilyAttrName and columnQualifierAttrName parameters. Alternatively, they can be the same for all tuples, by setting the staticColumnFamily and staticColumnQualifier parameters. 
+<p class="p">The <tt class="ph tt">HBASEPut</tt> operator puts tuples into an Hbase table. It includes support for checkAndPut.  If the value is a primitive type, a Put method must have a row, columnFamily, columnQualifier,and value specified.  The row and value are derived from the input tuple, which is specified by the rowAttrName and valueAttrName parameters.  The columnFamily and columnQualifier can be specified in the same way, by using the columnFamilyAttrName and columnQualifierAttrName parameters. Alternatively, they can be the same for all tuples, by setting the staticColumnFamily and staticColumnQualifier parameters. 
 </p>
 
 <div class="p">Here is an example: 
@@ -102,14 +102,14 @@ If the value is a tuple type, then the attribute names of the tuple are interpre
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 12 parameters.
+  <dd class="dd">This operator supports 14 parameters.
 <p class="p"> Required: 
 <a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__valueAttrName">valueAttrName</a>
 
 </p>
 
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>
+<a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>
 
 </p>
 </dd>
@@ -235,17 +235,79 @@ If the value is a tuple type, then the attribute names of the tuple are interpre
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 12 parameters.
+This operator supports 14 parameters.
 <p class="p"> Required: 
 <a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__valueAttrName">valueAttrName</a>
 
 </p>
 
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>
+<a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>
 
 </p>
 <dl class="dl">
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__authKeytab"><!-- --></a><tt class="ph tt">authKeytab</tt></dt>
+
+<dd class="dd">
+<p class="p">The <strong class="ph b">authKeytab</strong> parameter specifies the kerberos keytab file that is created for the principal.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__authPrincipal"><!-- --></a><tt class="ph tt">authPrincipal</tt></dt>
+
+<dd class="dd">
+<p class="p">The <strong class="ph b">authPrincipal</strong> parameter specifies the Kerberos principal, which is typically the principal that is created for HBase server
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
 
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__batchSize"><!-- --></a><tt class="ph tt">batchSize</tt></dt>
 
@@ -405,7 +467,7 @@ This operator supports 12 parameters.
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__hbaseSite"><!-- --></a><tt class="ph tt">hbaseSite</tt></dt>
 
 <dd class="dd">
-<p class="p">The hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
+<p class="p">The <strong class="ph b">hbaseSite</strong> parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then <tt class="ph tt">HBASE_HOME</tt> must be set when the operator runs, and it will use <tt class="ph tt">$HBASE_SITE/conf/hbase-site.xml</tt>
 </p>
 <dl class="dl">
 
@@ -626,7 +688,7 @@ This operator supports 12 parameters.
 
   <dd class="dd"/>
 
-  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, @HBASE_HOME@/lib/*, @HBASE_HOME@/*</tt></dd>
+  <dd class="dd"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__context__dependencies__managedlibrary__libpath">Library Path</a>: <tt class="ph tt">../../impl/lib/com.ibm.streamsx.hbase.jar, ../../opt/downloaded/*</tt></dd>
 
  
  </dl>

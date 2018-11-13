@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 2.2.0</a> &gt; Developing and running applications that use the HBase Toolkit</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.1.0</a> &gt; Developing and running applications that use the HBase Toolkit</p>
 
 </div>
 
@@ -38,20 +38,11 @@
 
 <div class="p">
 <ul class="ul">
-<li class="li"> Install IBM InfoSphere Streams.  Configure the product environment variables by entering the following command: 
-<pre class="pre codeblock">
-source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
-</pre>
+<li class="li"> Install the Apache Ambari on you Hadoop server. https://ambari.apache.org/   Configure the product environment via ambari and    install Apache Hadoop (<a class="xref" href="http://hadoop.apache.org/">http://hadoop.apache.org/</a>)   Install Apache HBase (<a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>),    and Apache Zookeeper (<a class="xref" href="http://zookeeper.apache.org/">http://zookeeper.apache.org/</a>).    All of these products can be configured via ambari.</li>
 
-</li>
-
-<li class="li"> Install Apache HBase (<a class="xref" href="http://hbase.apache.org/">http://hbase.apache.org/</a>), Apache Hadoop (<a class="xref" href="http://hadoop.apache.org/">http://hadoop.apache.org/</a>)    and Apache Zookeeper (<a class="xref" href="http://zookeeper.apache.org/">http://zookeeper.apache.org/</a>). All of these products are installed as part of IBM InfoSphere BigInsights. 
-<ul class="ul">
-<li class="li"> This toolkit supports IBM InfoSphere BigInsights version 3.0.0 and later and HBase 0.96 and later versions.  </li>
-
-<li class="li"> <em class="ph i">Note</em>: The host or resource where InfoSphere Streams is installed must be able to communicate with the resources where     HBase is installed, but you do not need both on the same resource.</li>
-
-</ul>
+<li class="li">
+<p class="p"> The com.ibm.streamsx.hbase toolkit can also access to the:   <strong class="ph b">IBM Biginsighs</strong> https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.welcome.doc/doc/welcome.html   <strong class="ph b">Hortonworks</strong> data platform https://hortonworks.com/products/data-platforms/hdp/
+</p>
 </li>
 
 </ul>
@@ -77,67 +68,32 @@ source product-installation-root-directory/4.0.0.0/bin/streamsprofile.sh
 <ul class="ul">
 <li class="li"> If your Streams application will be running on the same resource where HBase is installed, set <strong class="ph b">HBASE_HOME</strong> to the directory that contains HBase.</li>
 
-<li class="li"> Otherwise, copy the <tt class="ph tt">/hbase-install-dir/lib</tt> directory to the file system where Streams will be running, making sure to follow symbolic links:
+<li class="li"> Otherwise, copy the <strong class="ph b">/hbase-install-dir/lib</strong> directory to the file system where Streams will be running, making sure to follow symbolic links:
 <pre class="pre codeblock">
   cp -Lr path-to-hbase/lib /path-on-streams-host
 </pre>
 
 </li>
 
-<li class="li"> Set <strong class="ph b">HBASE_HOME</strong> to the directory you created, for example, to <tt class="ph tt">path-on-streams-host</tt>.</li>
+<li class="li"> Set <strong class="ph b">HBASE_HOME</strong> to the directory you created, for example, to <strong class="ph b">path-on-streams-host</strong>.</li>
 
 </ul>
 </li>
 
-<li class="li"> For IBM BigInsights, you must configure your development environment by setting <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong> as environment variables.
+<li class="li">
+<div class="p"> Supply the operator with HBase configuration information. By default, <strong class="ph b">HBASE_HOME</strong>/<strong class="ph b">conf</strong> is searched for the <strong class="ph b">hbase-site.xml</strong>.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
 <ul class="ul">
-<li class="li"> If your Streams application will be running on the same resource where BigInsights is installed: 
-<ul class="ul">
-<li class="li"> Set <strong class="ph b">HADOOP_HOME</strong>:
-<ul class="ul">
-<li class="li"> For BigInsights 3.x, set it to <tt class="ph tt">/BigInsights_install/IHC</tt>. </li>
+<li class="li"> Create a <strong class="ph b">conf</strong> directory in the same directory you created in step 1 and copy the <strong class="ph b">hbase-site.xml</strong> from your HBase installation to that directory.</li>
 
-<li class="li"> For BigInsights 4.x, set it to <tt class="ph tt">/biginsights_install/hadoop</tt>.</li>
+<li class="li"> Copy the <strong class="ph b">hbase-site.xml</strong> file from the <strong class="ph b">conf</strong> directory in your HBase installation into a directory accessible by your application and use the <strong class="ph b">hbaseSite</strong> parameter to specify the path to the copied file.</li>
 
 </ul>
+
+</div>
 </li>
 
-<li class="li"> Set <strong class="ph b">HBASE_HOME</strong> to <tt class="ph tt">/biginsights_install/hbase</tt>.</li>
-
-</ul>
-</li>
-
-<li class="li"> If your Streams application will not be running on the same resource as BigInsights, you need to copy the following directories to the file system where Streams will be running:
-<ul class="ul">
-<li class="li"> Create a directory to contain the HBase and Hadoop libraries, for example, <tt class="ph tt">/home/streams/BI_Install/</tt> on the resource where Streams will be running.</li>
-
-<li class="li"> For BigInsights 3.x, copy <tt class="ph tt">/BigInsights_install/IHC</tt> and <tt class="ph tt">/BigInsights_install/hbase</tt> to the directory you created, making sure to follow symbolic links. For example,
-<pre class="pre codeblock">
-cp -Lr /BigInsights_install/IHC  /path-on-Streams-host
-</pre>
-
-</li>
-
-<li class="li"> For BigInsights 4.x, copy <tt class="ph tt">/BigInsights_install/hadoop</tt>, <tt class="ph tt">BigInsights_install/hadoop-hbase</tt> and <tt class="ph tt">BigInsightsInstall/hbase</tt> to the directory you created.</li>
-
-<li class="li"> Set <strong class="ph b">HBASE_HOME</strong> to <tt class="ph tt">/home/streams/BI_Install/hbase</tt> and <strong class="ph b">HADOOP_HOME</strong> to <tt class="ph tt">/home/streams/BI_install/hadoop</tt> for BigInsights 4.x and <tt class="ph tt">/home/streams/BI_install/IHC</tt> for BigInsights 3.x.</li>
-
-</ul>
-</li>
-
-</ul>
-</li>
-
-<li class="li"> Supply the operator with HBase configuration information. By default, <strong class="ph b">HBASE_HOME</strong>/<tt class="ph tt">conf</tt> is searched for the <tt class="ph tt">hbase-site.xml</tt>.  If Streams will not be running on the same resource as the HBase installation, you can do one of the following: 
-<ul class="ul">
-<li class="li"> Create a <tt class="ph tt">conf</tt> directory in the same directory you created in step 1 and copy the <tt class="ph tt">hbase-site.xml</tt> from your HBase installation to that directory.</li>
-
-<li class="li"> Copy the <tt class="ph tt">hbase-site.xml</tt> file from the <tt class="ph tt">conf</tt> directory in your HBase installation into a directory accessible by your application and use the <strong class="ph b">hbaseSite</strong> parameter to specify the path to the copied file.</li>
-
-</ul>
-</li>
-
-<li class="li"> Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
+<li class="li">
+<div class="p"> Configure the SPL compiler to find the toolkit root directory. Use one of the following methods:
 <ul class="ul">
 <li class="li"> Set the <strong class="ph b">STREAMS_SPLPATH</strong> environment variable to the root directory of a toolkit     or multiple toolkits (with : as a separator).  For example:
 <pre class="pre codeblock">
@@ -153,12 +109,15 @@ sc -t $STREAMS_INSTALL/toolkits/com.ibm.streamsx.hbase -M MyMain
 
     where MyMain is the name of the SPL main composite.     <strong class="ph b">Note</strong>: These command parameters override the <strong class="ph b">STREAMS_SPLPATH</strong> environment variable.</li>
 
-<li class="li"> Add the toolkit location in InfoSphere Streams Studio.</li>
+<li class="li"> Add the toolkit location in IBM Streams Studio.</li>
 
 </ul>
+
+</div>
 </li>
 
-<li class="li"> Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
+<li class="li">
+<div class="p"> Develop your application. To avoid the need to fully qualify the operators, add a use directive in your application. 
 <ul class="ul">
 <li class="li"> For example, you can add the following clause in your SPL source file:
 <pre class="pre codeblock">
@@ -173,15 +132,74 @@ use com.ibm.streamsx.hbase::HBASEDelete;
 </li>
 
 </ul>
+
+</div>
 </li>
 
-<li class="li"> Build your application.  You can use the <strong class="ph b">sc</strong> command or Streams Studio.  </li>
+<li class="li">
+<p class="p"> Build your application.  You can use the <strong class="ph b">sc</strong> command or Streams Studio.  
+</p>
+</li>
 
-<li class="li"> Start the InfoSphere Streams instance. Remember to set <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong> (for BigInsights) as described above as application environment variable(s) on the instance. This can be done using the Streams Console or the <tt class="ph tt">streamtool</tt> utility.</li>
+<li class="li">
+<p class="p"> Start the IBM Streams instance. Remember to set <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong>    This can be done using the Streams Console or the <strong class="ph b">streamtool</strong> utility.    The streamsx.hbase toolkit from version 3.1.0 delivers all needed apache clint jar libaries.     If you use the <strong class="ph b">hbaseSite</strong> parameter to specify the hbase-site.xml file, it is not necessary to set the <strong class="ph b">HBASE_HOME</strong> and <strong class="ph b">HADOOP_HOME</strong> environment variables.    
+</p>
+</li>
 
-<li class="li"> Run the application. You can submit the application as a job by using the <strong class="ph b">streamtool submitjob</strong> command or by using Streams Studio.  </li>
+<li class="li">
+<p class="p"> Run the application. You can submit the application as a job by using the <strong class="ph b">streamtool submitjob</strong> command or by using Streams Studio. 
+</p>
+</li>
 
 </ol>
+
+</div>
+
+<p class="p"><strong class="ph b">Kerberos Authentication</strong>
+</p>
+
+<p class="p">Kerberos authentication is a network protocol to provide strong authentication for client/server applications.
+</p>
+
+<p class="p">The streamsx.hbase toolkit support from version 3.1.0 kerberos authentication. All operators have now 2 additional parameters:
+</p>
+
+<p class="p">The <strong class="ph b">authKeytab</strong> parameter specifies the kerberos keytab file that is created for the principal. The <strong class="ph b">authPrincipal</strong> parameter specifies the Kerberos principal, which is typically the principal that is created for the HBase server.
+</p>
+
+<p class="p">If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
+</p>
+
+<p class="p"><a class="xref" href="https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/">https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/</a>
+</p>
+
+<p class="p"><a class="xref" href="https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html">https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html</a>
+</p>
+
+<p class="p"><a class="xref" href="https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html">https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html</a>
+</p>
+
+<p class="p">After enabling the Kerberos authentication copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
+</p>
+
+<p class="p">Here is an example to connect to the HBase server with Kerberos Authentication:
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+   () as putsink = HBASEPut(toHBASE)
+   {
+        param
+            authKeytab         : "etc/hbase.service.keytab";
+            authPrincipal      : "hbase/myhdp26.ibm.com@HDP2.COM";
+            hbaseSite          : "etc/hbase-site.xml";
+            rowAttrName        : "key" ;
+            tableName          : "streamsSample_books" ; 
+            staticColumnFamily : "all" ;
+            valueAttrName      : "bookData" ;
+   }
+</pre>
+
 
 </div>
 

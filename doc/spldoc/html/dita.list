@@ -1,4 +1,4 @@
-#Wed Dec 13 12:17:50 CET 2017
+#Tue Nov 13 15:36:49 CET 2018
 copytosourcelist=
 hreftargetslist=dita/tk$com.ibm.streamsx.hbase/ix$Operator.xml,dita/tk$com.ibm.streamsx.hbase/tk$com.ibm.streamsx.hbase.xml,dita/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEGet.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEDelete.xml,dita/tk$com.ibm.streamsx.hbase/ix$Namespace.xml,dita/tk$com.ibm.streamsx.hbase/tk$com.ibm.streamsx.hbase$1.xml,dita/toolkits/toolkits.xml,dita/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEScan.xml,dita/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEPut.xml,dita/tk$com.ibm.streamsx.hbase/op$com.ibm.streamsx.hbase$HBASEIncrement.xml,dita/tk$com.ibm.streamsx.hbase/ns$com.ibm.streamsx.hbase.xml,dita/references/OperatorModel.xml
 fullditatopicfile=fullditatopic.list
