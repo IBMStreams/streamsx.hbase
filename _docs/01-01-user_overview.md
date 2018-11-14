@@ -16,5 +16,8 @@ sidebar:
 
 [SPLDoc for the com.ibm.streamsx.hbase toolkit](https://ibmstreams.github.io/streamsx.hbase/doc/spldoc/html/index.html)
 
+## HBASE and Kerberos authentication 
+[How to use kerberos authentication](https://github.com/IBMStreams/streamsx.hbase/wiki/How-to-use-kerberos-authentication-in-streamsx.hbase-toolkit)
+
 
 
