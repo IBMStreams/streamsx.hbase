@@ -71,6 +71,10 @@ import com.ibm.streams.operator.state.StateHandler;
 		+ " is a list or a primitive type, there will be one tuple per HBASE entry.  If "
 		+ HBASEGet.OUT_PARAM_NAME
 		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating) })
+
+
+
+
 @Icons(location32 = "impl/java/icons/HBASEScan_32.gif", location16 = "impl/java/icons/HBASEScan_16.gif")
 public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final String TRIGGER_PARAM = "triggerCount";
@@ -161,7 +165,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 
 		//	myTable = operator.connection.getTable(operator.tableNameBytes);
-			myTable = operator.getHTable();
+			myTable = operator.getHTable(operator.tableName);
 			
 			// This sets any filters based on operator parameters.
 			resultScanner = operator.startScan(myTable, myScan);
@@ -399,6 +403,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final String END_ROW_PARAM = "endRow";
 	static final String ROW_PREFIX_PARAM = "rowPrefix";
 	static final String MAXIMUM_SCAN_THREADS = "maxThreads";
+	private String tableName = null;
 	private double initDelay = 0.0;
 	private int outRow = -1;
 	private int outColumnF = -1;
@@ -441,6 +446,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	private int startIndex = -1, endIndex = -1, prefixIndex = -1;
 	private MetaType startType = null, endType = null, prefixType = null;
 
+	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+	public void setTableName(String _name) {
+		tableName = _name;
+	}
+
+	
 	@Parameter(name = MAXIMUM_SCAN_THREADS, optional = true, description = "Maximum number of threads to use to scan the table.  Defaults to one.")
 	public void setMaximumThreads(int max) {
 		maxThreads = max;
@@ -747,7 +758,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		if (endRow != null) {
 			endBytes = endRow.getBytes(charset);
 		}
-		Table myTable = getHTable();
+		Table myTable = getHTable(tableName);
 		RegionLocator regionLocator = connection.getRegionLocator(myTable.getName());	
 
 		
@@ -919,7 +930,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 					+ inputMode);
 		}
 //		HTableInterface myTable = connection.getTable(tableNameBytes);
-		Table myTable = getHTable();
+		Table myTable = getHTable(tableName);
 		ResultScanner resultScanner = startScan(myTable, myScan);
 		submitResults(tuple, resultScanner, (long) -1);
 		myTable.close();

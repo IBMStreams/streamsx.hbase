@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 import java.util.Set;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -15,32 +16,51 @@ import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.model.Parameter;
+import com.ibm.streams.operator.TupleAttribute;
 
 public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	protected String rowAttr = null;
 	protected String columnFamilyAttr = null;
 	protected String columnQualifierAttr = null;
+	public String tableNameAttr = null;
 
 	protected int rowAttrIndex = -1;
 	protected int colFamilyIndex = -1;
 	protected int colQualifierIndex = -1;
+	protected int tableNameIndex = -1;
 
 	protected MetaType rowAttrType = null;
 
-	protected MetaType colQualifierType = null, colFamilyType = null;
+	protected MetaType colQualifierType = null, colFamilyType = null, tableNameType = null;
 
 	static final String COL_FAM_PARAM_NAME = "columnFamilyAttrName";
 	static final String COL_QUAL_PARAM_NAME = "columnQualifierAttrName";
-	static final String TABLE_PARAM_NAME = "tableName";
+	public TupleAttribute<Tuple, String> tableAttrName; 
+	static final String TABLE_NAME_PARAM = "tableAttrName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	byte colFamBytes[] = null;
 	byte colQualBytes[] = null;
+	byte tableNameBytes[] = null;
 
+
+	@Parameter(name = TABLE_NAME_PARAM, optional = true, description = "Name of the attribute on the input tuple containing the tableName.  Cannot be used with tableName.")
+	public void setTableNameAttr(TupleAttribute<Tuple, String> tableAttrName) throws IOException {
+		this.tableAttrName = tableAttrName;
+	} 
+	
+/*	
+	public void setTableNameAttr(String TableNameAttr) {
+		tableNameAttr = TableNameAttr;
+	}
+*/
+	
+	
 	@Parameter(name = COL_FAM_PARAM_NAME, optional = true, description = "Name of the attribute on the input tuple containing the columnFamily.  Cannot be used with staticColumnFmily.")
 	public void setColumnFamilyAttr(String colF) {
 		columnFamilyAttr = colF;
 	}
-
+	
+	
 	@Parameter(name = COL_QUAL_PARAM_NAME, optional = true, description = "Name of the attribute on the input tuple containing the columnQualifier.  Cannot be used with staticColumnQualifier.")
 	public void setColumnQualifierAttr(String colQ) {
 		columnQualifierAttr = colQ;
@@ -59,6 +79,10 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		// Cannot specify both columnFamilyAttrName and a staticColumnFamily
 		checker.checkExcludedParameters(COL_FAM_PARAM_NAME, STATIC_COLF_NAME);
 		checker.checkExcludedParameters(STATIC_COLF_NAME, COL_FAM_PARAM_NAME);
+		// Cannot specify both columnFamilyAttrName and a staticColumnFamily
+		checker.checkExcludedParameters(TABLE_NAME_PARAM, TABLE_PARAM_NAME);
+		checker.checkExcludedParameters(TABLE_PARAM_NAME, TABLE_NAME_PARAM);
+
 	}
 
 	@ContextCheck(compile = true)
@@ -96,6 +120,18 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		}
 	}
 
+	protected byte[] getTableName(Tuple tuple) throws Exception {
+
+		System.out.println("################### getTableName  " + tableNameBytes);
+
+		if (tableNameBytes == null)
+			return getBytes(tuple, tableNameIndex, tableNameType);
+		else {
+			return tableNameBytes;
+		}
+	}
+	
+	
 	/**
 	 * For {rowAttrName,columnFamilyAttrName,columnQualifierAttrName}, if
 	 * specified, ensures the attribute exists, and stores the index in class
@@ -133,6 +169,19 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 					.getType().getMetaType();
 		}
 
+		if (tableNameAttr != null) {
+			tableNameIndex = checkAndGetIndex(inputSchema,
+					tableNameAttr);
+			System.out.println("################### checkAndGetIndex  " + tableNameIndex);
+			System.out.println("################### checkAndGetIndex  " + tableNameAttr);
+
+			
+			tableNameType = inputSchema.getAttribute(tableNameIndex)
+					.getType().getMetaType();
+		}
+
+		
+		
 		if (staticColumnQualifierList != null) {
 			colQualBytes = staticColumnQualifierList.get(0).getBytes(charset);
 			if (staticColumnQualifierList.size() > 1) {

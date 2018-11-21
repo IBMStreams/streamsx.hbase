@@ -62,8 +62,8 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
 	protected Charset charset = RSTRING_CHAR_SET;
-	private String tableName = null;
-	protected byte tableNameBytes[] = null;
+//	public String tableName = null;
+//	protected byte tableNameBytes[] = null;
 	private static String hbaseSite = null;
 	private String fAuthPrincipal = null;
 	private String fAuthKeytab = null;
@@ -91,10 +91,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 		charset = Charset.forName(_name);
 	}
 
-	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
-	public void setTableName(String _name) {
-		tableName = _name;
-	}
+//	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+//	public void setTableName(String _name) {
+//		tableName = _name;
+//	}
 
 	@Parameter(name = STATIC_COLF_NAME, optional = true, description = "If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.")
 	public void setStaticColumnFamily(List<String> name) {
@@ -307,7 +307,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
 
-		tableNameBytes = tableName.getBytes(charset);
+//		tableNameBytes = tableName.getBytes(charset);
 		getConnection();
 	}
 
@@ -354,18 +354,25 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * 
 	 * @return HTable object.
 	 * @throws IOException
-	 */
+	 
 	protected Table getHTable() throws IOException {
 		final TableName tableName = TableName.valueOf(tableNameBytes);
 		return connection.getTable(tableName);
 	}
-
+*/
 	protected Table getHTable(String sTableName) throws IOException {
 		byte TableNameBytes[] = sTableName.getBytes(charset);
 		final TableName tableName = TableName.valueOf(TableNameBytes);
 		return connection.getTable(tableName);
 	}
 
+	protected Table getHTable(byte TableNameBytes[]) throws IOException {
+		final TableName tableName = TableName.valueOf(TableNameBytes);
+		return connection.getTable(tableName);
+	}
+
+	
+/*	
 	protected TableName getTableName() throws IOException {
 		final TableName Tablename = TableName.valueOf(tableNameBytes);
 		return Tablename;
@@ -376,7 +383,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		final TableName Tablename = TableName.valueOf(TableNameBytes);
 		return Tablename;
 	}
-
+*/
 	/**
 	 * Shutdown this operator.
 	 * 

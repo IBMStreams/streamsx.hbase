@@ -117,7 +117,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private OutputMapper outMapper;
 	private int maxVersions = -1;
 	private long minTimestamp = Long.MIN_VALUE;
-
+	private String tableName = null;
 	Logger logger = Logger.getLogger(this.getClass());
 
 	static final String OUT_PARAM_NAME = "outAttrName";
@@ -131,6 +131,12 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	private String outAttrName = defaultOutAttrName;;
 	private String successAttr = null;
 
+	@Parameter(name = TABLE_PARAM_NAME, optional = true, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+	public void setTableName(String _name) {
+		tableName = _name;
+	}
+
+	
 	@Parameter(name = SUCCESS_PARAM_NAME, description = "This parameter specifies the name of attribute of the output port where the operator puts a count of the values it populated.", optional = true)
 	public void setSuccessAttr(String name) {
 		successAttr = name;
@@ -317,7 +323,45 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-		Table myTable = getHTable();
+
+		
+		
+		Table myTable = null;
+		if (tableName == null) {
+			tableName = tuple.getString("tableName");
+		}
+		
+		myTable = getHTable(tableName);
+				
+/*		
+		if (tableName != null) {
+			myTable = getHTable(tableName);
+		} else if (tableAttrName != null){
+     			System.out.println("################### tableNameAttr  " + tableAttrName);
+     			tableName = tuple.getString("tableAttrName");
+				myTable = getHTable(tableName);
+				byte tableNameBytes[] = null;
+				tableNameBytes = getTableName(tuple);
+				if (tableNameBytes != null){
+	    			System.out.println("################### tableNameBytes  " + tableNameBytes);
+					myTable = getHTable(tableNameBytes);
+				}
+		}
+*/		
+		if ( myTable == null) {
+			System.out.println("################### No table  ");
+		}
+			
+/*
+		byte tableNameBytes[] = null;
+		Table myTable = null;
+		tableNameBytes = getTableName(tuple);
+		if (tableNameBytes !=null){
+			myTable = getHTable(tableNameBytes);
+		} else {
+			myTable = getHTable(tableName);
+		}
+*/	
 		Result r = myTable.get(myGet);
 
 		int numResults = r.size();

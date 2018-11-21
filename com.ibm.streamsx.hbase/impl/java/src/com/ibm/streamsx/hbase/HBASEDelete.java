@@ -179,7 +179,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-		Table myTable = getHTable();
+		Table myTable = getHTable(tableName);
 		byte row[] = getRow(tuple);
 		Delete myDelete = new Delete(row);
 
@@ -237,7 +237,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	protected void flushBuffer() throws IOException {
 		if (connection != null && !connection.isClosed()) {
 	//		HTableInterface myTable = connection.getTable(tableNameBytes);
-			Table myTable =getHTable();
+			Table myTable =getHTable(tableName);
 			if (myTable != null && deleteList != null && deleteList.size() > 0) {
 				synchronized (listLock) {
 					if (deleteList != null && deleteList.size() > 0) {

@@ -44,7 +44,9 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected int checkColFIndex = -1;
 	protected int checkColQIndex = -1;
 	protected int checkValueIndex = -1;
-
+	
+	public String tableName = null;
+	
 	protected MetaType checkColFType = null, checkColQType = null,
 			checkValueType = null;
 
@@ -60,6 +62,11 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	private String successAttrName = null;
 	private int successAttrIndex = -1;
 	StreamingOutput<OutputTuple> outStream = null;
+
+	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+	public void setTableName(String _name) {
+		tableName = _name;
+	}
 	
 	@Parameter(name = SUCCESS_PARAM, optional = true, description = "Attribute on the output port to be set to true if the check passes and the action is successful")
 	public void setSuccessAttr(String name) {
@@ -160,7 +167,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 
-		Table table = getHTable();
+		Table table = getHTable(tableName);
 
     	if (null == table) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
