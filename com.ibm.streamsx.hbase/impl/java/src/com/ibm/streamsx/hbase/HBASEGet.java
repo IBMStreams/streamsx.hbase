@@ -323,45 +323,18 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-
-		
 		
 		Table myTable = null;
-		if (tableName == null) {
-			tableName = tuple.getString("tableName");
-		}
-		
-		myTable = getHTable(tableName);
-				
-/*		
 		if (tableName != null) {
 			myTable = getHTable(tableName);
-		} else if (tableAttrName != null){
-     			System.out.println("################### tableNameAttr  " + tableAttrName);
-     			tableName = tuple.getString("tableAttrName");
-				myTable = getHTable(tableName);
-				byte tableNameBytes[] = null;
-				tableNameBytes = getTableName(tuple);
-				if (tableNameBytes != null){
-	    			System.out.println("################### tableNameBytes  " + tableNameBytes);
-					myTable = getHTable(tableNameBytes);
-				}
+		} else {
+			myTable = getHTable(getTableName(tuple))
 		}
-*/		
+		
 		if ( myTable == null) {
 			System.out.println("################### No table  ");
 		}
-			
-/*
-		byte tableNameBytes[] = null;
-		Table myTable = null;
-		tableNameBytes = getTableName(tuple);
-		if (tableNameBytes !=null){
-			myTable = getHTable(tableNameBytes);
-		} else {
-			myTable = getHTable(tableName);
-		}
-*/	
+
 		Result r = myTable.get(myGet);
 
 		int numResults = r.size();

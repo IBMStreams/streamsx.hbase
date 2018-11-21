@@ -120,16 +120,17 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		}
 	}
 
-	protected byte[] getTableName(Tuple tuple) throws Exception {
+	protected String getTableName(Tuple tuple) throws Exception {
 
-		System.out.println("################### getTableName  " + tableNameBytes);
+		System.out.println("################### getTableName  " + tuple.toString());
 
-		if (tableNameBytes == null)
-			return getBytes(tuple, tableNameIndex, tableNameType);
-		else {
-			return tableNameBytes;
-		}
+		String TableName = tuple.getString(tableAttrName.getAttribute().getIndex()); 
+		
+		System.out.println("################### getTableName  " + TableName);
+		return TableName;
+		
 	}
+
 	
 	
 	/**
