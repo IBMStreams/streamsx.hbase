@@ -79,7 +79,7 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		// Cannot specify both columnFamilyAttrName and a staticColumnFamily
 		checker.checkExcludedParameters(COL_FAM_PARAM_NAME, STATIC_COLF_NAME);
 		checker.checkExcludedParameters(STATIC_COLF_NAME, COL_FAM_PARAM_NAME);
-		// Cannot specify both columnFamilyAttrName and a staticColumnFamily
+		// Cannot specify both tableAttrName and a tableName
 		checker.checkExcludedParameters(TABLE_NAME_PARAM, TABLE_PARAM_NAME);
 		checker.checkExcludedParameters(TABLE_PARAM_NAME, TABLE_NAME_PARAM);
 
