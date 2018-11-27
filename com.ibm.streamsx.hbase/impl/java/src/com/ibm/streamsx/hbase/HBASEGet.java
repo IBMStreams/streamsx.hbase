@@ -328,7 +328,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		if (tableName != null) {
 			myTable = getHTable(tableName);
 		} else {
-			myTable = getHTable(getTableName(tuple))
+			myTable = getHTable(getTableName(tuple));
 		}
 		
 		if ( myTable == null) {
