@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.BufferedMutator;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
@@ -130,7 +131,6 @@ public class HBASEPut extends HBASEPutDelete {
 	protected Object tableLock = new Object();
 	public static final String BUFFER_PARAM = "enableBuffer";
 
-	
 	@Parameter(name = BATCHSIZE_NAME, optional = true, description = "**This parameter has been deprecated as of Streams 4.2.0**.  The **" +BUFFER_PARAM+"** parameter should be used instead.  The **batchSize** parameter indicates the maximum number of Puts to buffer before sending to HBase.  Larger numbers are more efficient, but increase the risk of lost changes on operator crash.  In a consistent region, a drain flushes the buffer to HBase.")
 	public void setBatchSize(int _size) {
 		batchSize = _size;
@@ -211,7 +211,7 @@ public class HBASEPut extends HBASEPutDelete {
 		
 		if (bufferTransactions) {
     		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
-    		cachedTable= getHTable(tableName);
+    		cachedTable= getHTable();
     // 		cachedTable = connection.getTable(tableNameBytes);
 
   //  		cachedTable.setAutoFlush(false, true);
@@ -264,8 +264,13 @@ public class HBASEPut extends HBASEPutDelete {
 //		HTableInterface table = null;
 		Table table = null;
 		if (!bufferTransactions) {
-//			table = connection.getTable(tableNameBytes);
-			table = getHTable(tableName);
+			table = getHTable(tuple);				
+			try {
+				table = getHTable(tuple);
+			} catch (TableNotFoundException e) {
+				e.printStackTrace();
+				logger.error(e.getMessage());
+			}		
 		}
 		switch (putMode) {
 
@@ -386,8 +391,7 @@ public class HBASEPut extends HBASEPutDelete {
 	 * Flush the internal list of puts we keep when using our own batch puts instead of autoflush
 	 */
 	protected synchronized void flushInternalBuffer() throws IOException {
-//		HTableInterface table = connection.getTable(tableNameBytes);
-		Table table = getHTable(tableName);
+		Table table = getHTable();
 		synchronized (listLock) {
 			if (table != null && putList != null && putList.size() > 0) {
 				logger.debug(Messages.getString("HBASE_PUT_EMPTING_BUFFER"));

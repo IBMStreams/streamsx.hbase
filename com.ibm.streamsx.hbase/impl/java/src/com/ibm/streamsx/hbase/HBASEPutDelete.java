@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -44,12 +45,13 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected int checkColFIndex = -1;
 	protected int checkColQIndex = -1;
 	protected int checkValueIndex = -1;
-	
-	public String tableName = null;
-	
+
 	protected MetaType checkColFType = null, checkColQType = null,
 			checkValueType = null;
 
+	Logger logger = Logger.getLogger(this.getClass());
+
+	
 	final protected Object listLock = new Object();
 	protected int batchSize = 0;
 
@@ -62,11 +64,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	private String successAttrName = null;
 	private int successAttrIndex = -1;
 	StreamingOutput<OutputTuple> outStream = null;
-
-	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
-	public void setTableName(String _name) {
-		tableName = _name;
-	}
 	
 	@Parameter(name = SUCCESS_PARAM, optional = true, description = "Attribute on the output port to be set to true if the check passes and the action is successful")
 	public void setSuccessAttr(String name) {
@@ -167,9 +164,17 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 
-		Table table = getHTable(tableName);
+		Table myTable = null;
+		
+		try {
+			myTable = getHTable();
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
 
-    	if (null == table) {
+
+    	if (null == myTable) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
     		throw new Exception("Cannot access table.  Check configuration");
     	}
@@ -211,7 +216,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			}
 			successAttrIndex = attr.getIndex();
 		}
-		table.close();
+		myTable.close();
 		context.registerStateHandler(this);
 	}
 

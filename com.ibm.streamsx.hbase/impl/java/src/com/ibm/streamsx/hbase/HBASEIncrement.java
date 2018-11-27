@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -41,16 +42,9 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	MetaType incrAttrType = null;
 	int incrAttrIndex = -1;
 	protected long defaultIncr = 1;
-	private String tableName = null;
 	private static final String INCREMENT_ATTR_PARAM = "incrementAttrName";
 	private static final String STATIC_INCREMENT_VALUE = "increment";
 
-	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
-	public void setTableName(String _name) {
-		tableName = _name;
-	}
-
-	
 	@Parameter(name = INCREMENT_ATTR_PARAM, optional = true, description = "This parameter specifies the attribute that is used to determine the increment. It cannot be used with the "
 			+ STATIC_INCREMENT_VALUE + " parameter.")
 	public void setIncrAttr(String name) {
@@ -134,9 +128,17 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 				incr = tuple.getLong(incrAttrIndex);
 			}
 		}
-		Table myTable = getHTable(tableName);
-		long newValue = myTable.incrementColumnValue(row, colF, colQ, incr);
-		myTable.close();
+		Table myTable = null;		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (myTable != null ){
+			myTable.incrementColumnValue(row, colF, colQ, incr);
+			myTable.close();
+		}
 	}
 
 }

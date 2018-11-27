@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
@@ -29,11 +30,11 @@ import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
 
-/**
+/** 
  * Accepts tuples on input stream and makes the corresponding delete in the
  * HBASE table. .
  * <P>
- */
+ */ 
 @PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from an HBase table.  It can also optionally do a checkAndDelete operation."
 		+ HBASEOperator.DOC_BLANKLINE
 		+ "The behavior of the operator depends on its parameters:"
@@ -179,7 +180,18 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-		Table myTable = getHTable(tableName);
+
+		Table myTable = null;
+
+		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+
+		if ( myTable != null ){
 		byte row[] = getRow(tuple);
 		Delete myDelete = new Delete(row);
 
@@ -226,6 +238,7 @@ public class HBASEDelete extends HBASEPutDelete {
 		// submits it.
 		submitOutputTuple(tuple, success);
 		myTable.close();
+		}
 	}
 
 	/**
@@ -237,7 +250,7 @@ public class HBASEDelete extends HBASEPutDelete {
 	protected void flushBuffer() throws IOException {
 		if (connection != null && !connection.isClosed()) {
 	//		HTableInterface myTable = connection.getTable(tableNameBytes);
-			Table myTable =getHTable(tableName);
+			Table myTable =getHTable();
 			if (myTable != null && deleteList != null && deleteList.size() > 0) {
 				synchronized (listLock) {
 					if (deleteList != null && deleteList.size() > 0) {

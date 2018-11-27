@@ -25,5 +25,7 @@
 		<nature>com.ibm.streams.studio.splproject.SPLProjectNature</nature>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>com.ibm.etools.systems.projects.core.remoteunixnature</nature>
 	</natures>
 </projectDescription>
+
