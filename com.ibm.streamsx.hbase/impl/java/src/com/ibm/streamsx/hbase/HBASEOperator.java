@@ -87,6 +87,9 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING = "rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE / Byte.SIZE;
 
+	
+	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
+	
 	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The **hbaseSite** parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
 	public void setHbaseSite(String name) {
 		hbaseSite = name;
@@ -97,12 +100,12 @@ public abstract class HBASEOperator extends AbstractOperator {
 		charset = Charset.forName(_name);
 	}
 
-	@Parameter(name = TABLE_PARAM_NAME, optional = true, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+	@Parameter(name = TABLE_PARAM_NAME, optional = true, description = "Name of the HBASE table. It is an optional parameter but one of these parameters must be set in opeartor: 'tableName' or 'tableNameAttribute'. Cannot be used with 'tableNameAttribute'. If the table does not exist, the operator will throw an exception")
 	public void setTableName(String _name) {
 		tableName = _name;
 	}
 	
-	@Parameter(name = TABLE_NAME_ATTRIBUTE, optional = true, description = "Name of the attribute on the input tuple containing the tableName. Cannot be used with tableName.")
+	@Parameter(name = TABLE_NAME_ATTRIBUTE, optional = true, description = "Name of the attribute on the input tuple containing the tableName. Use this parameter to pass the table name to the operator via input port. Cannot be used with parameter 'tableName'. This is suitable for tables with the same schema.")
 	public void setTableNameAttr(TupleAttribute<Tuple, String> tableNameAttribute) throws IOException {
 		this.tableNameAttribute = tableNameAttribute;
 	} 
@@ -153,7 +156,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * 
 	 * @param checker
 	 */
-	@ContextCheck(compile = false)
+	@ContextCheck(compile = true)
 	public static void runtimeHBaseOperatorChecks(OperatorContextChecker checker) {
 		OperatorContext context = checker.getOperatorContext();
 		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
@@ -163,6 +166,11 @@ public abstract class HBASEOperator extends AbstractOperator {
 				checker.setInvalidContext(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME), null);
 			}
 		}
+		
+		if ((!context.getParameterNames().contains(TABLE_PARAM_NAME))
+			&& (!context.getParameterNames().contains(TABLE_NAME_ATTRIBUTE))) {
+				checker.setInvalidContext("One of these parameters must be set in opeartor: '" + TABLE_PARAM_NAME + "' or '" + TABLE_NAME_ATTRIBUTE +"'", null);
+		}				
 	}
 
 	@ContextCheck(compile = true)
@@ -292,8 +300,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
+	    logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 		ArrayList<String>libList = new ArrayList<>();
 		String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
@@ -310,7 +317,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		try {
 			context.addClassLibraries(libList.toArray(new String[0]));
 		} catch (Exception e) {
-			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+			logger.error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 		}
 	
 		
@@ -335,14 +342,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 
 	protected void getConnection() throws IOException {
-
-		System.out.println("hbaseSite:\t" + hbaseSite);
+		logger.info("hbaseSite:\t" + hbaseSite);
 		Configuration conf = HBaseConfiguration.create();
 		conf.addResource(new Path(hbaseSite));
 		if ((fAuthPrincipal != null) && (fAuthKeytab != null)) {
 			// kerberos authentication
-			System.out.println("fAuthKeytab:\t" + fAuthKeytab);
-			System.out.println("fAuthPrincipal:\t" + fAuthPrincipal);
+			logger.info("fAuthKeytab:\t" + fAuthKeytab);
+			logger.info("fAuthPrincipal:\t" + fAuthPrincipal);
 			conf.set("hadoop.security.authentication", "kerberos");
 			conf.set("hbase.security.authentication", "kerberos");
 			UserGroupInformation.setConfiguration(conf);
@@ -352,7 +358,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		connection = ConnectionFactory.createConnection(HBaseConfiguration.create(conf));
 		Admin admin = connection.getAdmin();
 		if (admin.getConnection() == null) {
-			Logger.getLogger(this.getClass()).error("HBase connection failed");
+			logger.error("HBase connection failed");
 		}
 
 		/*
@@ -439,7 +445,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	@Override
 	public synchronized void shutdown() throws Exception {
 		OperatorContext context = getOperatorContext();
-		Logger.getLogger(this.getClass()).trace(
+		logger.trace(
 				"Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 		if (connection != null && !connection.isClosed()) {
 			connection.close();

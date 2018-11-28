@@ -325,7 +325,6 @@ public class HBASEGet extends HBASEOperatorWithInput {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
 			e.printStackTrace();
-			System.out.println("Cannot access table  " + e.getMessage());
 			logger.error(e.getMessage());
 		}
 
