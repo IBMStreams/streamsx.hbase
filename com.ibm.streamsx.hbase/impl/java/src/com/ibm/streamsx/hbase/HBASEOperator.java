@@ -384,6 +384,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 */
 	
 	protected Table getHTable() throws TableNotFoundException, IOException {
+		if (tableName == null){
+			return null;
+		}
+		
 		final TableName tableTableName = TableName.valueOf(tableNameBytes);
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
@@ -404,6 +408,8 @@ public abstract class HBASEOperator extends AbstractOperator {
 		}
 
 		if (TableNameStr == null) return null;
+
+		if (TableNameStr.length() < 1 ) return null;
 		
 		byte TableNameBytes[] = TableNameStr.getBytes(charset);
 		final TableName tableTableName = TableName.valueOf(TableNameBytes);

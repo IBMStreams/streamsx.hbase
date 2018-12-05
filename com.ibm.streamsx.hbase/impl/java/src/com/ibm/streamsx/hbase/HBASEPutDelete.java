@@ -166,19 +166,28 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 
 		Table myTable = null;
 		
+		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
+//		Tuple tuple = inputPort.
+		StreamSchema schema = inputPort.getStreamSchema();
+		Tuple tuple = schema.getTuple();
+
+		
 		try {
-			myTable = getHTable();
+			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
 		}
 
-
+/*
     	if (null == myTable) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
     		throw new Exception("Cannot access table.  Check configuration");
     	}
 
+*/    	
+    	if (myTable != null) {
+    	
 		StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
 		StreamSchema inputSchema = input.getStreamSchema();
 		if (checkAttr != null) {
@@ -217,6 +226,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			successAttrIndex = attr.getIndex();
 		}
 		myTable.close();
+    	}
 		context.registerStateHandler(this);
 	}
 
