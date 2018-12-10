@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.BufferedMutator;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
@@ -189,7 +190,7 @@ public class HBASEPut extends HBASEPutDelete {
 	 * When enableBuffer is true and we are disabling autoflush,
 	 * keep a pointer to the hbase table. This value will be null otherwise
 	 */
-	private Table cachedTable;
+	private Table cachedTable = null;
 	
 
 	/**
@@ -208,15 +209,20 @@ public class HBASEPut extends HBASEPutDelete {
 			putList = new ArrayList<Put>(batchSize);
 		}
 		
+		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
+//		Tuple tuple = inputPort.
+		StreamSchema schema = inputPort.getStreamSchema();
+		Tuple tuple = schema.getTuple();
+		
 		if (bufferTransactions) {
     		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
-    		cachedTable= getHTable();
+    		cachedTable= getHTable(tuple);
     // 		cachedTable = connection.getTable(tableNameBytes);
 
   //  		cachedTable.setAutoFlush(false, true);
     	}
-		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
-		StreamSchema schema = inputPort.getStreamSchema();
+
+		
 		Attribute attr = schema.getAttribute(valueAttr);
 
 		if (attr.getType().getMetaType() == MetaType.TUPLE) {
@@ -260,66 +266,72 @@ public class HBASEPut extends HBASEPutDelete {
 		byte colF[] = getColumnFamily(tuple);
 		boolean success = false;
 		Put myPut = new Put(row);
-//		HTableInterface table = null;
-		Table table = null;
+		Table myTable = null;
 		if (!bufferTransactions) {
-//			table = connection.getTable(tableNameBytes);
-			table = getHTable();
-		}
-		switch (putMode) {
-
-		case ENTRY:
-			byte colQ[] = getColumnQualifier(tuple);
-			byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
-			myPut.addColumn(colF, colQ, value);
-////			myPut.add(colF, colQ, value);
-			break;
-		case RECORD:
-			Tuple values = tuple.getTuple(valueAttr);
-			for (int i = 0; i < qualifierArray.length; i++) {
-				myPut.addColumn(colF, qualifierArray[i],
-//				myPut.add(colF, qualifierArray[i],
-						getBytes(values, i, attrType[i]));
-			}
-			break;
-		default:
-			// It should be impossible to get here.
-			throw new Exception("Unsupported Put type");
+			try {
+				myTable = getHTable(tuple);
+			} catch (TableNotFoundException e) {
+				e.printStackTrace();
+				logger.error(e.getMessage());
+			}		
 		}
 		
-		if (checkAttr != null) {
-			Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-
-			// the row attribute and the check row attribute have to match, so
-			// don't even look
-			// in the check attribute for hte row.
-			byte checkRow[] = getRow(tuple);
-			byte checkColF[] = getBytes(checkTuple, checkColFIndex,
-					checkColFType);
-			byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
-					checkColQType);
-			byte checkValue[] = getCheckValue(checkTuple);
-
-			success = table.checkAndPut(checkRow, checkColF, checkColQ,
-					checkValue, myPut);
-			logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
-		} else if (!bufferTransactions && batchSize == 0) {
-			table.put(myPut);
-		} else if (bufferTransactions){
-			safePut(myPut);
-		} else {
-			synchronized (listLock) {
-				putList.add(myPut);
-				if (putList.size() >= batchSize) {
-					logger.debug(Messages.getString("HBASE_PUT_SUBMITTING_BATCH"));
-					table.put(putList);
-					putList.clear();
+		if (myTable != null) {
+			switch (putMode) {
+	
+			case ENTRY:
+				byte colQ[] = getColumnQualifier(tuple);
+				byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
+				myPut.addColumn(colF, colQ, value);
+	////			myPut.add(colF, colQ, value);
+				break;
+			case RECORD:
+				Tuple values = tuple.getTuple(valueAttr);
+				for (int i = 0; i < qualifierArray.length; i++) {
+					myPut.addColumn(colF, qualifierArray[i],
+	//				myPut.add(colF, qualifierArray[i],
+							getBytes(values, i, attrType[i]));
+				}
+				break;
+			default:
+				// It should be impossible to get here.
+				throw new Exception("Unsupported Put type");
+			}
+			
+			if (checkAttr != null) {
+				Tuple checkTuple = tuple.getTuple(checkAttrIndex);
+	
+				// the row attribute and the check row attribute have to match, so
+				// don't even look
+				// in the check attribute for hte row.
+				byte checkRow[] = getRow(tuple);
+				byte checkColF[] = getBytes(checkTuple, checkColFIndex,
+						checkColFType);
+				byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
+						checkColQType);
+				byte checkValue[] = getCheckValue(checkTuple);
+	
+				success = myTable.checkAndPut(checkRow, checkColF, checkColQ,
+						checkValue, myPut);
+				logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
+			} else if (!bufferTransactions && batchSize == 0) {
+				myTable.put(myPut);
+			} else if (bufferTransactions){
+				safePut(myPut);
+			} else {
+				synchronized (listLock) {
+					putList.add(myPut);
+					if (putList.size() >= batchSize) {
+						logger.debug(Messages.getString("HBASE_PUT_SUBMITTING_BATCH"));
+						myTable.put(putList);
+						putList.clear();
+					}
 				}
 			}
-		}
-		if (!bufferTransactions){
-			table.close();
-		}
+			if (!bufferTransactions){
+				myTable.close();
+			}
+	}
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
 		submitOutputTuple(tuple, success);
@@ -330,8 +342,10 @@ public class HBASEPut extends HBASEPutDelete {
 	 */
 	protected void safePut(Put p) throws IOException {
 		synchronized (tableLock) {
-			cachedTable.put(p);
-		}
+			if (cachedTable != null) {
+				cachedTable.put(p);
+				}
+			}
 	}
 	
 	@Override
@@ -385,7 +399,6 @@ public class HBASEPut extends HBASEPutDelete {
 	 * Flush the internal list of puts we keep when using our own batch puts instead of autoflush
 	 */
 	protected synchronized void flushInternalBuffer() throws IOException {
-//		HTableInterface table = connection.getTable(tableNameBytes);
 		Table table = getHTable();
 		synchronized (listLock) {
 			if (table != null && putList != null && putList.size() > 0) {

@@ -10,19 +10,23 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
+
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
+import com.ibm.streams.operator.TupleAttribute;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
@@ -62,7 +66,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected List<String> staticColumnQualifierList = null;
 	public final static Charset RSTRING_CHAR_SET = Charset.forName("UTF-8");
 	protected Charset charset = RSTRING_CHAR_SET;
-	private String tableName = null;
+	public String tableName = null;
 	protected byte tableNameBytes[] = null;
 	private static String hbaseSite = null;
 	private String fAuthPrincipal = null;
@@ -70,6 +74,8 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected Connection connection = null;
 
 	static final String TABLE_PARAM_NAME = "tableName";
+	public TupleAttribute<Tuple, String> tableNameAttribute; 
+	static final String TABLE_NAME_ATTRIBUTE = "tableNameAttribute";
 	static final String ROW_PARAM_NAME = "rowAttrName";
 	static final String STATIC_COLF_NAME = "staticColumnFamily";
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
@@ -81,6 +87,9 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String VALID_TYPE_STRING = "rstring, ustring, blob, or int64";
 	static final int BYTES_IN_LONG = Long.SIZE / Byte.SIZE;
 
+	
+	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
+	
 	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The **hbaseSite** parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
 	public void setHbaseSite(String name) {
 		hbaseSite = name;
@@ -91,10 +100,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 		charset = Charset.forName(_name);
 	}
 
-	@Parameter(name = TABLE_PARAM_NAME, optional = false, description = "Name of the HBASE table.  If it does not exist, the operator will throw an exception on startup")
+	@Parameter(name = TABLE_PARAM_NAME, optional = true, description = "Name of the HBASE table. It is an optional parameter but one of these parameters must be set in opeartor: 'tableName' or 'tableNameAttribute'. Cannot be used with 'tableNameAttribute'. If the table does not exist, the operator will throw an exception")
 	public void setTableName(String _name) {
 		tableName = _name;
 	}
+	
+	@Parameter(name = TABLE_NAME_ATTRIBUTE, optional = true, description = "Name of the attribute on the input tuple containing the tableName. Use this parameter to pass the table name to the operator via input port. Cannot be used with parameter 'tableName'. This is suitable for tables with the same schema.")
+	public void setTableNameAttr(TupleAttribute<Tuple, String> tableNameAttribute) throws IOException {
+		this.tableNameAttribute = tableNameAttribute;
+	} 
+
 
 	@Parameter(name = STATIC_COLF_NAME, optional = true, description = "If this parameter is specified, it will be used as the columnFamily for all operations.  (Compare to columnFamilyAttrName.) For HBASEScan, it can have cardinality greater than one.")
 	public void setStaticColumnFamily(List<String> name) {
@@ -141,7 +156,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * 
 	 * @param checker
 	 */
-	@ContextCheck(compile = false)
+	@ContextCheck(compile = true)
 	public static void runtimeHBaseOperatorChecks(OperatorContextChecker checker) {
 		OperatorContext context = checker.getOperatorContext();
 		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
@@ -151,8 +166,22 @@ public abstract class HBASEOperator extends AbstractOperator {
 				checker.setInvalidContext(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME), null);
 			}
 		}
+		
+		if ((!context.getParameterNames().contains(TABLE_PARAM_NAME))
+			&& (!context.getParameterNames().contains(TABLE_NAME_ATTRIBUTE))) {
+				checker.setInvalidContext("One of these parameters must be set in opeartor: '" + TABLE_PARAM_NAME + "' or '" + TABLE_NAME_ATTRIBUTE +"'", null);
+		}				
 	}
 
+	@ContextCheck(compile = true)
+	public static void checkTableName(OperatorContextChecker checker) {
+		// Cannot specify both tableNameAttribute and a tableName
+		checker.checkExcludedParameters(TABLE_NAME_ATTRIBUTE, TABLE_PARAM_NAME);
+		checker.checkExcludedParameters(TABLE_PARAM_NAME, TABLE_NAME_ATTRIBUTE);
+	}
+
+	
+	
 	/**
 	 * Helper function to check that an attribute is the right type and return the index if so.
 	 * 
@@ -271,8 +300,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
-		Logger.getLogger(this.getClass()).trace(
-				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
+	    logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 		ArrayList<String>libList = new ArrayList<>();
 		String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
@@ -289,7 +317,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		try {
 			context.addClassLibraries(libList.toArray(new String[0]));
 		} catch (Exception e) {
-			Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
+			logger.error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 		}
 	
 		
@@ -307,22 +335,20 @@ public abstract class HBASEOperator extends AbstractOperator {
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
 
-		tableNameBytes = tableName.getBytes(charset);
+		if (tableName != null){
+			tableNameBytes = tableName.getBytes(charset);
+		}
 		getConnection();
 	}
 
-	
-	
-	
 	protected void getConnection() throws IOException {
-
-		System.out.println("hbaseSite:\t" + hbaseSite);
+		logger.info("hbaseSite:\t" + hbaseSite);
 		Configuration conf = HBaseConfiguration.create();
 		conf.addResource(new Path(hbaseSite));
 		if ((fAuthPrincipal != null) && (fAuthKeytab != null)) {
 			// kerberos authentication
-			System.out.println("fAuthKeytab:\t" + fAuthKeytab);
-			System.out.println("fAuthPrincipal:\t" + fAuthPrincipal);
+			logger.info("fAuthKeytab:\t" + fAuthKeytab);
+			logger.info("fAuthPrincipal:\t" + fAuthPrincipal);
 			conf.set("hadoop.security.authentication", "kerberos");
 			conf.set("hbase.security.authentication", "kerberos");
 			UserGroupInformation.setConfiguration(conf);
@@ -332,7 +358,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		connection = ConnectionFactory.createConnection(HBaseConfiguration.create(conf));
 		Admin admin = connection.getAdmin();
 		if (admin.getConnection() == null) {
-			Logger.getLogger(this.getClass()).error("HBase connection failed");
+			logger.error("HBase connection failed");
 		}
 
 		/*
@@ -354,12 +380,51 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * 
 	 * @return HTable object.
 	 * @throws IOException
+	 *
 	 */
-	protected Table getHTable() throws IOException {
-		final TableName tableName = TableName.valueOf(tableNameBytes);
-		return connection.getTable(tableName);
+	
+	protected Table getHTable() throws TableNotFoundException, IOException {
+		if (tableName == null){
+			return null;
+		}
+		
+		final TableName tableTableName = TableName.valueOf(tableNameBytes);
+		try (Admin admin = this.connection.getAdmin()) {
+			if (!admin.tableExists(tableTableName)) {
+		    	throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
+		          + "' does not exists.");
+		    	}
+			}
+		return connection.getTable(tableTableName);
 	}
 
+	
+	protected Table getHTable(Tuple tuple) throws TableNotFoundException, IOException {
+		String TableNameStr = null;
+		if (tableName != null) {
+			TableNameStr = tableName;
+		} else {
+			TableNameStr = tuple.getString(tableNameAttribute.getAttribute().getIndex()); 
+		}
+
+		if (TableNameStr == null) return null;
+
+		if (TableNameStr.length() < 1 ) return null;
+		
+		byte TableNameBytes[] = TableNameStr.getBytes(charset);
+		final TableName tableTableName = TableName.valueOf(TableNameBytes);
+		
+		try (Admin admin = this.connection.getAdmin()) {
+			if (!admin.tableExists(tableTableName)) {
+				throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
+		          	+ "' does not exists.");
+				}
+			}
+		
+		return connection.getTable(tableTableName);
+	}
+
+	
 	protected Table getHTable(String sTableName) throws IOException {
 		byte TableNameBytes[] = sTableName.getBytes(charset);
 		final TableName tableName = TableName.valueOf(TableNameBytes);
@@ -386,7 +451,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	@Override
 	public synchronized void shutdown() throws Exception {
 		OperatorContext context = getOperatorContext();
-		Logger.getLogger(this.getClass()).trace(
+		logger.trace(
 				"Operator " + context.getName() + " shutting down in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 		if (connection != null && !connection.isClosed()) {
 			connection.close();

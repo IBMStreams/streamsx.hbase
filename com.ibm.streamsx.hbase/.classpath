@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="opt/java/bin" path="opt/java/src"/>
+	<classpathentry kind="src" output="impl/java/bin" path="impl/java/src"/>
 	<classpathentry exported="true" kind="con" path="com.ibm.streams.java/com.ibm.streams.operator"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="opt/downloaded/commons-cli-1.2.jar"/>
@@ -28,5 +28,5 @@
 	<classpathentry kind="lib" path="opt/downloaded/slf4j-api-1.7.10.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/slf4j-log4j12-1.7.10.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/zookeeper-3.4.6.jar"/>
-	<classpathentry kind="output" path="opt/java/bin"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

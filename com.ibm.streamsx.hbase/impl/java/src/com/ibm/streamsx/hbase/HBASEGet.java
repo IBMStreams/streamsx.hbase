@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.log4j.Logger;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
@@ -317,7 +318,18 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myGet.addFamily(colF);
 			}
 		}
-		Table myTable = getHTable();
+		
+		Table myTable = null;
+		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+
+		if ( myTable != null) {
+
 		Result r = myTable.get(myGet);
 
 		int numResults = r.size();
@@ -350,6 +362,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		// Submit new tuple to output port 0
 		outStream.submit(outTuple);
 		myTable.close();
+		}
 	}
 
 }

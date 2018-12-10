@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -48,6 +49,9 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected MetaType checkColFType = null, checkColQType = null,
 			checkValueType = null;
 
+	Logger logger = Logger.getLogger(this.getClass());
+
+	
 	final protected Object listLock = new Object();
 	protected int batchSize = 0;
 
@@ -160,13 +164,30 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 
-		Table table = getHTable();
+		Table myTable = null;
+		
+		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
+//		Tuple tuple = inputPort.
+		StreamSchema schema = inputPort.getStreamSchema();
+		Tuple tuple = schema.getTuple();
 
-    	if (null == table) {
+		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+
+/*
+    	if (null == myTable) {
     		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
     		throw new Exception("Cannot access table.  Check configuration");
     	}
 
+*/    	
+    	if (myTable != null) {
+    	
 		StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
 		StreamSchema inputSchema = input.getStreamSchema();
 		if (checkAttr != null) {
@@ -204,7 +225,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			}
 			successAttrIndex = attr.getIndex();
 		}
-		table.close();
+		myTable.close();
+    	}
 		context.registerStateHandler(this);
 	}
 

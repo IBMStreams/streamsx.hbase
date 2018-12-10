@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionLocation;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.RegionLocator;
@@ -918,11 +919,20 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throw new Exception("Internal error.  Unknown input mode "
 					+ inputMode);
 		}
-//		HTableInterface myTable = connection.getTable(tableNameBytes);
-		Table myTable = getHTable();
-		ResultScanner resultScanner = startScan(myTable, myScan);
-		submitResults(tuple, resultScanner, (long) -1);
-		myTable.close();
+	
+		Table myTable = null;		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (myTable != null ){
+		
+			ResultScanner resultScanner = startScan(myTable, myScan);
+			submitResults(tuple, resultScanner, (long) -1);
+			myTable.close();
+		}
 		out.punctuate(Punctuation.WINDOW_MARKER);
 	}
 

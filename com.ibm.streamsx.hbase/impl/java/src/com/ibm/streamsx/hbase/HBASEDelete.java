@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
@@ -29,11 +30,11 @@ import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
 
-/**
+/** 
  * Accepts tuples on input stream and makes the corresponding delete in the
  * HBASE table. .
  * <P>
- */
+ */ 
 @PrimitiveOperator(name = "HBASEDelete", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEDelete` operator deletes an entry, an entire row, a columnFamily in a row, or a columnFamily, columnQualifier pair in a row from an HBase table.  It can also optionally do a checkAndDelete operation."
 		+ HBASEOperator.DOC_BLANKLINE
 		+ "The behavior of the operator depends on its parameters:"
@@ -179,53 +180,65 @@ public class HBASEDelete extends HBASEPutDelete {
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {
-		Table myTable = getHTable();
-		byte row[] = getRow(tuple);
-		Delete myDelete = new Delete(row);
 
-		if (DeleteMode.COLUMN_FAMILY == deleteMode) {
-			byte colF[] = getColumnFamily(tuple);
-			myDelete.addFamily(colF);
-		} else if (DeleteMode.COLUMN == deleteMode) {
-			byte colF[] = getColumnFamily(tuple);
-			byte colQ[] = getColumnQualifier(tuple);
-			if (deleteAll) {
-				myDelete.addColumns(colF, colQ);
-			} else {
-				myDelete.addColumn(colF, colQ);
-			}
+		Table myTable = null;
+
+		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
-		boolean success = false;
-		if (checkAttr != null) {
-			Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-			// the check row and the row have to match, so don't use the
-			// checkRow.
-			byte checkRow[] = getRow(tuple);
-			byte checkColF[] = getBytes(checkTuple, checkColFIndex,
-					checkColFType);
-			byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
-					checkColQType);
-			byte checkValue[] = getCheckValue(checkTuple);
-			success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
-					checkValue, myDelete);
-		} else if (batchSize == 0) {
-			logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
-			myTable.delete(myDelete);
-		} else {
-			synchronized (listLock) {
-				deleteList.add(myDelete);
-				if (deleteList.size() >= batchSize) {
-					myTable.delete(deleteList);
-					deleteList.clear();
+		if ( myTable != null ){
+			byte row[] = getRow(tuple);
+			Delete myDelete = new Delete(row);
+	
+			if (DeleteMode.COLUMN_FAMILY == deleteMode) {
+				byte colF[] = getColumnFamily(tuple);
+				myDelete.addFamily(colF);
+			} else if (DeleteMode.COLUMN == deleteMode) {
+				byte colF[] = getColumnFamily(tuple);
+				byte colQ[] = getColumnQualifier(tuple);
+				if (deleteAll) {
+					myDelete.addColumns(colF, colQ);
+				} else {
+					myDelete.addColumn(colF, colQ);
 				}
 			}
+	
+			boolean success = false;
+			if (checkAttr != null) {
+				Tuple checkTuple = tuple.getTuple(checkAttrIndex);
+				// the check row and the row have to match, so don't use the
+				// checkRow.
+				byte checkRow[] = getRow(tuple);
+				byte checkColF[] = getBytes(checkTuple, checkColFIndex,
+						checkColFType);
+				byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
+						checkColQType);
+				byte checkValue[] = getCheckValue(checkTuple);
+				success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
+						checkValue, myDelete);
+			} else if (batchSize == 0) {
+				logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
+				myTable.delete(myDelete);
+			} else {
+				synchronized (listLock) {
+					deleteList.add(myDelete);
+					if (deleteList.size() >= batchSize) {
+						myTable.delete(deleteList);
+						deleteList.clear();
+					}
+				}
+			}
+	
+			// Checks to see if an output tuple is necessary, and if so,
+			// submits it.
+			submitOutputTuple(tuple, success);
+			myTable.close();
 		}
-
-		// Checks to see if an output tuple is necessary, and if so,
-		// submits it.
-		submitOutputTuple(tuple, success);
-		myTable.close();
 	}
 
 	/**

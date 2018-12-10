@@ -3,6 +3,7 @@
 
 package com.ibm.streamsx.hbase;
 
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -127,9 +128,17 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 				incr = tuple.getLong(incrAttrIndex);
 			}
 		}
-		Table myTable = getHTable();
-		long newValue = myTable.incrementColumnValue(row, colF, colQ, incr);
-		myTable.close();
+		Table myTable = null;		
+		try {
+			myTable = getHTable(tuple);
+		} catch (TableNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (myTable != null ){
+			myTable.incrementColumnValue(row, colF, colQ, incr);
+			myTable.close();
+		}
 	}
 
 }
