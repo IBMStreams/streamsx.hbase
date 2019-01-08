@@ -26,6 +26,8 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	protected int colQualifierIndex = -1;
 
 	protected MetaType rowAttrType = null;
+	protected int valueAttrIndex = -1;
+	protected MetaType valueAttrType = null;
 
 	protected MetaType colQualifierType = null, colFamilyType = null;
 
@@ -96,6 +98,12 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		}
 	}
 
+	protected byte[] getValue(Tuple tuple) throws Exception {
+
+			return getBytes(tuple, valueAttrIndex, valueAttrType);
+	}
+
+	
 	/**
 	 * For {rowAttrName,columnFamilyAttrName,columnQualifierAttrName}, if
 	 * specified, ensures the attribute exists, and stores the index in class

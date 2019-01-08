@@ -161,8 +161,26 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
 
 * The parameters 'tableNme' and 'tableNameAttribute' are optional, but only one of them must be set to define the name of table.
 
+++ What is new in version 3.3.0
+
+* The HBABSPut parameter 'successAttr' is not depending to the parameter 'checkAttrName'
+* It returns in output parameter a boolean results after a successfully insert data into table. 
+
+		stream<boolean success, rstring character, rstring colF, rstring colQ, rstring value> allPut = HBASEPut(full)
+		{
+			param
+				tableName : "streamsSample_lotr" ;
+				rowAttrName : "character" ;
+				columnFamilyAttrName : "colF" ;
+				columnQualifierAttrName : "colQ" ;
+				valueAttrName : "value" ;
+				successAttr : "success" ;
+		}
+
+
+
 </info:description>
-    <info:version>3.2.0</info:version>
+    <info:version>3.3.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>

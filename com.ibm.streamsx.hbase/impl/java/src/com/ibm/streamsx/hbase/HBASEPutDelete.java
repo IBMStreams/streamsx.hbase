@@ -61,7 +61,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	static final String CHECK_ATTR_PARAM = "checkAttrName";
 	protected int checkAttrIndex = -1;
 	static final String SUCCESS_PARAM = "successAttr";
-	private String successAttrName = null;
+	public String successAttrName = null;
 	private int successAttrIndex = -1;
 	StreamingOutput<OutputTuple> outStream = null;
 	
@@ -106,8 +106,8 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected static void compileTimeChecks(OperatorContextChecker checker,
 			String operatorName) {
 		// If successAttr is set, then we must be using checkAttrParam
-		successRequiresOutput(checker);
-		checker.checkDependentParameters(SUCCESS_PARAM, CHECK_ATTR_PARAM);
+//		successRequiresOutput(checker);
+//		checker.checkDependentParameters(SUCCESS_PARAM, CHECK_ATTR_PARAM);
 		checkConsistentRegionSource(checker, operatorName);
 		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BATCHSIZE_NAME)){
 			checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_PARAM", CHECK_ATTR_PARAM, BATCHSIZE_NAME), null);
@@ -210,15 +210,16 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		}
 
 		if (successAttrName != null) {
-			if (checkAttrIndex < 0) {
+//			if (checkAttrIndex < 0) {
 				// TODO do context check the right way.
-				throw new Exception(SUCCESS_PARAM + " only valid if "
-						+ CHECK_ATTR_PARAM + " exists");
-			}
+//				throw new Exception(SUCCESS_PARAM + " only valid if "
+//						+ CHECK_ATTR_PARAM + " exists");
+//			}
 			// TODO also check that success attribute is only used if there's an
 			// output port
 			StreamSchema outSchema = outStream.getStreamSchema();
 			Attribute attr = outSchema.getAttribute(successAttrName);
+			
 			if (attr == null) {
 				throw new Exception(
 						"passed in success attribute, but no attribute found");
