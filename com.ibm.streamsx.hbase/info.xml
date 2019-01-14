@@ -166,17 +166,7 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
 * The HBABSPut parameter 'successAttr' is not depending to the parameter 'checkAttrName'
 * It returns in output parameter a boolean results after a successfully insert data into table. 
 
-		stream<boolean success, rstring character, rstring colF, rstring colQ, rstring value> allPut = HBASEPut(full)
-		{
-			param
-				tableName : "streamsSample_lotr" ;
-				rowAttrName : "character" ;
-				columnFamilyAttrName : "colF" ;
-				columnQualifierAttrName : "colQ" ;
-				valueAttrName : "value" ;
-				successAttr : "success" ;
-		}
-
+	
 
 
 </info:description>
