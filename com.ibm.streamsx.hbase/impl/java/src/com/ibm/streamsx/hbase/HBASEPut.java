@@ -281,13 +281,11 @@ public class HBASEPut extends HBASEPutDelete {
 				byte colQ[] = getColumnQualifier(tuple);
 				byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
 				myPut.addColumn(colF, colQ, value);
-	////			myPut.add(colF, colQ, value);
 				break;
 			case RECORD:
 				Tuple values = tuple.getTuple(valueAttr);
 				for (int i = 0; i < qualifierArray.length; i++) {
 					myPut.addColumn(colF, qualifierArray[i],
-	//				myPut.add(colF, qualifierArray[i],
 							getBytes(values, i, attrType[i]));
 				}
 				break;
@@ -300,7 +298,6 @@ public class HBASEPut extends HBASEPutDelete {
 				byte checkRow[] = getRow(tuple);
 				if (checkAttr != null) {
 					Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-		
 					// the row attribute and the check row attribute have to match, so
 					// don't even look
 					// in the check attribute for the row.
@@ -309,14 +306,12 @@ public class HBASEPut extends HBASEPutDelete {
 					byte checkValue[] = getCheckValue(checkTuple);
 		
 					success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);
-					System.out.println("CCCCCCCCCCCCCCCCCC  success " + success + " checkRow " + new String(checkRow) +  " checkColF " + new String(checkColF) +  " checkColQ " + new String(checkColQ) + " checkValue " + new String(checkValue));			
 				}else{
+					// set the success value without checkTuple
 					byte checkColQ[] = getColumnQualifier(tuple);
 					byte checkColF[] = getColumnFamily(tuple);
 					byte checkValue[] = getValue(tuple);
-//					byte checkValue[] = getBytes(tuple, valueAttrIndex, valueAttrType);
 					success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
-					System.out.println("AAAAAAAAAAAAAAAAAA  success " + success + " checkRow " + new String(checkRow) +  " checkColF " + new String(checkColF) +  " checkColQ " + new String(checkColQ) + " checkValue " + new String(checkValue));			
 				}
 				logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
 												
@@ -338,7 +333,7 @@ public class HBASEPut extends HBASEPutDelete {
 			if (!bufferTransactions){
 				myTable.close();
 			}
-	}
+		}
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
 		submitOutputTuple(tuple, success);
