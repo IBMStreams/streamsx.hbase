@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.1.0</a> &gt; Developing and running applications that use the HBase Toolkit</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.3.0</a> &gt; Developing and running applications that use the HBase Toolkit</p>
 
 </div>
 
@@ -152,54 +152,6 @@ use com.ibm.streamsx.hbase::HBASEDelete;
 </li>
 
 </ol>
-
-</div>
-
-<p class="p"><strong class="ph b">Kerberos Authentication</strong>
-</p>
-
-<p class="p">Kerberos authentication is a network protocol to provide strong authentication for client/server applications.
-</p>
-
-<p class="p">The streamsx.hbase toolkit support from version 3.1.0 kerberos authentication. All operators have now 2 additional parameters:
-</p>
-
-<p class="p">The <strong class="ph b">authKeytab</strong> parameter specifies the kerberos keytab file that is created for the principal. The <strong class="ph b">authPrincipal</strong> parameter specifies the Kerberos principal, which is typically the principal that is created for the HBase server.
-</p>
-
-<p class="p">If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
-</p>
-
-<p class="p"><a class="xref" href="https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/">https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/</a>
-</p>
-
-<p class="p"><a class="xref" href="https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html">https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html</a>
-</p>
-
-<p class="p"><a class="xref" href="https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html">https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html</a>
-</p>
-
-<p class="p">After enabling the Kerberos authentication copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
-</p>
-
-<p class="p">Here is an example to connect to the HBase server with Kerberos Authentication:
-</p>
-
-<div class="p">
-<pre class="pre codeblock">
-   () as putsink = HBASEPut(toHBASE)
-   {
-        param
-            authKeytab         : "etc/hbase.service.keytab";
-            authPrincipal      : "hbase/myhdp26.ibm.com@HDP2.COM";
-            hbaseSite          : "etc/hbase-site.xml";
-            rowAttrName        : "key" ;
-            tableName          : "streamsSample_books" ; 
-            staticColumnFamily : "all" ;
-            valueAttrName      : "bookData" ;
-   }
-</pre>
-
 
 </div>
 

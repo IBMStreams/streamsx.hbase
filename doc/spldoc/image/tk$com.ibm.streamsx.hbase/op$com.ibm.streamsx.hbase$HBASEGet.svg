@@ -92,17 +92,17 @@ Nxm4+Zl+mjPcPAd0zs//xoyMF5AVMP7/z8T16tKNP+eBDmHUf3AemAzsCIcDAHvZ
       ><set attributeName="visibility" from="hidden" end="sdt0.mouseout" to="visible" begin="sdt0.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="30.0" width="342.25998" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
+    ><rect x="47.65" y="30.0" width="428.11996" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
       /><text x="48.65" y="43.0"
-      >Required: rowAttrName, tableName / Optional: </text
+      >Required: rowAttrName / Optional: authKeytab, </text
       ><text x="48.65" y="58.0"
-      >authKeytab, authPrincipal, columnFamilyAttrName, </text
+      >authPrincipal, columnFamilyAttrName, columnQualifierAttrName, </text
       ><text x="48.65" y="73.0"
-      >columnQualifierAttrName, hbaseSite, maxVersions, </text
+      >hbaseSite, maxVersions, minTimestamp, outAttrName, </text
       ><text x="48.65" y="88.0"
-      >minTimestamp, outAttrName, staticColumnFamily, </text
+      >staticColumnFamily, staticColumnQualifier, outputCountAttr, </text
       ><text x="48.65" y="103.0"
-      >staticColumnQualifier, outputCountAttr</text
+      >tableName, tableNameAttribute</text
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="What is new in version 3.1.0"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_page"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>What is new in version 3.1.0</title>
+</head>
+<body id="spldoc_page">
+
+
+<h1 class="title topictitle1">What is new in version 3.1.0</h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.3.0</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase$2.html">What's new</a> &gt; What is new in version 3.1.0</p>
+
+</div>
+
+
+<div class="section">
+<p class="p"><strong class="ph b">Kerberos Authentication</strong>
+</p>
+
+<p class="p">Kerberos authentication is a network protocol to provide strong authentication for client/server applications.
+</p>
+
+<p class="p">The streamsx.hbase toolkit support from version 3.1.0 kerberos authentication. All operators have now 2 additional parameters:
+</p>
+
+<p class="p">The <strong class="ph b">authKeytab</strong> parameter specifies the kerberos keytab file that is created for the principal. The <strong class="ph b">authPrincipal</strong> parameter specifies the Kerberos principal, which is typically the principal that is created for the HBase server.
+</p>
+
+<p class="p">If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
+</p>
+
+<p class="p"><a class="xref" href="https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/">https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/</a>
+</p>
+
+<p class="p"><a class="xref" href="https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html">https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html</a>
+</p>
+
+<p class="p"><a class="xref" href="https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html">https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html</a>
+</p>
+
+<p class="p">After enabling the Kerberos authentication copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
+</p>
+
+<p class="p">Here is an example to connect to the HBase server with Kerberos Authentication:
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+   () as putsink = HBASEPut(toHBASE)
+   {
+        param
+            authKeytab         : "etc/hbase.service.keytab";
+            authPrincipal      : "hbase/myhdp26.ibm.com@HDP2.COM";
+            hbaseSite          : "etc/hbase-site.xml";
+            rowAttrName        : "key" ;
+            tableName          : "streamsSample_books" ; 
+            staticColumnFamily : "all" ;
+            valueAttrName      : "bookData" ;
+   }
+</pre>
+
+
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

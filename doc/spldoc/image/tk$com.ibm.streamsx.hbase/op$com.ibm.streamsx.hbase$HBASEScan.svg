@@ -90,17 +90,17 @@ FIVdT1YAAAAASUVORK5CYII="
       ><set attributeName="visibility" from="hidden" end="sdt0.mouseout" to="visible" begin="sdt0.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="30.0" width="381.47998" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
+    ><rect x="47.65" y="30.0" width="418.58" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
       /><text x="48.65" y="43.0"
-      >Required: tableName / Optional: authKeytab, </text
+      >Optional: authKeytab, authPrincipal, channel, endRow, </text
       ><text x="48.65" y="58.0"
-      >authPrincipal, channel, endRow, hbaseSite, initDelay, </text
+      >hbaseSite, initDelay, maxChannels, maxVersions, maxThreads, </text
       ><text x="48.65" y="73.0"
-      >maxChannels, maxVersions, maxThreads, minTimestamp, </text
+      >minTimestamp, outAttrName, outputCountAttr, rowPrefix, </text
       ><text x="48.65" y="88.0"
-      >outAttrName, outputCountAttr, rowPrefix, startRow, </text
+      >startRow, staticColumnFamily, staticColumnQualifier, </text
       ><text x="48.65" y="103.0"
-      >staticColumnFamily, staticColumnQualifier, triggerCount</text
+      >tableName, tableNameAttribute, triggerCount</text
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"

@@ -80,15 +80,15 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAj413FAAAA
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
     ><rect x="47.65" y="30.0" width="450.37997" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
       /><text x="48.65" y="43.0"
-      >Required: rowAttrName, tableName, valueAttrName / </text
+      >Required: rowAttrName, valueAttrName / Optional: </text
       ><text x="48.65" y="58.0"
-      >Optional: authKeytab, authPrincipal, batchSize, </text
+      >authKeytab, authPrincipal, batchSize, checkAttrName, </text
       ><text x="48.65" y="73.0"
-      >checkAttrName, columnFamilyAttrName, columnQualifierAttrName, </text
+      >columnFamilyAttrName, columnQualifierAttrName, </text
       ><text x="48.65" y="88.0"
       >enableBuffer, hbaseSite, staticColumnFamily, staticColumnQualifier, </text
       ><text x="48.65" y="103.0"
-      >successAttr</text
+      >successAttr, tableName, tableNameAttribute</text
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"

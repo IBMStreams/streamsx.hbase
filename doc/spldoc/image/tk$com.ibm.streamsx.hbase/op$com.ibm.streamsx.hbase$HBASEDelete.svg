@@ -90,17 +90,17 @@ CalBcP/IYInSyPZz+AsEzfDt9tLDkgAAAABJRU5ErkJggg=="
       ><set attributeName="visibility" from="hidden" end="sdt0.mouseout" to="visible" begin="sdt0.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
-    ><rect x="47.65" y="30.0" width="365.58" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
+    ><rect x="47.65" y="30.0" width="439.77997" style="fill:rgb(230,230,255);stroke:rgb(0,0,80);" rx="2.0" ry="2.0" height="77.0"
       /><text x="48.65" y="43.0"
-      >Required: rowAttrName, tableName / Optional: </text
+      >Required: rowAttrName / Optional: authKeytab, </text
       ><text x="48.65" y="58.0"
-      >authKeytab, authPrincipal, batchSize, checkAttrName, </text
+      >authPrincipal, batchSize, checkAttrName, columnFamilyAttrName, </text
       ><text x="48.65" y="73.0"
-      >columnFamilyAttrName, columnQualifierAttrName, </text
+      >columnQualifierAttrName, deleteAllVersions, hbaseSite, </text
       ><text x="48.65" y="88.0"
-      >deleteAllVersions, hbaseSite, staticColumnFamily, </text
+      >staticColumnFamily, staticColumnQualifier, successAttr, </text
       ><text x="48.65" y="103.0"
-      >staticColumnQualifier, successAttr</text
+      >tableName, tableNameAttribute</text
       ><set attributeName="visibility" from="hidden" end="sdt1.mouseout" to="visible" begin="sdt1.mouseover"
     /></g
     ><g visibility="hidden" style="stroke:none;font-style:italic;font-size:12px;font-family:&apos;Helvetica&apos;,&apos;SansSerif&apos;;"
