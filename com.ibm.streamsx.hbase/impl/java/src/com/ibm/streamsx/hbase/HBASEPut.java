@@ -124,8 +124,6 @@ public class HBASEPut extends HBASEPutDelete {
 	final static String VALUE_NAME = "valueAttrName";
 	protected byte[][] qualifierArray = null;
 	protected MetaType[] attrType = null;
-	private int valueAttrIndex = -1;
-	private MetaType valueAttrType = null;
 	protected boolean bufferTransactions = false;
 
 	protected Object tableLock = new Object();
@@ -283,13 +281,11 @@ public class HBASEPut extends HBASEPutDelete {
 				byte colQ[] = getColumnQualifier(tuple);
 				byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
 				myPut.addColumn(colF, colQ, value);
-	////			myPut.add(colF, colQ, value);
 				break;
 			case RECORD:
 				Tuple values = tuple.getTuple(valueAttr);
 				for (int i = 0; i < qualifierArray.length; i++) {
 					myPut.addColumn(colF, qualifierArray[i],
-	//				myPut.add(colF, qualifierArray[i],
 							getBytes(values, i, attrType[i]));
 				}
 				break;
@@ -297,25 +293,31 @@ public class HBASEPut extends HBASEPutDelete {
 				// It should be impossible to get here.
 				throw new Exception("Unsupported Put type");
 			}
-			
-			if (checkAttr != null) {
-				Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-	
-				// the row attribute and the check row attribute have to match, so
-				// don't even look
-				// in the check attribute for hte row.
+					
+			if (successAttrName != null) {
 				byte checkRow[] = getRow(tuple);
-				byte checkColF[] = getBytes(checkTuple, checkColFIndex,
-						checkColFType);
-				byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
-						checkColQType);
-				byte checkValue[] = getCheckValue(checkTuple);
-	
-				success = myTable.checkAndPut(checkRow, checkColF, checkColQ,
-						checkValue, myPut);
+				if (checkAttr != null) {
+					Tuple checkTuple = tuple.getTuple(checkAttrIndex);
+					// the row attribute and the check row attribute have to match, so
+					// don't even look
+					// in the check attribute for the row.
+					byte checkColF[] = getBytes(checkTuple, checkColFIndex, checkColFType);
+					byte checkColQ[] = getBytes(checkTuple, checkColQIndex, checkColQType);
+					byte checkValue[] = getCheckValue(checkTuple);
+		
+					success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);
+				}else{
+					// set the success value without checkTuple
+					byte checkColQ[] = getColumnQualifier(tuple);
+					byte checkColF[] = getColumnFamily(tuple);
+					byte checkValue[] = getValue(tuple);
+					success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
+				}
 				logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
+												
 			} else if (!bufferTransactions && batchSize == 0) {
-				myTable.put(myPut);
+				
+					myTable.put(myPut);
 			} else if (bufferTransactions){
 				safePut(myPut);
 			} else {
@@ -331,7 +333,7 @@ public class HBASEPut extends HBASEPutDelete {
 			if (!bufferTransactions){
 				myTable.close();
 			}
-	}
+		}
 		// Checks to see if an output tuple is necessary, and if so,
 		// submits it.
 		submitOutputTuple(tuple, success);
