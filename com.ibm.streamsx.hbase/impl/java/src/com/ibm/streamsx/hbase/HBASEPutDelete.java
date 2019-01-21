@@ -85,7 +85,7 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected static void successRequiresOutput(OperatorContextChecker checker) {
 		OperatorContext context = checker.getOperatorContext();
 		Set<String> params = context.getParameterNames();
-		if (params.contains(SUCCESS_PARAM)) {
+		if (params.contains(CHECK_ATTR_PARAM)) {
 
 			if (context.getStreamingOutputs().size() == 0) {
 				checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_OUT_PARAM", SUCCESS_PARAM ), null);
@@ -105,9 +105,9 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	 */
 	protected static void compileTimeChecks(OperatorContextChecker checker,
 			String operatorName) {
-		// If successAttr is set, then we must be using checkAttrParam
-//		successRequiresOutput(checker);
-//		checker.checkDependentParameters(SUCCESS_PARAM, CHECK_ATTR_PARAM);
+		successRequiresOutput(checker);
+		// If checkAttrParam is set, then we must be using successAttr
+		checker.checkDependentParameters(CHECK_ATTR_PARAM, SUCCESS_PARAM);
 		checkConsistentRegionSource(checker, operatorName);
 		if (!checker.checkExcludedParameters(CHECK_ATTR_PARAM, BATCHSIZE_NAME)){
 			checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_PARAM", CHECK_ATTR_PARAM, BATCHSIZE_NAME), null);
