@@ -15,10 +15,12 @@ import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingInput;
+import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
@@ -100,7 +102,10 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 		+ "port is set to true if the put operation occurs, and false otherwise."
 		+ HBASEPut.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+@OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+		@OutputPortSet(cardinality = 1, optional = true, description = "The `HBASEPut` operator has one optional output port. This port submits tuples when an error occurs while the operator is running the SQL statement. "
+				+ "The tuples deliver error message. ") })
+
 @Icons(location32 = "impl/java/icons/HBASEPut_32.gif", location16 = "impl/java/icons/HBASEPut_16.gif")
 public class HBASEPut extends HBASEPutDelete {
 
@@ -269,8 +274,9 @@ public class HBASEPut extends HBASEPutDelete {
 			try {
 				myTable = getHTable(tuple);
 			} catch (TableNotFoundException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				logger.error(e.getMessage());
+				submitErrorMessage(e.getMessage());
 			}		
 		}
 		

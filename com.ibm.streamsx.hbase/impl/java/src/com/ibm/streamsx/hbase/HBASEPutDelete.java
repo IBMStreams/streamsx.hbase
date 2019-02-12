@@ -62,8 +62,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected int checkAttrIndex = -1;
 	static final String SUCCESS_PARAM = "successAttr";
 	public String successAttrName = null;
-	private int successAttrIndex = -1;
-	StreamingOutput<OutputTuple> outStream = null;
 	
 	@Parameter(name = SUCCESS_PARAM, optional = true, description = "Attribute on the output port to be set to true if the check passes and the action is successful")
 	public void setSuccessAttr(String name) {
@@ -170,12 +168,12 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 //		Tuple tuple = inputPort.
 		StreamSchema schema = inputPort.getStreamSchema();
 		Tuple tuple = schema.getTuple();
-
 		
 		try {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
-			e.printStackTrace();
+			errorText = e.getMessage();
+//			e.printStackTrace();
 			logger.error(e.getMessage());
 		}
 
@@ -186,46 +184,47 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
     	}
 
 */    	
-    	if (myTable != null) {
-    	
-		StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
-		StreamSchema inputSchema = input.getStreamSchema();
-		if (checkAttr != null) {
-			Attribute attr = inputSchema.getAttribute(checkAttr);
-			if (attr == null) {
-				throw new Exception("Expected to find attribute with name "
-						+ checkAttr + " but did not");
+   
+		
+		if (myTable != null) {	
+			StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
+			StreamSchema inputSchema = input.getStreamSchema();
+			if (checkAttr != null) {
+				Attribute attr = inputSchema.getAttribute(checkAttr);
+				if (attr == null) {
+					throw new Exception("Expected to find attribute with name "
+							+ checkAttr + " but did not");
+				}
+				checkAttrIndex = attr.getIndex();
+				establishCheckAttrMatching(attr);
 			}
-			checkAttrIndex = attr.getIndex();
-			establishCheckAttrMatching(attr);
-		}
 
-		List<StreamingOutput<OutputTuple>> outputs = context
-				.getStreamingOutputs();
-		if (outputs.size() == 1) {
-			outStream = outputs.get(0);
-		}
-		if (outputs.size() > 1) {
-			throw new Exception("Operator only has one optional output port");
-		}
-
-		if (successAttrName != null) {
-//			if (checkAttrIndex < 0) {
-				// TODO do context check the right way.
-//				throw new Exception(SUCCESS_PARAM + " only valid if "
-//						+ CHECK_ATTR_PARAM + " exists");
-//			}
-			// TODO also check that success attribute is only used if there's an
-			// output port
-			StreamSchema outSchema = outStream.getStreamSchema();
-			Attribute attr = outSchema.getAttribute(successAttrName);
-			
-			if (attr == null) {
-				throw new Exception(
-						"passed in success attribute, but no attribute found");
+			List<StreamingOutput<OutputTuple>> outputs = context
+					.getStreamingOutputs();
+			if (outputs.size() == 1) {
+				outStream = outputs.get(0);
 			}
-			successAttrIndex = attr.getIndex();
-		}
+			if (outputs.size() > 1) {
+				throw new Exception("Operator only has one optional output port");
+			}
+	
+			if (successAttrName != null) {
+	//			if (checkAttrIndex < 0) {
+					// TODO do context check the right way.
+	//				throw new Exception(SUCCESS_PARAM + " only valid if "
+	//						+ CHECK_ATTR_PARAM + " exists");
+	//			}
+				// TODO also check that success attribute is only used if there's an
+				// output port
+				StreamSchema outSchema = outStream.getStreamSchema();
+				Attribute attr = outSchema.getAttribute(successAttrName);
+				
+				if (attr == null) {
+					throw new Exception(
+							"passed in success attribute, but no attribute found");
+				}
+				successAttrIndex = attr.getIndex();
+			}
 		myTable.close();
     	}
 		context.registerStateHandler(this);
@@ -261,31 +260,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		}
 	}
 
-	/**
-	 * Populate and submit an output tuple. If the operator is configured with
-	 * an output, create an output tuple, populate it from the input tuple and
-	 * the success attribute, and return.
-	 * 
-	 * @param inputTuple
-	 *            The input tuple to use.
-	 * @param success
-	 *            The success attribute
-	 * @throws Exception
-	 *             If there is a problem with the submission.
-	 */
-	protected void submitOutputTuple(Tuple inputTuple, boolean success)
-			throws Exception {
-		if (outStream != null) {
-			// Create a new tuple for output port 0
-			OutputTuple outTuple = outStream.newTuple();
-			// Copy across all matching attributes.
-			outTuple.assign(inputTuple);
-			if (successAttrIndex >= 0) {
-				outTuple.setBoolean(successAttrIndex, success);
-			}
-			outStream.submit(outTuple);
-		}
-	}
 
 	@Override
 	public void drain() throws Exception {

@@ -326,6 +326,11 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		} catch (TableNotFoundException e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
+			// Set the num results, if needed.
+			if (fErrorAttr != null) {
+				outTuple.setString(fErrorAttr, e.getMessage());
+			}
+
 		}
 
 		if ( myTable != null) {

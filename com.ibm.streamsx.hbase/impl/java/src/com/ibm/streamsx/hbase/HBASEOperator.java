@@ -28,8 +28,10 @@ import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.TupleAttribute;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
+import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
@@ -71,7 +73,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	private static String hbaseSite = null;
 	private String fAuthPrincipal = null;
 	private String fAuthKeytab = null;
+	private String fFailureAction = null;
 	protected Connection connection = null;
+	public String fErrorAttr = null;
+	public String errorText = null;
+	public int successAttrIndex = -1;
+	public StreamingOutput<OutputTuple> outStream = null;
+	protected StreamingOutput<OutputTuple> errorOutputPort = null;
 
 	static final String TABLE_PARAM_NAME = "tableName";
 	public TupleAttribute<Tuple, String> tableNameAttribute; 
@@ -81,6 +89,11 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String AUTH_PRINCIPAL = "authPrincipal";
 	static final String AUTH_KEYTAB = "authKeytab";
+	static final String FAILURE_ACTION = "failureAction";
+	static final String FAILURE_ACTION_LOG = "log";
+	static final String FAILURE_ACTION_TERMINATE = "terminate";
+	static final String FAILURE_ACTION_ERROR_ATTRIBUTE = "errorAttribute";
+	static final String ERROR_PARAM_NAME = "outputErrorAttr";
 	static final String JAR_LIBS_PATH = "/opt/downloaded/*";
 	
 	static final String CHARSET_PARAM_NAME = "charset";
@@ -88,6 +101,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final int BYTES_IN_LONG = Long.SIZE / Byte.SIZE;
 
 	
+	/**
+	 *  signifies if the operator has error port defined or not
+	 * assuming in the beginning that the operator does not have an error output
+	 * port by setting hasErrorPort to false. further down in the code, if the
+	 * number of output ports is 2, we set to true We send data to error output
+	 * port only in case where hasErrorPort is set to true which implies that
+	 * the operator instance has a error output port defined.
+	 */
+	public boolean hasErrorPort = false;
+
 	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
 	
 	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The **hbaseSite** parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
@@ -139,6 +162,25 @@ public abstract class HBASEOperator extends AbstractOperator {
 		return fAuthKeytab;
 	}
 
+	
+	@Parameter(name = FAILURE_ACTION, optional = true, description = "The **failureAction** parameter specifies the action in case of any error during the HBase access."
+			+ "This optional parameter has values of log, errorAttribute and terminate. "
+			+ "If not specified, log is assumed. If failureAction is log, the error is logged, and the error condition is cleared. "
+			+ "If failureAction is errorAttribute the error is logged and additional it requires an attribute on the output port, that will contain the error text. "
+			+ "If failureAction is terminate, the error is logged, will forward/throw exceptions that terminate the operator if no @catch annotation or ExceptionCatcher is in use. ")
+	public void setFailureAction(String failureAction) {
+		this.fFailureAction = failureAction;
+	}
+
+	@Parameter(name = ERROR_PARAM_NAME, optional = true, description = "This parameter specifies the name of attribute of the output port where the operator puts the error text.")
+	public void setErrorAttr(String errorAttr) {
+		fErrorAttr = errorAttr;
+	}
+
+	public String getfailureAction() {
+		return fFailureAction;
+	}
+	
 	protected static String getNoCCString() {
 		return Messages.getString("HBASE_OP_NO_CONSISTENT_REGION", "HBASEOperator");
 	}
@@ -335,9 +377,15 @@ public abstract class HBASEOperator extends AbstractOperator {
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
 
+		// check if the operator has an error output port
+		if (context.getNumberOfStreamingOutputs() == 2) {
+			errorOutputPort = getOutput(1);
+		}
+				
 		if (tableName != null){
 			tableNameBytes = tableName.getBytes(charset);
 		}
+				
 		getConnection();
 	}
 
@@ -416,10 +464,9 @@ public abstract class HBASEOperator extends AbstractOperator {
 		
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
-				throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
-		          	+ "' does not exists.");
-				}
+				  	throw new TableNotFoundException("Table '" + TableNameStr + "' does not exists.");
 			}
+		}
 		
 		return connection.getTable(tableTableName);
 	}
@@ -473,5 +520,50 @@ public abstract class HBASEOperator extends AbstractOperator {
 		}
 		return toReturn;
 	}
+	
+	/**
+	 * Populate and submit an output tuple. If the operator is configured with
+	 * an output, create an output tuple, populate it from the input tuple and
+	 * the success attribute, and return.
+	 * 
+	 * @param inputTuple
+	 *            The input tuple to use.
+	 * @param success
+	 *            The success attribute
+	 * @throws Exception
+	 *             If there is a problem with the submission.
+	 */
+	protected void submitOutputTuple(Tuple inputTuple, boolean success)
+			throws Exception {
+		if (outStream != null) {
+			// Create a new tuple for output port 0
+			OutputTuple outTuple = outStream.newTuple();
+			// Copy across all matching attributes.
+			outTuple.assign(inputTuple);
+			if (successAttrIndex >= 0) {
+				outTuple.setBoolean(successAttrIndex, success);
+			}		
+			outStream.submit(outTuple);
+		}
+	}
 
+
+	/**
+	 * Create and submit an output tuple. If the operator is configured with
+	 * an error output, create an output tuple, and submit the error message
+	 * 
+	 * @param errorMessage
+	 *            The input error message.
+	 * @throws Exception
+	 *             If there is a problem with the submission.
+	 */
+	protected void submitErrorMessage(String errorMessage)
+			throws Exception {
+		if (errorOutputPort != null){
+			OutputTuple errorTuple = errorOutputPort.newTuple();
+			errorTuple.setString(0, errorMessage);			
+			errorOutputPort.submit(errorTuple);
+		}
+	}
+		
 }
