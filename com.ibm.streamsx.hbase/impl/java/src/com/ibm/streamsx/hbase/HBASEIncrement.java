@@ -4,6 +4,7 @@
 package com.ibm.streamsx.hbase;
 
 import org.apache.hadoop.hbase.TableNotFoundException;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,10 @@ import com.ibm.streams.operator.model.Icons;
 import com.ibm.streams.operator.model.InputPortSet;
 import com.ibm.streams.operator.model.InputPortSet.WindowMode;
 import com.ibm.streams.operator.model.InputPortSet.WindowPunctuationInputMode;
+import com.ibm.streams.operator.model.OutputPortSet.WindowPunctuationOutputMode;
 import com.ibm.streams.operator.model.InputPorts;
+import com.ibm.streams.operator.model.OutputPortSet;
+import com.ibm.streams.operator.model.OutputPorts;
 import com.ibm.streams.operator.model.Parameter;
 import com.ibm.streams.operator.model.PrimitiveOperator;
 import com.ibm.streams.operator.state.ConsistentRegionContext;
@@ -33,7 +37,11 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 @PrimitiveOperator(name = "HBASEIncrement", namespace = "com.ibm.streamsx.hbase", description = "The `HBASEIncrement` operator increments the specified HBase entry.  The operator uses the `HTable.increment` function.  You can specify the value to increment as an operator parameter or as an attribute in the input tuple."
 		+ HBASEIncrement.CONSISTENT_REGION_INFO + HBASEOperator.DOC_BLANKLINE + HBASEOperator.commonDesc)
 @InputPorts({
-		@InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
+	@InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
+@OutputPorts({ 
+	@OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
 @Icons(location32 = "impl/java/icons/HBASEIncrement_32.gif", location16 = "impl/java/icons/HBASEIncrement_16.gif")
 public class HBASEIncrement extends HBASEOperatorWithInput {
 
@@ -132,11 +140,16 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 		try {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		if (myTable != null ){
-			myTable.incrementColumnValue(row, colF, colQ, incr);
+			boolean success = false;
+			long number = myTable.incrementColumnValue(row, colF, colQ, incr);
+			if (number > 0 ){
+				success = true;
+			}
+			submitOutputTuple(tuple, success);				
 			myTable.close();
 		}
 	}

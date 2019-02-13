@@ -97,7 +97,12 @@ import com.ibm.streams.operator.types.RString;
 		+ " exists on the output port, it is populated with the number of values found.  This behavior can help you distinguish between the case where the value returned is zero and the case where no such entry existed in HBase."
 		+ HBASEGet.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Description of which tuples to get", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Input tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+@OutputPorts({ 
+	@OutputPortSet(description = "Output tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
+
+
 @Icons(location32 = "impl/java/icons/HBASEGet_32.gif", location16 = "impl/java/icons/HBASEGet_16.gif")
 public class HBASEGet extends HBASEOperatorWithInput {
 
@@ -324,13 +329,8 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		try {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			logger.error(e.getMessage());
-			// Set the num results, if needed.
-			if (fErrorAttr != null) {
-				outTuple.setString(fErrorAttr, e.getMessage());
-			}
-
 		}
 
 		if ( myTable != null) {

@@ -172,7 +172,6 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		try {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
-			errorText = e.getMessage();
 //			e.printStackTrace();
 			logger.error(e.getMessage());
 		}

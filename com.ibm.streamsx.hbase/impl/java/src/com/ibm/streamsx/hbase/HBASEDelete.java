@@ -58,12 +58,15 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ " is set to true. Otherwise, the attribute of the output tuple is false."
 		+ HBASEDelete.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "This port can only be used if "+HBASEPutDelete.CHECK_ATTR_PARAM + " is specified. "
+@OutputPorts({ 
+	@OutputPortSet(description = "This port can only be used if "+HBASEPutDelete.CHECK_ATTR_PARAM + " is specified. "
 		+ "When that attribute is specified, deletes are conditional on the state of the table, and so may either succeed or fail. "
 		+ "This output port allows the SPL developer to determine whether the delete succeede or failed.  "
 		+ "For each input tuple, an output tuple is generated. "
 		+ "The attribute named by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true when the delete succeded, and false otherwise.  "
-		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
 @Icons(location32 = "impl/java/icons/HBASEDelete_32.gif", location16 = "impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {
 

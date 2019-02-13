@@ -75,8 +75,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 	private String fAuthKeytab = null;
 	private String fFailureAction = null;
 	protected Connection connection = null;
-	public String fErrorAttr = null;
-	public String errorText = null;
 	public int successAttrIndex = -1;
 	public StreamingOutput<OutputTuple> outStream = null;
 	protected StreamingOutput<OutputTuple> errorOutputPort = null;
@@ -89,11 +87,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final String STATIC_COLQ_NAME = "staticColumnQualifier";
 	static final String AUTH_PRINCIPAL = "authPrincipal";
 	static final String AUTH_KEYTAB = "authKeytab";
-	static final String FAILURE_ACTION = "failureAction";
-	static final String FAILURE_ACTION_LOG = "log";
-	static final String FAILURE_ACTION_TERMINATE = "terminate";
-	static final String FAILURE_ACTION_ERROR_ATTRIBUTE = "errorAttribute";
-	static final String ERROR_PARAM_NAME = "outputErrorAttr";
 	static final String JAR_LIBS_PATH = "/opt/downloaded/*";
 	
 	static final String CHARSET_PARAM_NAME = "charset";
@@ -160,21 +153,6 @@ public abstract class HBASEOperator extends AbstractOperator {
 
 	public String getAuthKeytab() {
 		return fAuthKeytab;
-	}
-
-	
-	@Parameter(name = FAILURE_ACTION, optional = true, description = "The **failureAction** parameter specifies the action in case of any error during the HBase access."
-			+ "This optional parameter has values of log, errorAttribute and terminate. "
-			+ "If not specified, log is assumed. If failureAction is log, the error is logged, and the error condition is cleared. "
-			+ "If failureAction is errorAttribute the error is logged and additional it requires an attribute on the output port, that will contain the error text. "
-			+ "If failureAction is terminate, the error is logged, will forward/throw exceptions that terminate the operator if no @catch annotation or ExceptionCatcher is in use. ")
-	public void setFailureAction(String failureAction) {
-		this.fFailureAction = failureAction;
-	}
-
-	@Parameter(name = ERROR_PARAM_NAME, optional = true, description = "This parameter specifies the name of attribute of the output port where the operator puts the error text.")
-	public void setErrorAttr(String errorAttr) {
-		fErrorAttr = errorAttr;
 	}
 
 	public String getfailureAction() {
@@ -377,11 +355,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
 
+		
 		// check if the operator has an error output port
-		if (context.getNumberOfStreamingOutputs() == 2) {
-			errorOutputPort = getOutput(1);
+		for (int i=0; i < context.getNumberOfStreamingOutputs(); i++ ){			
+			if ( i == 0) outStream = getOutput(i);
+			if ( i == 1) errorOutputPort = getOutput(1);
 		}
-				
+
 		if (tableName != null){
 			tableNameBytes = tableName.getBytes(charset);
 		}
@@ -421,16 +401,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 
 	/**
-	 * Subclasses should not generally use this. The should instead create HTableInterface via
-	 * connection.getTable(tableNameBytes).
-	 * However, HTableInterface doesn't have getStartEndKeys(), so that's why we need
-	 * an actual HTable.
+	 * getHTable get an Admin from connection ant returns a table if table exists. 
+	 * In case of any error it logs the error and submits error message if the operator has an error output port.
 	 * 
-	 * @return HTable object.
-	 * @throws IOException
+	 * @return Table.
+	 * @throws TableNotFoundException
 	 *
-	 */
-	
+	 */	
 	protected Table getHTable() throws TableNotFoundException, IOException {
 		if (tableName == null){
 			return null;
@@ -439,14 +416,28 @@ public abstract class HBASEOperator extends AbstractOperator {
 		final TableName tableTableName = TableName.valueOf(tableNameBytes);
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
-		    	throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
-		          + "' does not exists.");
+				String errorMessage = "Table '" + tableTableName.getNameAsString()
+				          + "' does not exists.";					
+					try {
+			    		submitErrorMessagee(errorMessage);
+					} catch (Exception e) {
+						logger.error(e.getMessage());
+					}
+		    		throw new TableNotFoundException(errorMessage);
 		    	}
 			}
 		return connection.getTable(tableTableName);
 	}
 
 	
+	/**
+	 * getHTable get an Admin from connection ant returns a table if table exists. 
+	 * In case of any error it logs the error and submits error message if the operator has an error output port.
+	 * @param Tuple 
+	 * @return Table.
+	 * @throws TableNotFoundException
+	 *
+	 */	
 	protected Table getHTable(Tuple tuple) throws TableNotFoundException, IOException {
 		String TableNameStr = null;
 		if (tableName != null) {
@@ -464,10 +455,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 		
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
-				  	throw new TableNotFoundException("Table '" + TableNameStr + "' does not exists.");
-			}
-		}
-		
+				String errorMessage = "Table '" + tableTableName.getNameAsString()
+		          + "' does not exists.";					
+				try {
+		    		submitErrorMessagee(errorMessage);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+				throw new TableNotFoundException(errorMessage);
+			}	
+		}		
 		return connection.getTable(tableTableName);
 	}
 
@@ -557,13 +554,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * @throws Exception
 	 *             If there is a problem with the submission.
 	 */
-	protected void submitErrorMessage(String errorMessage)
+	protected void submitErrorMessagee(String errorMessage)
 			throws Exception {
 		if (errorOutputPort != null){
 			OutputTuple errorTuple = errorOutputPort.newTuple();
 			errorTuple.setString(0, errorMessage);			
 			errorOutputPort.submit(errorTuple);
-		}
+		}	
 	}
 		
 }

@@ -102,9 +102,9 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 		+ "port is set to true if the put operation occurs, and false otherwise."
 		+ HBASEPut.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
-		@OutputPortSet(cardinality = 1, optional = true, description = "The `HBASEPut` operator has one optional output port. This port submits tuples when an error occurs while the operator is running the SQL statement. "
-				+ "The tuples deliver error message. ") })
+@OutputPorts({ 
+	@OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 
 @Icons(location32 = "impl/java/icons/HBASEPut_32.gif", location16 = "impl/java/icons/HBASEPut_16.gif")
 public class HBASEPut extends HBASEPutDelete {
@@ -276,7 +276,6 @@ public class HBASEPut extends HBASEPutDelete {
 			} catch (TableNotFoundException e) {
 //				e.printStackTrace();
 				logger.error(e.getMessage());
-				submitErrorMessage(e.getMessage());
 			}		
 		}
 		

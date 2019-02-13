@@ -166,11 +166,12 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
 * The HBABSPut parameter 'successAttr' is not depending to the parameter 'checkAttrName'
 * It returns in output parameter a boolean results after a successfully insert data into table. 
 
+++ What is new in version 3.4.0
 	
-
+* Add a new optional output port for error information. This port submits error message when an error occurs while HBase actions.
 
 </info:description>
-    <info:version>3.3.0</info:version>
+    <info:version>3.4.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>

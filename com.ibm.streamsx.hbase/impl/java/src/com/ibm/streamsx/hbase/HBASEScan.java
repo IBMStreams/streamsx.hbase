@@ -67,11 +67,14 @@ import com.ibm.streams.operator.state.StateHandler;
  */
 @PrimitiveOperator(name = "HBASEScan", namespace = "com.ibm.streamsx.hbase", description = HBASEScan.operatorDescription)
 @InputPorts({ @InputPortSet(description = "Tuple describing scan.  Should contain either (1) startRow, (2) endRow, (3) startRow and endRow, or (4) rowPrefix attribute.", cardinality = 1, optional = true, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "If "
+@OutputPorts({ 
+	@OutputPortSet(description = "If "
 		+ HBASEGet.OUT_PARAM_NAME
 		+ " is a list or a primitive type, there will be one tuple per HBASE entry.  If "
 		+ HBASEGet.OUT_PARAM_NAME
-		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating) })
+		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
 @Icons(location32 = "impl/java/icons/HBASEScan_32.gif", location16 = "impl/java/icons/HBASEScan_16.gif")
 public class HBASEScan extends HBASEOperator implements StateHandler {
 	static final String TRIGGER_PARAM = "triggerCount";
@@ -161,7 +164,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myScan = new Scan();
 			}
 
-		//	myTable = operator.connection.getTable(operator.tableNameBytes);
 			myTable = operator.getHTable();
 			
 			// This sets any filters based on operator parameters.
