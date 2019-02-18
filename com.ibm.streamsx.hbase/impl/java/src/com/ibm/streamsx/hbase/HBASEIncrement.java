@@ -144,14 +144,18 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 		}
 
 		if (myTable != null ){
-			boolean success = false;
-			long number = myTable.incrementColumnValue(row, colF, colQ, incr);
-			if (number > 0 ){
-				success = true;
+			try{
+				boolean success = false;
+				long number = myTable.incrementColumnValue(row, colF, colQ, incr);
+				if (number > 0 ){
+					success = true;
+				}
+				submitOutputTuple(tuple, success);				
+				myTable.close();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage());
 			}
-			submitOutputTuple(tuple, success);				
-			myTable.close();
 		}
 	}
-
 }

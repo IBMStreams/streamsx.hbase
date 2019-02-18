@@ -334,40 +334,43 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		}
 
 		if ( myTable != null) {
-
-		Result r = myTable.get(myGet);
-
-		int numResults = r.size();
-
-		switch (outputMode) {
-		case CELL:
-			if (numResults > 0)
-				outMapper.populate(outTuple, r.getMap().get(colF).get(colQ));
-			break;
-		case RECORD:
-			if (numResults > 0) {
-				numResults = outMapper.populateRecord(outTuple, r.getMap());
-				// In this case, we reset the number of results. This way, a
-				// down stream operator can check that all were
-				// populated.
+			try {
+				Result r = myTable.get(myGet);
+		
+				int numResults = r.size();
+		
+				switch (outputMode) {
+				case CELL:
+					if (numResults > 0)
+						outMapper.populate(outTuple, r.getMap().get(colF).get(colQ));
+					break;
+				case RECORD:
+					if (numResults > 0) {
+						numResults = outMapper.populateRecord(outTuple, r.getMap());
+						// In this case, we reset the number of results. This way, a
+						// down stream operator can check that all were
+						// populated.
+					}
+					break;
+				case QUAL_TO_VALUE:
+					outTuple.setMap(outAttrName, makeStringMap(r.getFamilyMap(colF)));
+					break;
+				case FAMILY_TO_VALUE:
+					outTuple.setMap(outAttrName, makeMapOfMap(r.getNoVersionMap()));
+					break;
+				}
+				// Set the num results, if needed.
+				if (successAttr != null) {
+					outTuple.setInt(successAttr, numResults);
+				}
+		
+				// Submit new tuple to output port 0
+				outStream.submit(outTuple);
+				myTable.close();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage());
 			}
-			break;
-		case QUAL_TO_VALUE:
-			outTuple.setMap(outAttrName, makeStringMap(r.getFamilyMap(colF)));
-			break;
-		case FAMILY_TO_VALUE:
-			outTuple.setMap(outAttrName, makeMapOfMap(r.getNoVersionMap()));
-			break;
-		}
-		// Set the num results, if needed.
-		if (successAttr != null) {
-			outTuple.setInt(successAttr, numResults);
-		}
-
-		// Submit new tuple to output port 0
-		outStream.submit(outTuple);
-		myTable.close();
 		}
 	}
-
 }

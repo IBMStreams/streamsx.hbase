@@ -4,7 +4,6 @@
 package com.ibm.streamsx.hbase;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,10 +14,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.hadoop.hbase.HRegionLocation;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.HRegionInfo;
-import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.RegionLocator;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -929,11 +926,16 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			e.printStackTrace();
 		}
 
-		if (myTable != null ){
-		
-			ResultScanner resultScanner = startScan(myTable, myScan);
-			submitResults(tuple, resultScanner, (long) -1);
-			myTable.close();
+		if (myTable != null ){			
+			try{
+			
+				ResultScanner resultScanner = startScan(myTable, myScan);
+				submitResults(tuple, resultScanner, (long) -1);
+				myTable.close();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage());
+			}
 		}
 		out.punctuate(Punctuation.WINDOW_MARKER);
 	}

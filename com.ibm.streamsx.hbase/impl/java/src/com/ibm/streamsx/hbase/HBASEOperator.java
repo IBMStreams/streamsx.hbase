@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -547,7 +549,8 @@ public abstract class HBASEOperator extends AbstractOperator {
 
 	/**
 	 * Create and submit an output tuple. If the operator is configured with
-	 * an error output, create an output tuple, and submit the error message
+	 * an error output, create an output tuple, and submit the error message.
+	 * Add the current date time and the name of operator that causes error to the error message.
 	 * 
 	 * @param errorMessage
 	 *            The input error message.
@@ -557,6 +560,9 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected void submitErrorMessagee(String errorMessage)
 			throws Exception {
 		if (errorOutputPort != null){
+			// add current date and time and operator name to error message
+			String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+			errorMessage = timeStamp + "  " + errorOutputPort.getName() + " :  " + errorMessage;
 			OutputTuple errorTuple = errorOutputPort.newTuple();
 			errorTuple.setString(0, errorMessage);			
 			errorOutputPort.submit(errorTuple);
