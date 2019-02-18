@@ -244,7 +244,7 @@ public class HBASEDelete extends HBASEPutDelete {
 				myTable.close();
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				submitErrorMessagee(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
 	}

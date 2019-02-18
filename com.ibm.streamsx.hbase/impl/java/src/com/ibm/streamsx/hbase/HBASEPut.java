@@ -337,7 +337,7 @@ public class HBASEPut extends HBASEPutDelete {
 				}
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				submitErrorMessagee(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
 		// Checks to see if an output tuple is necessary, and if so,

@@ -79,7 +79,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 	protected Connection connection = null;
 	public int successAttrIndex = -1;
 	public StreamingOutput<OutputTuple> outStream = null;
-	protected StreamingOutput<OutputTuple> errorOutputPort = null;
+	public StreamingOutput<OutputTuple> errorOutputPort = null;
 
 	static final String TABLE_PARAM_NAME = "tableName";
 	public TupleAttribute<Tuple, String> tableNameAttribute; 
@@ -361,7 +361,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 		// check if the operator has an error output port
 		for (int i=0; i < context.getNumberOfStreamingOutputs(); i++ ){			
 			if ( i == 0) outStream = getOutput(i);
-			if ( i == 1) errorOutputPort = getOutput(1);
+			if ( i == 1) errorOutputPort = getOutput(i);
 		}
 
 		if (tableName != null){
@@ -421,7 +421,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 				String errorMessage = "Table '" + tableTableName.getNameAsString()
 				          + "' does not exists.";					
 					try {
-			    		submitErrorMessagee(errorMessage);
+			    		submitErrorMessagee(errorMessage, null);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 					}
@@ -460,7 +460,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 				String errorMessage = "Table '" + tableTableName.getNameAsString()
 		          + "' does not exists.";					
 				try {
-		    		submitErrorMessagee(errorMessage);
+		    		submitErrorMessagee(errorMessage, tuple);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
@@ -557,12 +557,15 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * @throws Exception
 	 *             If there is a problem with the submission.
 	 */
-	protected void submitErrorMessagee(String errorMessage)
+	protected void submitErrorMessagee(String errorMessage, Tuple inputTuple)
 			throws Exception {
 		if (errorOutputPort != null){
 			// add current date and time and operator name to error message
 			String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
-			errorMessage = timeStamp + "  " + errorOutputPort.getName() + " :  " + errorMessage;
+			errorMessage = timeStamp + " , " + errorOutputPort.getName() + " , " + errorMessage;
+			// add input tuple to error message
+			if (inputTuple != null)
+				errorMessage = errorMessage + " , " + inputTuple.toString();
 			OutputTuple errorTuple = errorOutputPort.newTuple();
 			errorTuple.setString(0, errorMessage);			
 			errorOutputPort.submit(errorTuple);

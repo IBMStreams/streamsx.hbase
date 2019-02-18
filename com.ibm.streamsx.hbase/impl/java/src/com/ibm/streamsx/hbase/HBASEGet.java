@@ -161,7 +161,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	public static void compileChecks(OperatorContextChecker checker) {
 		OperatorContext context = checker.getOperatorContext();
 		int numOut = context.getNumberOfStreamingOutputs();
-		if (numOut != 1) {
+		if (numOut == 0) {
 			checker.setInvalidContext(Messages.getString("HBASE_GET_INVALID_OUTPUT", numOut), null);
 		}
 		checkConsistentRegionSource(checker, "HBASEGet");
@@ -369,7 +369,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 				myTable.close();
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				submitErrorMessagee(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
 	}

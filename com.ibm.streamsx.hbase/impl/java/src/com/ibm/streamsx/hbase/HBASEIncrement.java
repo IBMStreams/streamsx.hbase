@@ -154,7 +154,7 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 				myTable.close();
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				submitErrorMessagee(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
 	}

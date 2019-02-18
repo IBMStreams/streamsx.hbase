@@ -934,7 +934,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				myTable.close();
 			} catch (Exception e) {
 				logger.error(e.getMessage());
-				submitErrorMessagee(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
 		out.punctuate(Punctuation.WINDOW_MARKER);
