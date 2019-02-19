@@ -313,6 +313,7 @@ public class HBASEPut extends HBASEPutDelete {
 						byte checkColQ[] = getColumnQualifier(tuple);
 						byte checkColF[] = getColumnFamily(tuple);
 						byte checkValue[] = getValue(tuple);
+						myTable.put(myPut);
 						success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
 					}
 					logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
@@ -335,14 +336,14 @@ public class HBASEPut extends HBASEPutDelete {
 				if (!bufferTransactions){
 					myTable.close();
 				}
+				// Checks to see if an output tuple is necessary, and if so,
+				// submits it.
+				submitOutputTuple(tuple, success);
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
-		// Checks to see if an output tuple is necessary, and if so,
-		// submits it.
-		submitOutputTuple(tuple, success);
 	}
 
 	/**

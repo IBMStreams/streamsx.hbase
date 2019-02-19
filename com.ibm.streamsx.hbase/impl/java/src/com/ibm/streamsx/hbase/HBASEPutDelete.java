@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.TableNotFoundException;
-import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.ibm.streams.operator.Attribute;
@@ -162,69 +160,37 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 
-		Table myTable = null;
-		
-		StreamingInput<Tuple> inputPort = context.getStreamingInputs().get(0);
-//		Tuple tuple = inputPort.
-		StreamSchema schema = inputPort.getStreamSchema();
-		Tuple tuple = schema.getTuple();
-		
-		try {
-			myTable = getHTable(tuple);
-		} catch (TableNotFoundException e) {
-//			e.printStackTrace();
-			logger.error(e.getMessage());
+		StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
+		StreamSchema inputSchema = input.getStreamSchema();
+		if (checkAttr != null) {
+			Attribute attr = inputSchema.getAttribute(checkAttr);
+			if (attr == null) {
+				throw new Exception("Expected to find attribute with name "
+						+ checkAttr + " but did not");
+			}
+			checkAttrIndex = attr.getIndex();
+			establishCheckAttrMatching(attr);
 		}
 
-/*
-    	if (null == myTable) {
-    		Logger.getLogger(this.getClass()).error(Messages.getString("HBASE_PUT_DEL_NO_TABLE_ACCESS"));
-    		throw new Exception("Cannot access table.  Check configuration");
-    	}
+		List<StreamingOutput<OutputTuple>> outputs = context
+				.getStreamingOutputs();
+		if (outputs.size() == 1) {
+			outStream = outputs.get(0);
+		}
+		if (outputs.size() > 1) {
+			errorOutputPort = outputs.get(1);
+		}
 
-*/    	
-   
-		
-		if (myTable != null) {	
-			StreamingInput<Tuple> input = context.getStreamingInputs().get(0);
-			StreamSchema inputSchema = input.getStreamSchema();
-			if (checkAttr != null) {
-				Attribute attr = inputSchema.getAttribute(checkAttr);
-				if (attr == null) {
-					throw new Exception("Expected to find attribute with name "
-							+ checkAttr + " but did not");
-				}
-				checkAttrIndex = attr.getIndex();
-				establishCheckAttrMatching(attr);
-			}
+		if (successAttrName != null) {
+			// output port
+			StreamSchema outSchema = outStream.getStreamSchema();
+			Attribute attr = outSchema.getAttribute(successAttrName);
 
-			List<StreamingOutput<OutputTuple>> outputs = context
-					.getStreamingOutputs();
-			if (outputs.size() == 1) {
-				outStream = outputs.get(0);
+			if (attr == null) {
+				throw new Exception(
+						"passed in success attribute, but no attribute found");
 			}
-			if (outputs.size() > 1) {
-				throw new Exception("Operator only has one optional output port");
-			}
-	
-			if (successAttrName != null) {
-	//			if (checkAttrIndex < 0) {
-					// TODO do context check the right way.
-	//				throw new Exception(SUCCESS_PARAM + " only valid if "
-	//						+ CHECK_ATTR_PARAM + " exists");
-	//			}
-				// TODO also check that success attribute is only used if there's an
-				// output port
-				StreamSchema outSchema = outStream.getStreamSchema();
-				Attribute attr = outSchema.getAttribute(successAttrName);
-				
-				if (attr == null) {
-					throw new Exception(
-							"passed in success attribute, but no attribute found");
-				}
-				successAttrIndex = attr.getIndex();
-			}
-		myTable.close();
+			successAttrIndex = attr.getIndex();
     	}
 		context.registerStateHandler(this);
 	}
