@@ -323,9 +323,32 @@ public abstract class HBASEOperator extends AbstractOperator {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 	    logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
-		ArrayList<String>libList = new ArrayList<>();
-		String hadoopHome = System.getenv("HADOOP_HOME");
+
+	    String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
+		String HbaseSite = hbaseSite;
+		if (hbaseSite == null) {
+			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
+			HbaseSite = hbaseSite;
+		} else {
+			// We need to pass the absolute paths hbase-site.xml configuration file to the conf.
+			if (hbaseSite.charAt(0) != '/') {
+				hbaseSite = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + hbaseSite;
+			}
+		}
+
+		//	System.out.println("hbaseSite " + hbaseSite);
+		// check if the file hbase-site.xml exist.
+		if (hbaseSite != null) {
+			File f = new File(hbaseSite);	
+			if(!f.exists()){
+				logger.error("\nERROR: The hbase configuration file  '" + HbaseSite + "'  doesn't exist.", null);
+				logger.error(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME ), null);
+				return;
+			}
+		}	 
+		
+	    ArrayList<String>libList = new ArrayList<>();
 		String default_dir = context.getToolkitDirectory() + JAR_LIBS_PATH;
 		libList.add(default_dir);
 		if (hbaseHome != null) {
@@ -342,21 +365,11 @@ public abstract class HBASEOperator extends AbstractOperator {
 			logger.error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 		}
 	
-		
-		if (hbaseSite == null) {
-			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
-		} else {
-			// We need to pass the absolute paths hbase-site.xml configuration file to the conf.
-			if (hbaseSite.charAt(0) != '/') {
-				hbaseSite = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + hbaseSite;
-			}
-		}
-
+				
 		if ((fAuthKeytab != null) && (fAuthKeytab.charAt(0) != '/')) {
 			// We need to pass the absolute paths keytab file to the conf.
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
-
 		
 		// check if the operator has an error output port
 		for (int i=0; i < context.getNumberOfStreamingOutputs(); i++ ){			
