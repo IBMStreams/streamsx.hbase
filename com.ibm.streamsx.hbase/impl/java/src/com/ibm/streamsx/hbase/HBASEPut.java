@@ -19,6 +19,7 @@ import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamingData.Punctuation;
 import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingInput;
+import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
@@ -100,7 +101,10 @@ import com.ibm.streams.operator.model.PrimitiveOperator;
 		+ "port is set to true if the put operation occurs, and false otherwise."
 		+ HBASEPut.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Tuple to put into HBASE", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+@OutputPorts({ 
+	@OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
 @Icons(location32 = "impl/java/icons/HBASEPut_32.gif", location16 = "impl/java/icons/HBASEPut_16.gif")
 public class HBASEPut extends HBASEPutDelete {
 
@@ -215,8 +219,6 @@ public class HBASEPut extends HBASEPutDelete {
 		if (bufferTransactions) {
     		Logger.getLogger(this.getClass()).trace(Messages.getString("HBASE_PUT_DISABLING_FLUSH"));
     		cachedTable= getHTable(tuple);
-    // 		cachedTable = connection.getTable(tableNameBytes);
-
   //  		cachedTable.setAutoFlush(false, true);
     	}
 
@@ -269,74 +271,79 @@ public class HBASEPut extends HBASEPutDelete {
 			try {
 				myTable = getHTable(tuple);
 			} catch (TableNotFoundException e) {
-				e.printStackTrace();
 				logger.error(e.getMessage());
 			}		
 		}
 		
 		if (myTable != null) {
-			switch (putMode) {
-	
-			case ENTRY:
-				byte colQ[] = getColumnQualifier(tuple);
-				byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
-				myPut.addColumn(colF, colQ, value);
-				break;
-			case RECORD:
-				Tuple values = tuple.getTuple(valueAttr);
-				for (int i = 0; i < qualifierArray.length; i++) {
-					myPut.addColumn(colF, qualifierArray[i],
-							getBytes(values, i, attrType[i]));
-				}
-				break;
-			default:
-				// It should be impossible to get here.
-				throw new Exception("Unsupported Put type");
-			}
-					
-			if (successAttrName != null) {
-				byte checkRow[] = getRow(tuple);
-				if (checkAttr != null) {
-					Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-					// the row attribute and the check row attribute have to match, so
-					// don't even look
-					// in the check attribute for the row.
-					byte checkColF[] = getBytes(checkTuple, checkColFIndex, checkColFType);
-					byte checkColQ[] = getBytes(checkTuple, checkColQIndex, checkColQType);
-					byte checkValue[] = getCheckValue(checkTuple);
+			try {
+				switch (putMode) {
 		
-					success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);
-				}else{
-					// set the success value without checkTuple
-					byte checkColQ[] = getColumnQualifier(tuple);
-					byte checkColF[] = getColumnFamily(tuple);
-					byte checkValue[] = getValue(tuple);
-					success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
+				case ENTRY:
+					byte colQ[] = getColumnQualifier(tuple);
+					byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
+					myPut.addColumn(colF, colQ, value);
+					break;
+				case RECORD:
+					Tuple values = tuple.getTuple(valueAttr);
+					for (int i = 0; i < qualifierArray.length; i++) {
+						myPut.addColumn(colF, qualifierArray[i],
+								getBytes(values, i, attrType[i]));
+					}
+					break;
+				default:
+					// It should be impossible to get here.
+					throw new Exception("Unsupported Put type");
 				}
-				logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
-												
-			} else if (!bufferTransactions && batchSize == 0) {
-				
-					myTable.put(myPut);
-			} else if (bufferTransactions){
-				safePut(myPut);
-			} else {
-				synchronized (listLock) {
-					putList.add(myPut);
-					if (putList.size() >= batchSize) {
-						logger.debug(Messages.getString("HBASE_PUT_SUBMITTING_BATCH"));
-						myTable.put(putList);
-						putList.clear();
+						
+				if (successAttrName != null) {
+					byte checkRow[] = getRow(tuple);
+					if (checkAttr != null) {
+						Tuple checkTuple = tuple.getTuple(checkAttrIndex);
+						// the row attribute and the check row attribute have to match, so
+						// don't even look
+						// in the check attribute for the row.
+						byte checkColF[] = getBytes(checkTuple, checkColFIndex, checkColFType);
+						byte checkColQ[] = getBytes(checkTuple, checkColQIndex, checkColQType);
+						byte checkValue[] = getCheckValue(checkTuple);
+			
+						success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);
+					}else{
+						// set the success value without checkTuple
+						byte checkColQ[] = getColumnQualifier(tuple);
+						byte checkColF[] = getColumnFamily(tuple);
+						byte checkValue[] = getValue(tuple);
+						myTable.put(myPut);
+						success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
+					}
+					logger.debug(Messages.getString("HBASE_PUT_RESULT", success));
+													
+				} else if (!bufferTransactions && batchSize == 0) {
+					
+						myTable.put(myPut);
+				} else if (bufferTransactions){
+					safePut(myPut);
+				} else {
+					synchronized (listLock) {
+						putList.add(myPut);
+						if (putList.size() >= batchSize) {
+							logger.debug(Messages.getString("HBASE_PUT_SUBMITTING_BATCH"));
+							myTable.put(putList);
+							putList.clear();
+						}
 					}
 				}
-			}
-			if (!bufferTransactions){
-				myTable.close();
+				if (!bufferTransactions){
+					myTable.close();
+				}
+				// Checks to see if an output tuple is necessary, and if so,
+				// submits it.
+				submitOutputTuple(tuple, success);
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
 		}
-		// Checks to see if an output tuple is necessary, and if so,
-		// submits it.
-		submitOutputTuple(tuple, success);
 	}
 
 	/**

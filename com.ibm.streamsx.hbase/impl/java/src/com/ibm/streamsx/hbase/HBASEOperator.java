@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -27,9 +29,12 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.TupleAttribute;
+import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.OperatorContext;
+import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
 import com.ibm.streams.operator.StreamSchema;
+import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
@@ -71,7 +76,11 @@ public abstract class HBASEOperator extends AbstractOperator {
 	private static String hbaseSite = null;
 	private String fAuthPrincipal = null;
 	private String fAuthKeytab = null;
+	private String fFailureAction = null;
 	protected Connection connection = null;
+	public int successAttrIndex = -1;
+	public StreamingOutput<OutputTuple> outStream = null;
+	public StreamingOutput<OutputTuple> errorOutputPort = null;
 
 	static final String TABLE_PARAM_NAME = "tableName";
 	public TupleAttribute<Tuple, String> tableNameAttribute; 
@@ -88,6 +97,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 	static final int BYTES_IN_LONG = Long.SIZE / Byte.SIZE;
 
 	
+	/**
+	 *  signifies if the operator has error port defined or not
+	 * assuming in the beginning that the operator does not have an error output
+	 * port by setting hasErrorPort to false. further down in the code, if the
+	 * number of output ports is 2, we set to true We send data to error output
+	 * port only in case where hasErrorPort is set to true which implies that
+	 * the operator instance has a error output port defined.
+	 */
+	public boolean hasErrorPort = false;
+
 	org.apache.log4j.Logger logger = Logger.getLogger(this.getClass());
 	
 	@Parameter(name = HBASE_SITE_PARAM_NAME, optional = true, description = "The **hbaseSite** parameter specifies the path of hbase-site.xml file.  This is the recommended way to specify the HBASE configuration.  If not specified, then `HBASE_HOME` must be set when the operator runs, and it will use `$HBASE_SITE/conf/hbase-site.xml`")
@@ -139,6 +158,10 @@ public abstract class HBASEOperator extends AbstractOperator {
 		return fAuthKeytab;
 	}
 
+	public String getfailureAction() {
+		return fFailureAction;
+	}
+	
 	protected static String getNoCCString() {
 		return Messages.getString("HBASE_OP_NO_CONSISTENT_REGION", "HBASEOperator");
 	}
@@ -171,6 +194,15 @@ public abstract class HBASEOperator extends AbstractOperator {
 			&& (!context.getParameterNames().contains(TABLE_NAME_ATTRIBUTE))) {
 				checker.setInvalidContext("One of these parameters must be set in opeartor: '" + TABLE_PARAM_NAME + "' or '" + TABLE_NAME_ATTRIBUTE +"'", null);
 		}				
+	
+		if (context.getNumberOfStreamingOutputs() == 2) {
+			StreamingOutput<OutputTuple> errorOutputPort = context.getStreamingOutputs().get(1);
+			// The optional error output port can have only one rstring attribute.
+			if (errorOutputPort.getStreamSchema().getAttribute(0).getType().getMetaType() != Type.MetaType.RSTRING) {
+				checker.setInvalidContext("The first attribute in the optional error output port must be a rstring", null);
+			}
+		}	
+	
 	}
 
 	@ContextCheck(compile = true)
@@ -301,9 +333,32 @@ public abstract class HBASEOperator extends AbstractOperator {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
 	    logger.trace("Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
-		ArrayList<String>libList = new ArrayList<>();
-		String hadoopHome = System.getenv("HADOOP_HOME");
+
+	    String hadoopHome = System.getenv("HADOOP_HOME");
 		String hbaseHome = System.getenv("HBASE_HOME");
+		String HbaseSite = hbaseSite;
+		if (hbaseSite == null) {
+			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
+			HbaseSite = hbaseSite;
+		} else {
+			// We need to pass the absolute paths hbase-site.xml configuration file to the conf.
+			if (hbaseSite.charAt(0) != '/') {
+				hbaseSite = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + hbaseSite;
+			}
+		}
+
+		//	System.out.println("hbaseSite " + hbaseSite);
+		// check if the file hbase-site.xml exist.
+		if (hbaseSite != null) {
+			File f = new File(hbaseSite);	
+			if(!f.exists()){
+				logger.error("\nERROR: The hbase configuration file  '" + HbaseSite + "'  doesn't exist.", null);
+				logger.error(Messages.getString("HBASE_OP_NO_HBASE_HOME", HBASE_SITE_PARAM_NAME ), null);
+				return;
+			}
+		}	 
+		
+	    ArrayList<String>libList = new ArrayList<>();
 		String default_dir = context.getToolkitDirectory() + JAR_LIBS_PATH;
 		libList.add(default_dir);
 		if (hbaseHome != null) {
@@ -320,24 +375,23 @@ public abstract class HBASEOperator extends AbstractOperator {
 			logger.error(Messages.getString("HBASE_OP_NO_CLASSPATH"));
 		}
 	
-		
-		if (hbaseSite == null) {
-			hbaseSite = hbaseHome + File.separator + "conf" + File.separator + "hbase-site.xml";
-		} else {
-			// We need to pass the absolute paths hbase-site.xml configuration file to the conf.
-			if (hbaseSite.charAt(0) != '/') {
-				hbaseSite = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + hbaseSite;
-			}
-		}
-
+				
 		if ((fAuthKeytab != null) && (fAuthKeytab.charAt(0) != '/')) {
 			// We need to pass the absolute paths keytab file to the conf.
 			fAuthKeytab = context.getPE().getApplicationDirectory().getAbsolutePath() + File.separator + fAuthKeytab;
 		}
+		
+		// check if the operator has an error output port
+		for (int i=0; i < context.getNumberOfStreamingOutputs(); i++ ){			
+			if ( i == 0) outStream = getOutput(i);
+			if ( i == 1) errorOutputPort = getOutput(i);
+		}
 
+		
 		if (tableName != null){
 			tableNameBytes = tableName.getBytes(charset);
 		}
+				
 		getConnection();
 	}
 
@@ -373,16 +427,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	}
 
 	/**
-	 * Subclasses should not generally use this. The should instead create HTableInterface via
-	 * connection.getTable(tableNameBytes).
-	 * However, HTableInterface doesn't have getStartEndKeys(), so that's why we need
-	 * an actual HTable.
+	 * getHTable get an Admin from connection ant returns a table if table exists. 
+	 * In case of any error it logs the error and submits error message if the operator has an error output port.
 	 * 
-	 * @return HTable object.
-	 * @throws IOException
+	 * @return Table.
+	 * @throws TableNotFoundException
 	 *
-	 */
-	
+	 */	
 	protected Table getHTable() throws TableNotFoundException, IOException {
 		if (tableName == null){
 			return null;
@@ -391,14 +442,28 @@ public abstract class HBASEOperator extends AbstractOperator {
 		final TableName tableTableName = TableName.valueOf(tableNameBytes);
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
-		    	throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
-		          + "' does not exists.");
+				String errorMessage = "Table '" + tableTableName.getNameAsString()
+				          + "' does not exists.";					
+					try {
+			    		submitErrorMessagee(errorMessage, null);
+					} catch (Exception e) {
+						logger.error(e.getMessage());
+					}
+		    		throw new TableNotFoundException(errorMessage);
 		    	}
 			}
 		return connection.getTable(tableTableName);
 	}
 
 	
+	/**
+	 * getHTable get an Admin from connection ant returns a table if table exists. 
+	 * In case of any error it logs the error and submits error message if the operator has an error output port.
+	 * @param Tuple 
+	 * @return Table.
+	 * @throws TableNotFoundException
+	 *
+	 */	
 	protected Table getHTable(Tuple tuple) throws TableNotFoundException, IOException {
 		String TableNameStr = null;
 		if (tableName != null) {
@@ -416,11 +481,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 		
 		try (Admin admin = this.connection.getAdmin()) {
 			if (!admin.tableExists(tableTableName)) {
-				throw new TableNotFoundException("Table '" + tableTableName.getNameAsString()
-		          	+ "' does not exists.");
+				String errorMessage = "Table '" + tableTableName.getNameAsString()
+		          + "' does not exists.";					
+				try {
+		    		submitErrorMessagee(errorMessage, tuple);
+				} catch (Exception e) {
+					logger.error(e.getMessage());
 				}
-			}
-		
+				throw new TableNotFoundException(errorMessage);
+			}	
+		}		
 		return connection.getTable(tableTableName);
 	}
 
@@ -473,5 +543,57 @@ public abstract class HBASEOperator extends AbstractOperator {
 		}
 		return toReturn;
 	}
+	
+	/**
+	 * Populate and submit an output tuple. If the operator is configured with
+	 * an output, create an output tuple, populate it from the input tuple and
+	 * the success attribute, and return.
+	 * 
+	 * @param inputTuple
+	 *            The input tuple to use.
+	 * @param success
+	 *            The success attribute
+	 * @throws Exception
+	 *             If there is a problem with the submission.
+	 */
+	protected void submitOutputTuple(Tuple inputTuple, boolean success)
+			throws Exception {
+		if (outStream != null) {
+			// Create a new tuple for output port 0
+			OutputTuple outTuple = outStream.newTuple();
+			// Copy across all matching attributes.
+			outTuple.assign(inputTuple);
+			if (successAttrIndex >= 0) {
+				outTuple.setBoolean(successAttrIndex, success);
+			}		
+			outStream.submit(outTuple);
+		}
+	}
 
+
+	/**
+	 * Create and submit an output tuple. If the operator is configured with
+	 * an error output, create an output tuple, and submit the error message.
+	 * Add the current date time and the name of operator that causes error to the error message.
+	 * 
+	 * @param errorMessage
+	 *            The input error message.
+	 * @throws Exception
+	 *             If there is a problem with the submission.
+	 */
+	protected void submitErrorMessagee(String errorMessage, Tuple inputTuple)
+			throws Exception {
+		if (errorOutputPort != null){
+			// add current date and time and operator name to error message
+			String timeStamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+			errorMessage = timeStamp + " , " + errorOutputPort.getName() + " , " + errorMessage;
+			// add input tuple to error message
+			if (inputTuple != null)
+				errorMessage = errorMessage + " , " + inputTuple.toString();
+			OutputTuple errorTuple = errorOutputPort.newTuple();
+			errorTuple.setString(0, errorMessage);			
+			errorOutputPort.submit(errorTuple);
+		}	
+	}
+		
 }

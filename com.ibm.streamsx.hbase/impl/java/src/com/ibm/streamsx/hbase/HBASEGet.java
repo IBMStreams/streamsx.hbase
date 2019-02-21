@@ -97,7 +97,12 @@ import com.ibm.streams.operator.types.RString;
 		+ " exists on the output port, it is populated with the number of values found.  This behavior can help you distinguish between the case where the value returned is zero and the case where no such entry existed in HBase."
 		+ HBASEGet.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Description of which tuples to get", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "Input tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+@OutputPorts({ 
+	@OutputPortSet(description = "Output tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
+
+
 @Icons(location32 = "impl/java/icons/HBASEGet_32.gif", location16 = "impl/java/icons/HBASEGet_16.gif")
 public class HBASEGet extends HBASEOperatorWithInput {
 
@@ -156,7 +161,7 @@ public class HBASEGet extends HBASEOperatorWithInput {
 	public static void compileChecks(OperatorContextChecker checker) {
 		OperatorContext context = checker.getOperatorContext();
 		int numOut = context.getNumberOfStreamingOutputs();
-		if (numOut != 1) {
+		if (numOut == 0) {
 			checker.setInvalidContext(Messages.getString("HBASE_GET_INVALID_OUTPUT", numOut), null);
 		}
 		checkConsistentRegionSource(checker, "HBASEGet");
@@ -324,45 +329,48 @@ public class HBASEGet extends HBASEOperatorWithInput {
 		try {
 			myTable = getHTable(tuple);
 		} catch (TableNotFoundException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			logger.error(e.getMessage());
 		}
 
 		if ( myTable != null) {
-
-		Result r = myTable.get(myGet);
-
-		int numResults = r.size();
-
-		switch (outputMode) {
-		case CELL:
-			if (numResults > 0)
-				outMapper.populate(outTuple, r.getMap().get(colF).get(colQ));
-			break;
-		case RECORD:
-			if (numResults > 0) {
-				numResults = outMapper.populateRecord(outTuple, r.getMap());
-				// In this case, we reset the number of results. This way, a
-				// down stream operator can check that all were
-				// populated.
+			try {
+				Result r = myTable.get(myGet);
+		
+				int numResults = r.size();
+		
+				switch (outputMode) {
+				case CELL:
+					if (numResults > 0)
+						outMapper.populate(outTuple, r.getMap().get(colF).get(colQ));
+					break;
+				case RECORD:
+					if (numResults > 0) {
+						numResults = outMapper.populateRecord(outTuple, r.getMap());
+						// In this case, we reset the number of results. This way, a
+						// down stream operator can check that all were
+						// populated.
+					}
+					break;
+				case QUAL_TO_VALUE:
+					outTuple.setMap(outAttrName, makeStringMap(r.getFamilyMap(colF)));
+					break;
+				case FAMILY_TO_VALUE:
+					outTuple.setMap(outAttrName, makeMapOfMap(r.getNoVersionMap()));
+					break;
+				}
+				// Set the num results, if needed.
+				if (successAttr != null) {
+					outTuple.setInt(successAttr, numResults);
+				}
+		
+				// Submit new tuple to output port 0
+				outStream.submit(outTuple);
+				myTable.close();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
-			break;
-		case QUAL_TO_VALUE:
-			outTuple.setMap(outAttrName, makeStringMap(r.getFamilyMap(colF)));
-			break;
-		case FAMILY_TO_VALUE:
-			outTuple.setMap(outAttrName, makeMapOfMap(r.getNoVersionMap()));
-			break;
-		}
-		// Set the num results, if needed.
-		if (successAttr != null) {
-			outTuple.setInt(successAttr, numResults);
-		}
-
-		// Submit new tuple to output port 0
-		outStream.submit(outTuple);
-		myTable.close();
 		}
 	}
-
 }

@@ -58,12 +58,15 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ " is set to true. Otherwise, the attribute of the output tuple is false."
 		+ HBASEDelete.consistentCutInfo + HBASEOperator.commonDesc)
 @InputPorts({ @InputPortSet(description = "Representation of tuple to delete", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
-@OutputPorts({ @OutputPortSet(description = "This port can only be used if "+HBASEPutDelete.CHECK_ATTR_PARAM + " is specified. "
+@OutputPorts({ 
+	@OutputPortSet(description = "This port can only be used if "+HBASEPutDelete.CHECK_ATTR_PARAM + " is specified. "
 		+ "When that attribute is specified, deletes are conditional on the state of the table, and so may either succeed or fail. "
 		+ "This output port allows the SPL developer to determine whether the delete succeede or failed.  "
 		+ "For each input tuple, an output tuple is generated. "
 		+ "The attribute named by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true when the delete succeded, and false otherwise.  "
-		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
+	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+
 @Icons(location32 = "impl/java/icons/HBASEDelete_32.gif", location16 = "impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {
 
@@ -192,52 +195,57 @@ public class HBASEDelete extends HBASEPutDelete {
 		}
 
 		if ( myTable != null ){
-			byte row[] = getRow(tuple);
-			Delete myDelete = new Delete(row);
-	
-			if (DeleteMode.COLUMN_FAMILY == deleteMode) {
-				byte colF[] = getColumnFamily(tuple);
-				myDelete.addFamily(colF);
-			} else if (DeleteMode.COLUMN == deleteMode) {
-				byte colF[] = getColumnFamily(tuple);
-				byte colQ[] = getColumnQualifier(tuple);
-				if (deleteAll) {
-					myDelete.addColumns(colF, colQ);
-				} else {
-					myDelete.addColumn(colF, colQ);
-				}
-			}
-	
-			boolean success = false;
-			if (checkAttr != null) {
-				Tuple checkTuple = tuple.getTuple(checkAttrIndex);
-				// the check row and the row have to match, so don't use the
-				// checkRow.
-				byte checkRow[] = getRow(tuple);
-				byte checkColF[] = getBytes(checkTuple, checkColFIndex,
-						checkColFType);
-				byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
-						checkColQType);
-				byte checkValue[] = getCheckValue(checkTuple);
-				success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
-						checkValue, myDelete);
-			} else if (batchSize == 0) {
-				logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
-				myTable.delete(myDelete);
-			} else {
-				synchronized (listLock) {
-					deleteList.add(myDelete);
-					if (deleteList.size() >= batchSize) {
-						myTable.delete(deleteList);
-						deleteList.clear();
+			try{
+				byte row[] = getRow(tuple);
+				Delete myDelete = new Delete(row);
+		
+				if (DeleteMode.COLUMN_FAMILY == deleteMode) {
+					byte colF[] = getColumnFamily(tuple);
+					myDelete.addFamily(colF);
+				} else if (DeleteMode.COLUMN == deleteMode) {
+					byte colF[] = getColumnFamily(tuple);
+					byte colQ[] = getColumnQualifier(tuple);
+					if (deleteAll) {
+						myDelete.addColumns(colF, colQ);
+					} else {
+						myDelete.addColumn(colF, colQ);
 					}
 				}
+		
+				boolean success = false;
+				if (checkAttr != null) {
+					Tuple checkTuple = tuple.getTuple(checkAttrIndex);
+					// the check row and the row have to match, so don't use the
+					// checkRow.
+					byte checkRow[] = getRow(tuple);
+					byte checkColF[] = getBytes(checkTuple, checkColFIndex,
+							checkColFType);
+					byte checkColQ[] = getBytes(checkTuple, checkColQIndex,
+							checkColQType);
+					byte checkValue[] = getCheckValue(checkTuple);
+					success = myTable.checkAndDelete(checkRow, checkColF, checkColQ,
+							checkValue, myDelete);
+				} else if (batchSize == 0) {
+					logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
+					myTable.delete(myDelete);
+				} else {
+					synchronized (listLock) {
+						deleteList.add(myDelete);
+						if (deleteList.size() >= batchSize) {
+							myTable.delete(deleteList);
+							deleteList.clear();
+						}
+					}
+				}
+		
+				// Checks to see if an output tuple is necessary, and if so,
+				// submits it.
+				submitOutputTuple(tuple, success);
+				myTable.close();
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				submitErrorMessagee(e.getMessage(), tuple);
 			}
-	
-			// Checks to see if an output tuple is necessary, and if so,
-			// submits it.
-			submitOutputTuple(tuple, success);
-			myTable.close();
 		}
 	}
 

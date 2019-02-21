@@ -80,6 +80,7 @@ sub clearTable(%) {
 	if (defined $colFam4 && $colFam4 =~ /\w/) {
 		$createCommand .= ", \'$colFam4\'";
 	}
+	print ("$createCommand\n");
 	system("echo \"disable '$tableName'; drop '$tableName'\; ${createCommand}\" | \$HBASE_HOME/bin/hbase shell > shellResults");
 	die "Problems creating table" unless ($? >> 8 == 0) ;
 	print ("Table $tableName with columnfamilies $colFam1 $colFam2 is ready.\n\n");
