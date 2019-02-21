@@ -29,6 +29,7 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import com.ibm.streams.operator.AbstractOperator;
 import com.ibm.streams.operator.Attribute;
 import com.ibm.streams.operator.TupleAttribute;
+import com.ibm.streams.operator.Type;
 import com.ibm.streams.operator.OperatorContext;
 import com.ibm.streams.operator.OutputTuple;
 import com.ibm.streams.operator.OperatorContext.ContextCheck;
@@ -193,6 +194,15 @@ public abstract class HBASEOperator extends AbstractOperator {
 			&& (!context.getParameterNames().contains(TABLE_NAME_ATTRIBUTE))) {
 				checker.setInvalidContext("One of these parameters must be set in opeartor: '" + TABLE_PARAM_NAME + "' or '" + TABLE_NAME_ATTRIBUTE +"'", null);
 		}				
+	
+		if (context.getNumberOfStreamingOutputs() == 2) {
+			StreamingOutput<OutputTuple> errorOutputPort = context.getStreamingOutputs().get(1);
+			// The optional error output port can have only one rstring attribute.
+			if (errorOutputPort.getStreamSchema().getAttribute(0).getType().getMetaType() != Type.MetaType.RSTRING) {
+				checker.setInvalidContext("The first attribute in the optional error output port must be a rstring", null);
+			}
+		}	
+	
 	}
 
 	@ContextCheck(compile = true)
@@ -377,6 +387,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 			if ( i == 1) errorOutputPort = getOutput(i);
 		}
 
+		
 		if (tableName != null){
 			tableNameBytes = tableName.getBytes(charset);
 		}
