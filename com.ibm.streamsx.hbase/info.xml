@@ -170,8 +170,12 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
 	
 * Add a new optional output port for error information. This port submits error message when an error occurs while HBase actions.
 
+++ What is new in version 3.5.0
+	
+* The pom.xml file has been upgraded to use the Hadoop client version 2.8.5 and the HBase client version 1.4.9.
+
 </info:description>
-    <info:version>3.4.0</info:version>
+    <info:version>3.5.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
