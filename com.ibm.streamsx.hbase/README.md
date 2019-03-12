@@ -1,9 +1,6 @@
 This toolkit is for interacting with Apache HBASE.  It assumes Apache HBASE
 is already installed and running.
 
-To use the operators, you must set HADOOP_HOME and HBASE_HOME in your
-environment before compiling.
-
 This toolkit provides Streams operators to work with the HBASE API,
 so the operators are named after the HBASE API calls.  There is another
 toolkit for HBASE that takes a more database-like approach.
@@ -44,5 +41,7 @@ https://www.cloudera.com/documentation/enterprise/5-7-x/topics/cdh_sg_hbase_auth
 https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html
 
 After enabling the Kerberos authentication, copy the hbase server keytab and hbase configuration file "hbase-site.xml" from hadoop server into your IBM Streams server in a directory and use them in your SPL application.
+
+https://github.com/IBMStreams/streamsx.hbase/wiki/How-to-use-kerberos-authentication-in-streamsx.hbase-toolkit
 
 
