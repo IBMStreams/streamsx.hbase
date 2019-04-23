@@ -227,7 +227,11 @@ public class HBASEDelete extends HBASEPutDelete {
 							checkValue, myDelete);
 				} else if (batchSize == 0) {
 					logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
+					byte checkRow[] = getRow(tuple);
+					byte checkColF[] = getBytes(tuple, colFamilyIndex, colFamilyType);
+					byte checkColQ[] = getBytes(tuple, colQualifierIndex, colQualifierType);
 					myTable.delete(myDelete);
+					success = myTable.checkAndDelete(checkRow, checkColF, checkColQ, null, myDelete);
 				} else {
 					synchronized (listLock) {
 						deleteList.add(myDelete);
