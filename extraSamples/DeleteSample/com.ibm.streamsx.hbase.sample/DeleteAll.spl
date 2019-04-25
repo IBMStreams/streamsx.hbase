@@ -1,5 +1,6 @@
-namespace com.ibm.streamsx.hbase.sample;
-use com.ibm.streamsx.hbase::*;
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::* ;
 /**
  * This demonstrates the use of the deleteAllVersions parameter.
  * 
@@ -25,108 +26,104 @@ use com.ibm.streamsx.hbase::*;
  * 
  */
 composite DeleteAll {
-param 
-expression<rstring> $tableName: "streamsSample_deleteTest";
-expression<list<rstring>> $qualifiers : ["notspecified","justOne","all"];
-expression<float64> $deleteDelay: 30.0;
-graph
+	param
+		expression<rstring> $tableName : "streamsSample_deleteTest" ;
+		expression<list<rstring>> $qualifiers : [ "notspecified", "justOne", "all" ] ;
+		expression<float64> $deleteDelay : 30.0 ;
+	graph
 
-/* The next two operators load the table. 
+	/* The next two operators load the table. 
  * What we do is that we load each of the columnFamilies with 
  * <code>entry_v1,entry_v2,entry_v3</code>.
  * 
  * The column families are notspecified, justOne, and all.  
  * 
  */
-stream<rstring row, rstring colQ, rstring message> inputStream = Beacon() {
-param iterations: 9;
-period: 1.0;
+		stream<rstring row, rstring colQ, rstring message> inputStream = Beacon(){
+			param
+				iterations : 9 ;
+				period : 1.0 ;
+			output
+				inputStream : row = "deleteTest", colQ = $qualifiers [ IterationCount()%(uint64)size($qualifiers)], message = "entry_v" +(rstring)((uint64)1 +
+				IterationCount()/(uint64)size($qualifiers));
+		}
 
-output inputStream:
-row = "deleteTest",
-colQ = $qualifiers[IterationCount()%(uint64)size($qualifiers)],
-message = "entry_v"+(rstring)((uint64)1+IterationCount()/(uint64)size($qualifiers));
-}
+		()as loadTable = HBASEPut(inputStream){
+			param
+				staticColumnFamily : "all" ;
+				rowAttrName : "row" ;
+				columnQualifierAttrName : "colQ" ;
+				valueAttrName : "message" ;
+				tableName : $tableName ;
+		}
+		// End table loading.  
 
-() as loadTable = HBASEPut(inputStream) {
-param
-staticColumnFamily: "all";
-rowAttrName: "row";
-columnQualifierAttrName: "colQ";
-valueAttrName: "message";
-tableName: $tableName;
-}
-// End table loading.  
+		// These segments do the querying, just so we can see what's in the table.  We do a query every second.
+		// for 100 seconds.  
+		stream<rstring row> queryStream = Beacon(){
+			param
+				period : 1.0 ;
+				iterations : 100 ;
+			output
+				queryStream : row = "deleteTest" ;
+		}
 
-// These segments do the querying, just so we can see what's in the table.  We do a query every second.
-// for 100 seconds.  
-stream<rstring row> queryStream = Beacon() {
-param
-period: 1.0;
-iterations: 100;
-output queryStream:
-row="deleteTest";
-}
+		stream<rstring row, int32 numResults, tuple<rstring justOne, rstring all, rstring notspecified> value> tableStatus = HBASEGet(queryStream){
+			param
+				rowAttrName : "row" ;
+				tableName : $tableName ;
+				outAttrName : "value" ;
+				staticColumnFamily : "all" ;
+				outputCountAttr : "numResults" ;
+		}
 
-stream<rstring row, int32 numResults, tuple<rstring justOne, rstring all, rstring notspecified> value > tableStatus= HBASEGet(queryStream) {
-param
-rowAttrName:"row";
-tableName: $tableName;
-outAttrName: "value";
-staticColumnFamily: "all";
-outputCountAttr: "numResults";
-}
+		()as getSink = FileSink(tableStatus){
+			param
+				file : "deleteVersion_tableStatus.out" ;
+		}
 
-() as getSink = FileSink(tableStatus) {
-param file: "deleteVersion_tableStatus.out";
-}
+		// Beacon to trigger the delete operator.
+		stream<rstring row> deleteStream = Beacon(){
+			param
+				iterations : 1 ;
+				initDelay : $deleteDelay ;
+			output
+				deleteStream : row = "deleteTest" ;
+		}
 
-// Beacon to trigger the delete operator.
-stream<rstring row> deleteStream = Beacon() {
-param 
-iterations: 1;
-initDelay: $deleteDelay;
-output deleteStream:
-row = "deleteTest";
-}
+		// Delete just one version.
+		()as deleteOne = HBASEDelete(deleteStream){
+			param
+				tableName : $tableName ;
+				rowAttrName : "row" ;
+				staticColumnFamily : "all" ;
+				staticColumnQualifier : "justOne" ;
+				deleteAllVersions : false ;
+		}
 
-// Delete just one version.
-() as deleteOne = HBASEDelete(deleteStream) {
-param
-tableName: $tableName;
-rowAttrName: "row";
-staticColumnFamily:"all";
-staticColumnQualifier:"justOne";
-deleteAllVersions: false;
-}
+		// Delete all versions explicitly
+		()as deleteAll = HBASEDelete(deleteStream){
+			param
+				tableName : $tableName ;
+				rowAttrName : "row" ;
+				staticColumnFamily : "all" ;
+				staticColumnQualifier : "all" ;
+				deleteAllVersions : true ;
+		}
 
+		// Use the default delete mode (delete all)
+		// Also in this example, we specify the columnQualifier via the deleteStream
+		stream<rstring row, rstring colQ> deleteStreamWithColQ = Functor(deleteStream){
+			output
+				deleteStreamWithColQ : colQ = "notspecified" ;
+		}
 
-
-// Delete all versions explicitly
-() as deleteAll = HBASEDelete(deleteStream) {
-param
-tableName: $tableName;
-rowAttrName: "row";
-staticColumnFamily:"all";
-staticColumnQualifier:"all";
-deleteAllVersions: true;
-}
-
-// Use the default delete mode (delete all)
-// Also in this example, we specify the columnQualifier via the deleteStream
-stream<rstring row, rstring colQ> deleteStreamWithColQ = Functor(deleteStream) {
-output deleteStreamWithColQ:
-colQ= "notspecified";
-}
-
-
-() as deletedefault = HBASEDelete(deleteStreamWithColQ) {
-param
-tableName: $tableName;
-rowAttrName: "row";
-staticColumnFamily:"all";
-columnQualifierAttrName: "colQ";
-}
-
+		()as deletedefault = HBASEDelete(deleteStreamWithColQ){
+			param
+				tableName : $tableName ;
+				rowAttrName : "row" ;
+				staticColumnFamily : "all" ;
+				columnQualifierAttrName : "colQ" ;
+		}
 
 }
