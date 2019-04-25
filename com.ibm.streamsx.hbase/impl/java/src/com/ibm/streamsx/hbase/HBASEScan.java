@@ -614,6 +614,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		System.out.println("Operator Name: " + context.getName());
+
 		// Now check that the output is the proper format.
 		StreamingOutput<OutputTuple> output = getOutput(0);
 		StreamSchema outSchema = output.getStreamSchema();

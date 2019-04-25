@@ -207,6 +207,8 @@ public class HBASEPut extends HBASEPutDelete {
 	public synchronized void initialize(OperatorContext context)
 			throws Exception {
 		super.initialize(context);
+		System.out.println("Operator Name: " + context.getName());
+
 		if (batchSize > 0) {
 			putList = new ArrayList<Put>(batchSize);
 		}

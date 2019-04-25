@@ -158,6 +158,8 @@ public class HBASEDelete extends HBASEPutDelete {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		System.out.println("Operator Name: " + context.getName());
+
 		if (batchSize > 0) {
 			deleteList = new ArrayList<Delete>(batchSize);
 		}
@@ -227,11 +229,13 @@ public class HBASEDelete extends HBASEPutDelete {
 							checkValue, myDelete);
 				} else if (batchSize == 0) {
 					logger.debug(Messages.getString("HBASE_DEL_DELETING", myDelete)); 
-					byte checkRow[] = getRow(tuple);
-					byte checkColF[] = getBytes(tuple, colFamilyIndex, colFamilyType);
-					byte checkColQ[] = getBytes(tuple, colQualifierIndex, colQualifierType);
-					myTable.delete(myDelete);
-					success = myTable.checkAndDelete(checkRow, checkColF, checkColQ, null, myDelete);
+					myTable.delete(myDelete);	
+					if (columnFamilyAttr != null && columnQualifierAttr !=null) {					
+						byte checkRow[] = getRow(tuple);						
+						byte checkColF[] = getBytes(tuple, colFamilyIndex, colFamilyType);
+						byte checkColQ[] = getBytes(tuple, colQualifierIndex, colQualifierType);						
+						success = myTable.checkAndDelete(checkRow, checkColF, checkColQ, null, myDelete);
+					}
 				} else {
 					synchronized (listLock) {
 						deleteList.add(myDelete);
