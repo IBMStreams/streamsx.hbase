@@ -575,13 +575,13 @@ public abstract class HBASEOperator extends AbstractOperator {
 	 * Create and submit an output tuple. If the operator is configured with
 	 * an error output, create an output tuple, and submit the error message.
 	 * Add the current date time and the name of operator that causes error to the error message.
-	 * 
+	 * Add the input tuple to the output port if the operator is configured with error port and input tuple
 	 * @param errorMessage
 	 *            The input error message.
 	 * @throws Exception
 	 *             If there is a problem with the submission.
 	 */
-	protected void submitErrorMessagee(String errorMessage, Tuple inputTuple)
+	 protected void submitErrorMessagee(String errorMessage, Tuple inputTuple)
 			throws Exception {
 		if (errorOutputPort != null){
 			// add current date and time and operator name to error message
@@ -591,7 +591,18 @@ public abstract class HBASEOperator extends AbstractOperator {
 			if (inputTuple != null)
 				errorMessage = errorMessage + " , " + inputTuple.toString();
 			OutputTuple errorTuple = errorOutputPort.newTuple();
-			errorTuple.setString(0, errorMessage);			
+			StreamSchema errorTupleSchema = errorTuple.getStreamSchema();
+			errorTuple.setString(0, errorMessage);	
+			// check if the error tuple has 2 attributes  
+			if (errorTupleSchema.getAttributeCount() > 1){
+				Attribute attr = errorTupleSchema.getAttribute(1);
+				// check if the second attribute is a tuple
+				if (attr.getType().getMetaType() == MetaType.TUPLE) {
+					// Copy across all matching attributes from input tuple to teh output port.
+					errorTuple.setTuple(1, inputTuple);
+				}
+							
+			}				
 			errorOutputPort.submit(errorTuple);
 		}	
 	}

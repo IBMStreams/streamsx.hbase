@@ -120,7 +120,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	}
 
 	private enum InputMode {
-		START, END, START_END, PREFIX
+		START, END, START_END, PREFIX, TABELE_NAME
 	}
 
 	private static class ScanRegion implements Closeable {
@@ -162,7 +162,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			}
 
 			myTable = operator.getHTable();
-			
+						
 			// This sets any filters based on operator parameters.
 			resultScanner = operator.startScan(myTable, myScan);
 			if (resultScanner != null) {
@@ -508,7 +508,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	// Context checks that apply in all cases.
 	@ContextCheck(compile = true)
 	public static void checks(OperatorContextChecker checker) {
-		checker.checkDependentParameters("endRow", "startRow");
+//		checker.checkDependentParameters("endRow", "startRow");
 		checker.checkDependentParameters("maxChannels", "channel");
 		checker.checkDependentParameters("channel", "maxChannels");
 		int numInput = checker.getOperatorContext()
@@ -614,6 +614,8 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		System.out.println("Operator Name: " + context.getName());
+
 		// Now check that the output is the proper format.
 		StreamingOutput<OutputTuple> output = getOutput(0);
 		StreamSchema outSchema = output.getStreamSchema();
@@ -683,6 +685,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			StreamSchema inputSchema = context.getStreamingInputs().get(0)
 					.getStreamSchema();
 
+			inputMode = InputMode.TABELE_NAME;
 			if (null != inputSchema.getAttribute(START_ROW_PARAM)) {
 				Attribute startAttr = inputSchema.getAttribute(START_ROW_PARAM);
 				startIndex = startAttr.getIndex();
@@ -708,6 +711,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				prefixType = rowPrefix.getType().getMetaType();
 				inputMode = InputMode.PREFIX;
 			}
+			
 		} else {
 			throw new Exception("Expected 0 or 1 streaming inputs, found "
 					+ context.getNumberOfStreamingInputs());
@@ -748,6 +752,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			endBytes = endRow.getBytes(charset);
 		}
 		Table myTable = getHTable();
+			
 		RegionLocator regionLocator = connection.getRegionLocator(myTable.getName());	
 
 		
@@ -899,6 +904,9 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 	
 		Scan myScan;
 		switch (inputMode) {
+		case TABELE_NAME:
+			myScan = new Scan();
+			break;
 		case START:
 			myScan = new Scan(getBytes(tuple, startIndex, startType));
 			break;
@@ -926,6 +934,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 			e.printStackTrace();
 		}
 
+		
 		if (myTable != null ){			
 			try{
 			

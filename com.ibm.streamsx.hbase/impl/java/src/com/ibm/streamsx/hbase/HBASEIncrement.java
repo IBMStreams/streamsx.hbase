@@ -91,6 +91,8 @@ public class HBASEIncrement extends HBASEOperatorWithInput {
 	public synchronized void initialize(OperatorContext context) throws Exception {
 		// Must call super.initialize(context) to correctly setup an operator.
 		super.initialize(context);
+		System.out.println("Operator Name: " + context.getName());
+
 		Logger.getLogger(this.getClass()).trace(
 				"Operator " + context.getName() + " initializing in PE: " + context.getPE().getPEId() + " in Job: " + context.getPE().getJobId());
 
