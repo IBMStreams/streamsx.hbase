@@ -178,6 +178,13 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
 	
 * Improvement of HBASEScan operator to support the table name as input port without startRow and endRow.
 
+* Improvement of error output port to support an optional tuple as input tuple.
+  If the second attribute of error output port is a tuple like input tuple, 
+  the HBASE Operators returns in case of any error, additional to the error message also the input tuple. 
+  The first attribute in the optional error output port must be a 'rstring'.
+  The second attribute in the error output port is optional and must be a 'TUPLE'.
+
+
 </info:description>
     <info:version>3.6.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>

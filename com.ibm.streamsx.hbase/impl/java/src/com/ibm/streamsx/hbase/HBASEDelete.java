@@ -65,7 +65,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 		+ "For each input tuple, an output tuple is generated. "
 		+ "The attribute named by "+HBASEPutDelete.SUCCESS_PARAM+" is set to true when the delete succeded, and false otherwise.  "
 		+ "The other attributes are copied from the input tuple.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
-	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+	@OutputPortSet(description = "Optional port for error information. This port submits an error message and a tuple, when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 
 @Icons(location32 = "impl/java/icons/HBASEDelete_32.gif", location16 = "impl/java/icons/HBASEDelete_16.gif")
 public class HBASEDelete extends HBASEPutDelete {

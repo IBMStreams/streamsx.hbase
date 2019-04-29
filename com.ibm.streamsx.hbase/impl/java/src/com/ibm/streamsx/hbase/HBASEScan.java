@@ -70,7 +70,7 @@ import com.ibm.streams.operator.state.StateHandler;
 		+ " is a list or a primitive type, there will be one tuple per HBASE entry.  If "
 		+ HBASEGet.OUT_PARAM_NAME
 		+ " is of type tuple, there will be output tuple per row, and the attribute names will be taken as the columnQualifiers for those attributes", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Generating),
-	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true) })
+	@OutputPortSet(description = "Optional port for error information. This port submits an error message and a tuple, when an error occurs while HBase actions.", cardinality = 1, optional = true) })
 
 @Icons(location32 = "impl/java/icons/HBASEScan_32.gif", location16 = "impl/java/icons/HBASEScan_16.gif")
 public class HBASEScan extends HBASEOperator implements StateHandler {
@@ -764,12 +764,12 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 				}
 			if (endBytes == null) {
 				endBytes = startEndKeys.getSecond()[n];
-			}
-			System.out.println("[" + (n + 1) + "]" +
-					" startRow: " +
-					(startBytes.length == 8 ? Bytes.toLong(startBytes) : Bytes.toStringBinary(startBytes)) + 
-					", endRow: " +
-					(endBytes.length == 8 ? Bytes.toLong(endBytes) : Bytes.toStringBinary(endBytes)));
+				}
+//			System.out.println("[" + (n + 1) + "]" +
+//					" startRow: " +
+//					(startBytes.length == 8 ? Bytes.toLong(startBytes) : Bytes.toStringBinary(startBytes)) + 
+//					", endRow: " +
+//					(endBytes.length == 8 ? Bytes.toLong(endBytes) : Bytes.toStringBinary(endBytes)));
 			}
 
 		 		  

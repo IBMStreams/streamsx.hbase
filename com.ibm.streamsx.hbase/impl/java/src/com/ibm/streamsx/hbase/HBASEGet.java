@@ -99,7 +99,7 @@ import com.ibm.streams.operator.types.RString;
 @InputPorts({ @InputPortSet(description = "Description of which tuples to get", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ 
 	@OutputPortSet(description = "Output tuple with value or values from HBASE", cardinality = 1, optional = false, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
-	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+	@OutputPortSet(description = "Optional port for error information. This port submits an error message and a tuple, when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 
 
 
