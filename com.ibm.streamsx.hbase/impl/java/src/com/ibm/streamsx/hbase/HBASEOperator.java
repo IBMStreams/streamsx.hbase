@@ -197,10 +197,18 @@ public abstract class HBASEOperator extends AbstractOperator {
 	
 		if (context.getNumberOfStreamingOutputs() == 2) {
 			StreamingOutput<OutputTuple> errorOutputPort = context.getStreamingOutputs().get(1);
-			// The optional error output port can have only one rstring attribute.
+			// The first attribute of optional error output port must be a string.
 			if (errorOutputPort.getStreamSchema().getAttribute(0).getType().getMetaType() != Type.MetaType.RSTRING) {
 				checker.setInvalidContext("The first attribute in the optional error output port must be a rstring", null);
 			}
+			// The second attribute of optional error output port must be a Tuple.
+			if (errorOutputPort.getStreamSchema().getAttribute(1) !=null){
+				if (errorOutputPort.getStreamSchema().getAttribute(1).getType().getMetaType() != Type.MetaType.TUPLE) {
+					checker.setInvalidContext("The second attribute in the optional error output port must be a TUPLE", null);
+				}
+				
+			}
+			
 		}	
 	
 	}

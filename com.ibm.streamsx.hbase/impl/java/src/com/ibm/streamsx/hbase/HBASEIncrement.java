@@ -40,7 +40,7 @@ import com.ibm.streams.operator.state.ConsistentRegionContext;
 	@InputPortSet(description = "Tuples describing entry to increment", cardinality = 1, optional = false, windowingMode = WindowMode.NonWindowed, windowPunctuationInputMode = WindowPunctuationInputMode.Oblivious) })
 @OutputPorts({ 
 	@OutputPortSet(description = "Optional port for success or failure information.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving),
-	@OutputPortSet(description = "Optional port for error information. This port submits error message when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
+	@OutputPortSet(description = "Optional port for error information. This port submits an error message and a tuple, when an error occurs while HBase actions.", cardinality = 1, optional = true, windowPunctuationOutputMode = WindowPunctuationOutputMode.Preserving) })
 
 @Icons(location32 = "impl/java/icons/HBASEIncrement_32.gif", location16 = "impl/java/icons/HBASEIncrement_16.gif")
 public class HBASEIncrement extends HBASEOperatorWithInput {
