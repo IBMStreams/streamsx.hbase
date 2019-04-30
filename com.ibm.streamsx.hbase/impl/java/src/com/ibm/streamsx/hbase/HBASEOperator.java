@@ -201,12 +201,16 @@ public abstract class HBASEOperator extends AbstractOperator {
 			if (errorOutputPort.getStreamSchema().getAttribute(0).getType().getMetaType() != Type.MetaType.RSTRING) {
 				checker.setInvalidContext("The first attribute in the optional error output port must be a rstring", null);
 			}
+			
+			// The second attribute of error output port is optional. 
+			if (errorOutputPort.getStreamSchema().getAttributeCount() > 1){
 			// The second attribute of optional error output port must be a Tuple.
-			if (errorOutputPort.getStreamSchema().getAttribute(1) !=null){
-				if (errorOutputPort.getStreamSchema().getAttribute(1).getType().getMetaType() != Type.MetaType.TUPLE) {
-					checker.setInvalidContext("The second attribute in the optional error output port must be a TUPLE", null);
+				if (errorOutputPort.getStreamSchema().getAttribute(1) !=null){
+					if (errorOutputPort.getStreamSchema().getAttribute(1).getType().getMetaType() != Type.MetaType.TUPLE) {
+						checker.setInvalidContext("The second attribute in the optional error output port must be a TUPLE", null);
+					}
+					
 				}
-				
 			}
 			
 		}	
