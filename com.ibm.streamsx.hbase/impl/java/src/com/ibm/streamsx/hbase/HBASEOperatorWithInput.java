@@ -24,17 +24,23 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 	protected int rowAttrIndex = -1;
 	protected int colFamilyIndex = -1;
 	protected int colQualifierIndex = -1;
+	protected int timestampAttributeIndex = -1;
 
 	protected MetaType rowAttrType = null;
 	protected int valueAttrIndex = -1;
 	protected MetaType valueAttrType = null;
 
-	protected MetaType colQualifierType = null, colFamilyType = null;
+	protected MetaType colQualifierType = null;
+	protected MetaType colFamilyType = null;
+	protected MetaType timestampType =null;
 
 	static final String COL_FAM_PARAM_NAME = "columnFamilyAttrName";
 	static final String COL_QUAL_PARAM_NAME = "columnQualifierAttrName";
 	static final String TABLE_PARAM_NAME = "tableName";
 	static final String ROW_PARAM_NAME = "rowAttrName";
+	static final String TIMESTAMP = "Timestamp";
+	static final String TIMESTAMP_ATTR = "TimestampAttrName";
+
 	byte colFamBytes[] = null;
 	byte colQualBytes[] = null;
 
@@ -98,12 +104,20 @@ public abstract class HBASEOperatorWithInput extends HBASEOperator {
 		}
 	}
 
+	protected long getTimeStamp(Tuple tuple) throws Exception {
+		if (timestampAttributeIndex > 0)
+		{
+			return tuple.getLong(timestampAttributeIndex);
+		}else{
+			return 0;
+		}
+	}
+
 	protected byte[] getValue(Tuple tuple) throws Exception {
 
 			return getBytes(tuple, valueAttrIndex, valueAttrType);
 	}
 
-	
 	/**
 	 * For {rowAttrName,columnFamilyAttrName,columnQualifierAttrName}, if
 	 * specified, ensures the attribute exists, and stores the index in class
