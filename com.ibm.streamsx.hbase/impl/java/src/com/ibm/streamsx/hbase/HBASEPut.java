@@ -6,8 +6,6 @@ package com.ibm.streamsx.hbase;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Timestamp;
-import java.util.Date;
 
 
 import org.apache.hadoop.hbase.TableNotFoundException;
@@ -320,7 +318,7 @@ public class HBASEPut extends HBASEPutDelete {
 					
 					if (timeStamp > 0){
 						myPut.addColumn(colF, colQ, timeStamp, value);
-				        System.out.println("WWWWWWWWWWWWW timeStamp = " + timeStamp);					
+				        // System.out.println("timeStamp = " + timeStamp);					
 					}
 					else {
 						myPut.addColumn(colF, colQ, value);						
@@ -355,10 +353,6 @@ public class HBASEPut extends HBASEPutDelete {
 						byte checkColQ[] = getColumnQualifier(tuple);
 						byte checkColF[] = getColumnFamily(tuple);
 						byte checkValue[] = getValue(tuple);
-						if (timeStamp > 0){
-							byte checkTimeStamp[] = getCheckTimeStamp(tuple);
-					        System.out.println("WWWWWWWWWWWWWWWWWWWWWWWWWWW444 " + checkTimeStamp);							
-						}					
 						myTable.put(myPut);
 						success = myTable.checkAndPut(checkRow,checkColF, checkColQ, checkValue,  myPut);
 					}

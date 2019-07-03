@@ -18,7 +18,10 @@
 	<classpathentry kind="lib" path="opt/downloaded/hbase-client-1.4.9.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/hbase-common-1.4.9.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/hbase-protocol-1.4.9.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/htrace-core-3.1.0-incubating.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/htrace-core4-4.2.0-incubating.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/jackson-core-asl-1.9.13.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/jackson-mapper-asl-1.9.13.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/javaee-api-7.0.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/metrics-core-2.2.0.jar"/>
@@ -27,6 +30,6 @@
 	<classpathentry kind="lib" path="opt/downloaded/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/slf4j-api-1.7.10.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/slf4j-log4j12-1.7.10.jar"/>
-	<classpathentry kind="lib" path="opt/downloaded/zookeeper-3.4.13.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/zookeeper-3.4.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
