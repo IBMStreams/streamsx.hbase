@@ -184,9 +184,16 @@ Here is an example to connect to the HBase server with Kerberos Authentication:
   The first attribute in the optional error output port must be a 'rstring'.
   The second attribute in the error output port is optional and must be a 'TUPLE'.
 
+++ What is new in version 3.7.0
+
+* The HBASEPut operator provides 2 new parameters to add time stamp:  
+**Timestamp** This parameter specifies the timestamp in milliseconds (INT64). The timestamp allows for versioning of the cells. Every time HBaes make a PUT on a table it set the timestamp. By default this is the current time in milliseconds, but you can set your own timestamp as well with this parameter. Cannot be used with TimestampAttrName")
+**TimestampAttrName** Name of the attribute on the input tuple containing the timestamp in milliseconds. Cannot be used with Timestamp.
+
+The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.jar** .
 
 </info:description>
-    <info:version>3.6.0</info:version>
+    <info:version>3.7.0</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>

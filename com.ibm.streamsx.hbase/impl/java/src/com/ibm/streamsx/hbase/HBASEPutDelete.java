@@ -43,9 +43,10 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 	protected int checkColFIndex = -1;
 	protected int checkColQIndex = -1;
 	protected int checkValueIndex = -1;
+	protected int checkTimestampIndex = -1;
 
 	protected MetaType checkColFType = null, checkColQType = null,
-			checkValueType = null;
+			checkValueType = null, checkTimestampType = null;
 
 	Logger logger = Logger.getLogger(this.getClass());
 
@@ -132,6 +133,13 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 			checkValueType = checkSchema.getAttribute(checkValueIndex)
 					.getType().getMetaType();
 		}
+
+		if (checkSchema.getAttribute("Timestamp") != null) {
+			checkTimestampIndex = checkAndGetIndex(checkSchema, "Timestamp");
+			checkTimestampType = checkSchema.getAttribute(checkTimestampIndex)
+					.getType().getMetaType();
+		}
+
 	}
 
 	byte[] getCheckValue(Tuple tuple) throws Exception {
@@ -140,6 +148,14 @@ public abstract class HBASEPutDelete extends HBASEOperatorWithInput implements
 		} else
 			return null;
 	}
+	
+	byte[] getCheckTimeStamp(Tuple tuple) throws Exception {
+		if (checkTimestampIndex > 0) {
+			return getBytes(tuple, checkTimestampIndex, checkTimestampType);
+		} else
+			return null;
+	}
+	
 
 	/**
 	 * This checks that

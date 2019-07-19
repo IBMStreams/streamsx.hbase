@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.BufferedMutator;
 import org.apache.hadoop.hbase.client.Put;
@@ -21,6 +22,7 @@ import com.ibm.streams.operator.StreamSchema;
 import com.ibm.streams.operator.StreamingInput;
 import com.ibm.streams.operator.StreamingOutput;
 import com.ibm.streams.operator.Tuple;
+import com.ibm.streams.operator.TupleAttribute;
 import com.ibm.streams.operator.Type.MetaType;
 import com.ibm.streams.operator.compile.OperatorContextChecker;
 import com.ibm.streams.operator.meta.TupleType;
@@ -126,6 +128,8 @@ public class HBASEPut extends HBASEPutDelete {
 	private PutMode putMode = null;
 	protected String valueAttr = null;
 	final static String VALUE_NAME = "valueAttrName";
+	protected long timeStamp = 0;
+	protected String timestampAttribute = null; 
 	protected byte[][] qualifierArray = null;
 	protected MetaType[] attrType = null;
 	protected boolean bufferTransactions = false;
@@ -155,6 +159,17 @@ public class HBASEPut extends HBASEPutDelete {
 		valueAttr = val;
 	}
 
+	@Parameter(name = TIMESTAMP, optional = true, description = "This parameter specifies the timestamp in milliseconds (INT64). The timestamp allows for versioning of the cells. Everytime HBaes make a PUT on a table it set the timestamp. By default this is the current time in milliseconds, but you can set your own timestamp as well with this parametr. Cannot be used with TimestampAttrName")
+	public void setTimestamp(long ts) {
+		timeStamp = ts;
+	}
+
+	@Parameter(name = TIMESTAMP_ATTR, optional = true, description = "Name of the attribute on the input tuple containing the timestamp in milliseconds. Cannot be used with Timestamp.")
+	public void setTimestampAtrr(String ts) {
+		timestampAttribute = ts;
+	}
+
+	
 	/**
 	 * Do any necessary compile time checks. It calls the checker of the super
 	 * class.
@@ -184,7 +199,9 @@ public class HBASEPut extends HBASEPutDelete {
 		} else if (context.getParameterNames().contains(BATCHSIZE_NAME)) {
 			System.err.println("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " +BUFFER_PARAM  + " parameter instead.");
 		}
-		
+		if ((!checker.checkExcludedParameters(TIMESTAMP,TIMESTAMP_ATTR))){
+		 	checker.setInvalidContext("The " + TIMESTAMP + " can not be used with " + TIMESTAMP_ATTR , null);
+		}
 	}
 
 	Logger logger = Logger.getLogger(this.getClass());
@@ -247,6 +264,17 @@ public class HBASEPut extends HBASEPutDelete {
 			valueAttrType = attr.getType().getMetaType();
 			putMode = PutMode.ENTRY;
 		}
+		
+		if (timestampAttribute != null) {
+			timestampAttributeIndex = checkAndGetIndex(schema, timestampAttribute);
+			timestampType = schema.getAttribute(timestampAttributeIndex).getType().getMetaType();
+			if (timestampType != MetaType.INT64){
+					String message = Messages.getString("HBASE_OP_INVALID_ATTR", timestampAttribute, timestampType);
+					Logger.getLogger(this.getClass()).trace(message);
+					System.err.print(message);
+			}
+		}
+
 	}
 
 	/**
@@ -284,7 +312,18 @@ public class HBASEPut extends HBASEPutDelete {
 				case ENTRY:
 					byte colQ[] = getColumnQualifier(tuple);
 					byte value[] = getBytes(tuple, valueAttrIndex, valueAttrType);
-					myPut.addColumn(colF, colQ, value);
+					if (timestampAttribute != null) {
+						timeStamp = getTimeStamp(tuple);
+					}
+					
+					if (timeStamp > 0){
+						myPut.addColumn(colF, colQ, timeStamp, value);
+				        // System.out.println("timeStamp = " + timeStamp);					
+					}
+					else {
+						myPut.addColumn(colF, colQ, value);						
+					}
+					
 					break;
 				case RECORD:
 					Tuple values = tuple.getTuple(valueAttr);
@@ -308,8 +347,7 @@ public class HBASEPut extends HBASEPutDelete {
 						byte checkColF[] = getBytes(checkTuple, checkColFIndex, checkColFType);
 						byte checkColQ[] = getBytes(checkTuple, checkColQIndex, checkColQType);
 						byte checkValue[] = getCheckValue(checkTuple);
-			
-						success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);
+						success = myTable.checkAndPut(checkRow, checkColF, checkColQ, checkValue, myPut);																		
 					}else{
 						// set the success value without checkTuple
 						byte checkColQ[] = getColumnQualifier(tuple);
@@ -341,6 +379,7 @@ public class HBASEPut extends HBASEPutDelete {
 				// Checks to see if an output tuple is necessary, and if so,
 				// submits it.
 				submitOutputTuple(tuple, success);
+				success = false;
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 				submitErrorMessagee(e.getMessage(), tuple);
