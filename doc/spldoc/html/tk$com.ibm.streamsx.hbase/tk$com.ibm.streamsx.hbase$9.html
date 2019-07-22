@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="What is new in version 3.7.0"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_page"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>What is new in version 3.7.0</title>
+</head>
+<body id="spldoc_page">
+
+
+<h1 class="title topictitle1">What is new in version 3.7.0</h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.7.0</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase$2.html">What's new</a> &gt; What is new in version 3.7.0</p>
+
+</div>
+
+
+<div class="section">
+<div class="p">
+<ul class="ul">
+<li class="li"> The HBASEPut operator provides 2 new parameters to add time stamp:  </li>
+
+</ul>
+<strong class="ph b">Timestamp</strong> This parameter specifies the timestamp in milliseconds (INT64). The timestamp allows for versioning of the cells. Every time HBaes make a PUT on a table it set the timestamp. By default this is the current time in milliseconds, but you can set your own timestamp as well with this parameter. Cannot be used with TimestampAttrName") <strong class="ph b">TimestampAttrName</strong> Name of the attribute on the input tuple containing the timestamp in milliseconds. Cannot be used with Timestamp.
+</div>
+
+<p class="p">The jar library zookeeper-3.4.13.jar has been replaced with <strong class="ph b">zookeeper-3.4.6.jar</strong> .
+</p>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

@@ -22,7 +22,7 @@
 <div class="body refbody">
 <div class="section">
 <p class="p">
-<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.4.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEPut</p>
+<a class="xref" href="../toolkits/toolkits.html">IBMStreams com.ibm.streamsx.hbase Toolkit</a> &gt; <a class="xref" href="tk$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase 3.7.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.hbase.html">com.ibm.streamsx.hbase</a> &gt; HBASEPut</p>
 
 </div>
 
@@ -102,14 +102,14 @@ If the value is a tuple type, then the attribute names of the tuple are interpre
  
   <dt class="dt dlterm">Parameters</dt>
 
-  <dd class="dd">This operator supports 15 parameters.
+  <dd class="dd">This operator supports 17 parameters.
 <p class="p"> Required: 
 <a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__valueAttrName">valueAttrName</a>
 
 </p>
 
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__tableNameAttribute">tableNameAttribute</a>
+<a class="xref" href="#spldoc_operator__parameter__Timestamp">Timestamp</a>, <a class="xref" href="#spldoc_operator__parameter__TimestampAttrName">TimestampAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__tableNameAttribute">tableNameAttribute</a>
 
 </p>
 </dd>
@@ -234,7 +234,7 @@ If the value is a tuple type, then the attribute names of the tuple are interpre
 
    <dd class="dd">
 
-<p class="p">Optional port for error information. This port submits error message when an error occurs while HBase actions.
+<p class="p">Optional port for error information. This port submits an error message and a tuple, when an error occurs while HBase actions.
 </p>
 
 <p class="p"/>
@@ -272,17 +272,79 @@ If the value is a tuple type, then the attribute names of the tuple are interpre
 
 <div class="section">
 <p class="p splhead-1"><strong class="ph b"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters">Parameters</a></strong></p>
-This operator supports 15 parameters.
+This operator supports 17 parameters.
 <p class="p"> Required: 
 <a class="xref" href="#spldoc_operator__parameter__rowAttrName">rowAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__valueAttrName">valueAttrName</a>
 
 </p>
 
 <p class="p"> Optional: 
-<a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__tableNameAttribute">tableNameAttribute</a>
+<a class="xref" href="#spldoc_operator__parameter__Timestamp">Timestamp</a>, <a class="xref" href="#spldoc_operator__parameter__TimestampAttrName">TimestampAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__authKeytab">authKeytab</a>, <a class="xref" href="#spldoc_operator__parameter__authPrincipal">authPrincipal</a>, <a class="xref" href="#spldoc_operator__parameter__batchSize">batchSize</a>, <a class="xref" href="#spldoc_operator__parameter__checkAttrName">checkAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnFamilyAttrName">columnFamilyAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__columnQualifierAttrName">columnQualifierAttrName</a>, <a class="xref" href="#spldoc_operator__parameter__enableBuffer">enableBuffer</a>, <a class="xref" href="#spldoc_operator__parameter__hbaseSite">hbaseSite</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnFamily">staticColumnFamily</a>, <a class="xref" href="#spldoc_operator__parameter__staticColumnQualifier">staticColumnQualifier</a>, <a class="xref" href="#spldoc_operator__parameter__successAttr">successAttr</a>, <a class="xref" href="#spldoc_operator__parameter__tableName">tableName</a>, <a class="xref" href="#spldoc_operator__parameter__tableNameAttribute">tableNameAttribute</a>
 
 </p>
 <dl class="dl">
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__Timestamp"><!-- --></a><tt class="ph tt">Timestamp</tt></dt>
+
+<dd class="dd">
+<p class="p">This parameter specifies the timestamp in milliseconds (INT64). The timestamp allows for versioning of the cells. Everytime HBaes make a PUT on a table it set the timestamp. By default this is the current time in milliseconds, but you can set your own timestamp as well with this parametr. Cannot be used with TimestampAttrName
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: int64
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
+
+<dt class="dt dlterm"><a name="spldoc_operator__parameter__TimestampAttrName"><!-- --></a><tt class="ph tt">TimestampAttrName</tt></dt>
+
+<dd class="dd">
+<p class="p">Name of the attribute on the input tuple containing the timestamp in milliseconds. Cannot be used with Timestamp.
+</p>
+<dl class="dl">
+
+ <dt class="dt dlterm">Properties </dt>
+
+ <dd class="dd">
+  <ul class="sl simple">
+  <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__type">Type</a>: rstring
+  </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__cardinality">Cardinality</a>: 1
+     </li>
+
+     <li class="sli"><a class="xref" href="../references/OperatorModel.html#spldoc_reference_operator_model__parameters__parameter__optional">Optional</a>: true
+     </li>
+
+  </ul>
+
+ </dd>
+
+
+</dl>
+
+</dd>
+
+
 
 <dt class="dt dlterm"><a name="spldoc_operator__parameter__authKeytab"><!-- --></a><tt class="ph tt">authKeytab</tt></dt>
 
