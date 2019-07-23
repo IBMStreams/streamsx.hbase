@@ -1,0 +1,89 @@
+/*
+This SPL application demonstrates how to put the input stream in two or several HBase databases.
+It is also possible to put one row at the same time in two different HBase databases.
+The custom operator splits the input stream in two streams.
+The HBaseSink_1 operator writes the input1 stream into HBase database 1 (hbaseSite :  "etc/hbase-site-1.xml";)
+The HBaseSink_2 operator writes the input2 stream into HBase database 2 (hbaseSite :  "etc/hbase-site-2.xml";)
+*/
+namespace application ;
+
+use com.ibm.streamsx.hbase::HBASEPut ;
+
+composite HbaseTest {
+param
+    expression<rstring> $authKeytab1 : getSubmissionTimeValue("authKeytab1", "etc/hbase.headless-1.keytab");
+    expression<rstring> $authPrincipal1 : getSubmissionTimeValue("authPrincipal1", "hbase-hdp2@HDP2.COM");
+    expression<rstring> $authKeytab2 : getSubmissionTimeValue("authKeytab2", "etc/hbase.headless-2.keytab");
+    expression<rstring> $authPrincipal2 : getSubmissionTimeValue("authPrincipal2", "hbase-hdpkclu@HDP2.COM");
+type
+    HbasePut = rstring table, rstring key, rstring value, rstring hbaseSite ;
+graph
+
+// read input files
+// The csv file (data/input.csv) has in the last column the name of HBase cluster 
+// #table, key, value, hbaseSite
+// test_table, key1, value1, hbase1
+// test_table, key2, value2, hbase2
+// test_table, key3, value2, Both
+
+    stream<HbasePut> readInputs = FileSource(){
+        param
+            file : "input.csv" ;
+            format : csv ;
+    }
+
+    // This custom operator splits the input streams in two separate streams (conditional to the value of "hbaseSite")
+    (stream<HbasePut> Input_1 ; stream<HbasePut> Input_2)= Custom(readInputs as I){
+        logic
+        onTuple readInputs : {
+            printStringLn((rstring)readInputs);
+            if(hbaseSite == "hbase1"){
+                submit(I, Input_1);
+            }
+
+            else if(hbaseSite == "hbase2"){
+                submit(I, Input_2);
+            }
+
+            else if(hbaseSite == "Both"){
+                submit(I, Input_1);
+                submit(I, Input_2);
+            }
+
+            else {
+                printStringLn("hbaseSite parameter should be hbase1 or hbase2 or Both");
+            }
+
+        }
+
+    }
+
+    ()as HBaseSink_1 = HBaseSink(Input_1){
+        param
+            authKeytab : $authKeytab1 ;
+            authPrincipal : $authPrincipal1 ;
+            hbaseSite : "etc/hbase-site-1.xml" ;
+    }
+
+    ()as HBaseSink_2 = HBaseSink(Input_2){
+        param
+            authKeytab : $authKeytab2 ;
+            authPrincipal : $authPrincipal2 ;
+            hbaseSite : "etc/hbase-site-2.xml" ;
+    }
+
+    /*
+
+    // It is also possibe to write the data into 3. or 4. HBase cluster 
+
+       () as ANOTHER_sndHBaseSin = HBaseSink(input3){
+        param
+            authKeytab     : $authKeytab3;
+            authPrincipal     : $authPrincipal3; 
+            hbaseSite     : "etc/hbase-site-3.xml";
+        }
+    */
+}
+
+
+

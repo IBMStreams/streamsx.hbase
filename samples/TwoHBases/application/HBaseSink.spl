@@ -1,0 +1,53 @@
+/*
+//  This composite is a wrapper for HBASEPut operator.
+//  The HBAS operators needs at least 3 parameters to connect to a HBase server. 
+//  1- hbaseSite: The HBase configuration file hbase-site.xml.   
+//  2- authKeytab : A keytab is a file containing pairs of Kerberos principals 
+//     and encrypted keys that are derived from the Kerberos password.
+//  3- authPrincipal: A Kerberos principal for keytab .
+//  */
+
+namespace application ;
+use com.ibm.streamsx.hbase::HBASEPut ;
+
+public composite HBaseSink(input Data ) {
+    param
+        expression<rstring> $authKeytab ;
+        expression<rstring> $authPrincipal ;
+        expression<rstring> $hbaseSite ;
+    graph
+
+        // prints input data
+        ()as printData = Custom(Data){
+            logic
+                onTuple Data : printStringLn((rstring)Data);
+        }
+
+        // puts tuples from input data into a HBase table                 
+        (stream<boolean success> putToHbase ; stream<rstring errorText> Error)= HBASEPut(Data){
+            param
+                authPrincipal : $authPrincipal ;
+                authKeytab : $authKeytab ;
+                hbaseSite : $hbaseSite ;
+                tableNameAttribute : table ;
+                rowAttrName : "key" ;
+                valueAttrName : "value" ;
+                staticColumnFamily : "all" ;
+                staticColumnQualifier : "all" ;
+                successAttr : "success" ;
+                vmArg :"-Djava.security.krb5.conf=/etc/krb5.conf";
+        }
+
+        // print the value of success attribute 
+        ()as printPutToHbase = Custom(putToHbase){
+            logic
+                onTuple putToHbase : printStringLn((rstring)putToHbase);
+        }
+        
+        // prints error messages in case of any error during the put action
+        ()as printError = Custom(Error){
+            logic
+                onTuple Error : printStringLn((rstring)Error);
+        }
+    }
+

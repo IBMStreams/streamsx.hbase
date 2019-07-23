@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<toolkitModel xmlns="http://www.ibm.com/xmlns/prod/streams/spl/toolkit" productVersion="4.3.1.0" xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:ti="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <toolkit name="HbaseTest" requiredProductVersion="4.0" version="1.0.0">
+    <description>Toolkit Description</description>
+    <uriTable>
+      <uri index="2" value="application/HBaseSink.spl"/>
+      <uri index="1" value="application/HbaseTest.spl"/>
+    </uriTable>
+    <namespace name="application">
+      <compositeOp column="11" line="12" name="HbaseTest" potentialMain="true" uriIndex="1">
+        <parameter defaultValue="getSubmissionTimeValue(&quot;authKeytab1&quot;, &quot;etc/hbase.headless-1.keytab&quot;)" metaType="Expression" name="authKeytab1" optional="true" type="&lt;rstring>"/>
+        <parameter defaultValue="getSubmissionTimeValue(&quot;authPrincipal1&quot;, &quot;hbase-hdp2@HDP2.COM&quot;)" metaType="Expression" name="authPrincipal1" optional="true" type="&lt;rstring>"/>
+        <parameter defaultValue="getSubmissionTimeValue(&quot;authKeytab2&quot;, &quot;etc/hbase.headless-2.keytab&quot;)" metaType="Expression" name="authKeytab2" optional="true" type="&lt;rstring>"/>
+        <parameter defaultValue="getSubmissionTimeValue(&quot;authPrincipal2&quot;, &quot;hbase-hdpkclu@HDP2.COM&quot;)" metaType="Expression" name="authPrincipal2" optional="true" type="&lt;rstring>"/>
+        <type column="5" line="19" name="HbasePut" type="rstring table, rstring key, rstring value, rstring hbaseSite" uriIndex="1"/>
+      </compositeOp>
+      <compositeOp column="18" line="13" name="HBaseSink" potentialMain="false" public="true" uriIndex="2">
+        <parameter metaType="Expression" name="authKeytab" optional="false" type="&lt;rstring>"/>
+        <parameter metaType="Expression" name="authPrincipal" optional="false" type="&lt;rstring>"/>
+        <parameter metaType="Expression" name="hbaseSite" optional="false" type="&lt;rstring>"/>
+        <inputPort name="Data" portIndex="0"/>
+      </compositeOp>
+    </namespace>
+    <sabFiles>
+      <ti:include path="toolkit.xml" root="toolkitDir"/>
+      <ti:include path="impl/java/lib/**" root="toolkitDir"/>
+      <ti:include path="impl/java/bin/**" root="toolkitDir"/>
+      <ti:include path="impl/bin/**" root="toolkitDir"/>
+      <ti:include path="impl/lib/**" root="toolkitDir"/>
+      <ti:include path="impl/nl/*.dat" root="toolkitDir"/>
+      <ti:include path="etc/**" root="toolkitDir"/>
+      <ti:include path="lib/**" root="toolkitDir"/>
+      <ti:include path="nl/**" root="toolkitDir"/>
+      <ti:include path="opt/**" root="toolkitDir"/>
+    </sabFiles>
+  </toolkit>
+
+</toolkitModel>

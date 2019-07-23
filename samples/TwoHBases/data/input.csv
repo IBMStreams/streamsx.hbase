@@ -1,0 +1,5 @@
+#table, key, value, site
+test_table, key1, value1, hbase1
+test_table, key2, value2, hbase2
+test_table, key3, value2, Both
+
