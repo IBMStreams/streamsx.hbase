@@ -11,7 +11,7 @@
 	<groupId>com.ibm.streamsx.hbase</groupId>
 	<artifactId>streamsx.hbase</artifactId>
 	<packaging>jar</packaging>
-	<version>3.8.0</version>
+	<version>3.8.1</version>
 	<name>com.ibm.streamsx.hbase</name>
 	<repositories>
 		<repository>
@@ -379,7 +379,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>4.0.52.Final </version>
+			<version>4.1.42.Final </version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
