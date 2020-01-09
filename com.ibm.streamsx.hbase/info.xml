@@ -203,8 +203,12 @@ The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.ja
 
 * The jar library **netty-all-4.0.52.Final.jar** has been upgraded to **netty-all-4.1.42.Final.jar** .
 
+++ What is new in version 3.8.2
+
+* New error messages for globalization.
+
 </info:description>
-    <info:version>3.8.1</info:version>
+    <info:version>3.8.2</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>

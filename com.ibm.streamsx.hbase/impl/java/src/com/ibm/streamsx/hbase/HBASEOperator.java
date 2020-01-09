@@ -192,14 +192,14 @@ public abstract class HBASEOperator extends AbstractOperator {
 		
 		if ((!context.getParameterNames().contains(TABLE_PARAM_NAME))
 			&& (!context.getParameterNames().contains(TABLE_NAME_ATTRIBUTE))) {
-				checker.setInvalidContext("One of these parameters must be set in opeartor: '" + TABLE_PARAM_NAME + "' or '" + TABLE_NAME_ATTRIBUTE +"'", null);
+				checker.setInvalidContext(Messages.getString("HBASE_FAILED_ONE_OF_TWO_PARAMS", TABLE_PARAM_NAME, TABLE_NAME_ATTRIBUTE), null);
 		}				
 	
 		if (context.getNumberOfStreamingOutputs() == 2) {
 			StreamingOutput<OutputTuple> errorOutputPort = context.getStreamingOutputs().get(1);
 			// The first attribute of optional error output port must be a string.
 			if (errorOutputPort.getStreamSchema().getAttribute(0).getType().getMetaType() != Type.MetaType.RSTRING) {
-				checker.setInvalidContext("The first attribute in the optional error output port must be a rstring", null);
+				checker.setInvalidContext(Messages.getString("HBASE_INVALID_ATTR_RSTRING"), null);
 			}
 			
 			// The second attribute of error output port is optional. 
@@ -207,7 +207,7 @@ public abstract class HBASEOperator extends AbstractOperator {
 			// The second attribute of optional error output port must be a Tuple.
 				if (errorOutputPort.getStreamSchema().getAttribute(1) !=null){
 					if (errorOutputPort.getStreamSchema().getAttribute(1).getType().getMetaType() != Type.MetaType.TUPLE) {
-						checker.setInvalidContext("The second attribute in the optional error output port must be a TUPLE", null);
+						checker.setInvalidContext(Messages.getString("HBASE_INVALID_ATTR_TUPLE"), null);
 					}
 					
 				}
