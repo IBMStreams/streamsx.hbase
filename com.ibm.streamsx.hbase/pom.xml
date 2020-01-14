@@ -11,7 +11,7 @@
 	<groupId>com.ibm.streamsx.hbase</groupId>
 	<artifactId>streamsx.hbase</artifactId>
 	<packaging>jar</packaging>
-	<version>3.8.1</version>
+	<version>3.8.2</version>
 	<name>com.ibm.streamsx.hbase</name>
 	<repositories>
 		<repository>
@@ -133,7 +133,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.10</version>
+			<version>1.7.30</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -145,7 +145,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.10</version>
+			<version>1.7.30</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>

@@ -27,8 +27,8 @@
 	<classpathentry kind="lib" path="opt/downloaded/netty-all-4.1.42.Final.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/protobuf-java-2.5.0.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="opt/downloaded/slf4j-api-1.7.10.jar"/>
-	<classpathentry kind="lib" path="opt/downloaded/slf4j-log4j12-1.7.10.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="opt/downloaded/slf4j-log4j12-1.7.30.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/stax2-api-4.2.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/woodstox-core-5.0.3.jar"/>
 	<classpathentry kind="lib" path="opt/downloaded/zookeeper-3.4.14.jar"/>
