@@ -194,13 +194,13 @@ public class HBASEPut extends HBASEPutDelete {
 		OperatorContext context = checker.getOperatorContext();
 		// The hbase site must either be specified by a parameter, or we must look it up relative to an environment variable.
 		 
-		if ((!checker.checkExcludedParameters(BATCHSIZE_NAME,BUFFER_PARAM))){
-		 	checker.setInvalidContext("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " +BUFFER_PARAM  + " parameter instead.", null);
+		if ((!checker.checkExcludedParameters(BATCHSIZE_NAME, BUFFER_PARAM))){
+		 	checker.setInvalidContext("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " + BUFFER_PARAM + " parameter instead.", null);
 		} else if (context.getParameterNames().contains(BATCHSIZE_NAME)) {
-			System.err.println("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " +BUFFER_PARAM  + " parameter instead.");
+			System.err.println("The " + BATCHSIZE_NAME + " has been deprecated and should not be used.  Use the " + BUFFER_PARAM + " parameter instead.");
 		}
-		if ((!checker.checkExcludedParameters(TIMESTAMP,TIMESTAMP_ATTR))){
-		 	checker.setInvalidContext("The " + TIMESTAMP + " can not be used with " + TIMESTAMP_ATTR , null);
+		if ((!checker.checkExcludedParameters(TIMESTAMP, TIMESTAMP_ATTR))){
+		 	checker.setInvalidContext(Messages.getString("HBASE_PUT_DEL_INVALID_PARAM", TIMESTAMP, TIMESTAMP_ATTR), null);
 		}
 	}
 
