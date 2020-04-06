@@ -211,6 +211,10 @@ The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.ja
 
 * New error messages for globalization.
 
+++ What is new in version 3.8.4
+
+* pom.xml updated to use commons-configuration2 JAR library version 2.7
+
 
 </info:description>
     <info:version>3.8.3</info:version>
