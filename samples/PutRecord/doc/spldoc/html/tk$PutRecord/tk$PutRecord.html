@@ -29,6 +29,58 @@
 <div class="section"><h2 class="title sectiontitle splhead-1">General Information</h2>
 
 
+<p class="p">The sample <strong class="ph b">PutRecord</strong> puts records or tuples into HBASE table, using the attribute names as <strong class="ph b">columnQualifiers</strong>.
+</p>
+
+<p class="p">In order to run this sample, you must have the table created. in HBASE shell with:
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+hbase(main):004:0&gt; create 'streamsSample_books', 'all'
+</pre>
+
+
+</div>
+
+<p class="p">The <strong class="ph b">FileSource</strong> reads records from books.csv file.
+</p>
+
+<p class="p">The <strong class="ph b">Functor</strong> opeartor generates a key and forwards book records and keys to HBASEPut.
+</p>
+
+<p class="p">The <strong class="ph b">HBASEPut</strong> puts tuples into HBASE table.  
+</p>
+
+<p class="p">We don't specify a <strong class="ph b">columnQualifier</strong> and the attribute given by <strong class="ph b">valueAttrName</strong> is a tuple,  so it treats the attribute names in that tuple as columnQualifiers,  and the attribute values.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+() as putsink = HBASEPut(toHBASE)
+{
+	param
+		rowAttrName : "key" ;
+		tableName : "streamsSample_books" ;
+		staticColumnFamily : "all" ;
+		valueAttrName : "bookData" ;
+}
+</pre>
+
+
+</div>
+
+<p class="p">If you run the sample and then scan the table in hbase shell, you'll see the results.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+hbase(main):005:0&gt; scan 'streamsSample_books'
+</pre>
+
+
+</div>
+
 <dl class="dl">
   
   <dt class="dt dlterm">Version</dt>
@@ -40,6 +92,16 @@
   <dt class="dt dlterm">Required Product Version</dt>
 
   <dd class="dd">4.0.0.0</dd>
+
+  
+  
+  <dt class="dt dlterm">Required Toolkits and Versions</dt>
+
+  <dd class="dd"><ul class="sl simple">
+    <li class="sli">com.ibm.streamsx.hbase (2.0.0)</li>
+
+  </ul>
+</dd>
 
   
   
@@ -56,6 +118,9 @@
   
   <dl class="dl">
     <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    <dt class="dt dlterm"><a class="xref" href="ix$Namespace.html">Namespaces</a></dt>
 <dd class="dd"/>
 
   </dl>

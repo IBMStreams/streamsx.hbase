@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2014, International Business Machines Corporation  
+	 All Rights Reserved                                	      
+-->
+<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
+  <info:identity>
+    <info:name>PutRecord</info:name>
+    <info:description>
+The sample **PutRecord** puts records or tuples into HBASE table, using the attribute names as **columnQualifiers**.
+
+In order to run this sample, you must have the table created.
+in HBASE shell with:
+
+    hbase(main):004:0> create 'streamsSample_books', 'all'
+
+The **FileSource** reads records from books.csv file.
+
+The **Functor** opeartor generates a key and forwards book records and keys to HBASEPut.
+
+The **HBASEPut** puts tuples into HBASE table.  
+
+We don't specify a **columnQualifier** and the attribute given by **valueAttrName** is a tuple, 
+so it treats the attribute names in that tuple as columnQualifiers, 
+and the attribute values.
+
+	() as putsink = HBASEPut(toHBASE)
+	{
+		param
+			rowAttrName : "key" ;
+			tableName : "streamsSample_books" ;
+			staticColumnFamily : "all" ;
+			valueAttrName : "bookData" ;
+	}
+
+
+If you run the sample and then scan the table in hbase shell, you'll see the results.
+ 
+    hbase(main):005:0> scan 'streamsSample_books'
+
+    </info:description>
+    <info:version>1.0.1</info:version>
+    <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
+  </info:identity>
+  <info:dependencies>
+    <info:toolkit>
+      <common:name>com.ibm.streamsx.hbase</common:name>
+      <common:version>2.0.0</common:version>
+    </info:toolkit>
+  </info:dependencies>
+</info:toolkitInfoModel>

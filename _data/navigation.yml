@@ -6,8 +6,6 @@ main:
     url: /docs/user/overview
   - title: "Developer Documentation"
     url: /docs/developer/overview
-  - title: "HBASE for Bluemix"
-    url: /docs/bluemix/overview
   - title: "HBASE Samples"
     url: /docs/samples/overview
 

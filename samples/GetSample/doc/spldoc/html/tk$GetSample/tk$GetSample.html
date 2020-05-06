@@ -29,8 +29,180 @@
 <div class="section"><h2 class="title sectiontitle splhead-1">General Information</h2>
 
 
-<p class="p">Demonstrates the use com.ibm.streamsx.hbase.HBASEGet
+<p class="p">The sample <strong class="ph b">GetSample</strong> demonstrates the use com.ibm.streamsx.hbase.HBASEGet.
 </p>
+
+<p class="p">After running the sample, you can check the result files in data directory.
+</p>
+
+<p class="p">Three samples:
+</p>
+
+<div class="p">
+<ul class="ul">
+<li class="li"> with just the <strong class="ph b">row</strong> as a query </li>
+
+<li class="li">
+<p class="p"> with the row and the <strong class="ph b">columnFamily</strong>
+</p>
+</li>
+
+<li class="li">
+<p class="p"> with the <strong class="ph b">row</strong>, <strong class="ph b">columnFamily</strong>, and <strong class="ph b">columnQualifier</strong> 
+</p>
+</li>
+
+</ul>
+
+</div>
+
+<p class="p">This sample assumes you've run the <strong class="ph b">PutSample</strong> already to put data into hbase.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+namespace com.ibm.streamsx.hbase.sample ;
+
+use com.ibm.streamsx.hbase::HBASEGet ;
+
+composite GetSample
+{
+    graph
+
+    //////////////// PART 1 //////////////////////////////////////
+    // In this sample, row, column family and column qualifier are all supplied.
+
+    // Read queries from a file.
+        stream&lt;rstring who, rstring infoType, rstring requestedDetail&gt; queries = FileSource()
+        {
+            param
+                file : "queries.csv" ;
+                format : csv ;
+        }
+
+        // Send the query to HBASE.  The value is placed in value attribute.
+        // Not all queries will return results. To distinguish between a value
+        // with empty string because no entry was in the database and a value
+        // that is empty because the database value field was empty, you can use the
+        // outputCountAttribute, which gives the number of outputs found.
+        //
+        // "Harry","location","beginFellowship","",0  -- no row for Harry
+        // "Aragorn","location","beginFellowship","",0  -- no entry for Aragorn location:beginFellowship
+        // "Gandalf","appearance","beard","bushy",1
+        // "Frodo","location","beginFellowship","The Shire",1
+        stream&lt;rstring who, rstring infoType, rstring requestedDetail, rstring value, int32 numResults&gt; queryResults = HBASEGet(queries)
+        {
+            param
+                tableName : "streamsSample_lotr" ;
+                rowAttrName : "who" ;
+                columnFamilyAttrName : "infoType" ;
+                columnQualifierAttrName : "requestedDetail" ;
+                outAttrName : "value" ;
+                outputCountAttr : "numResults" ;
+        }
+
+        () as querySink = FileSink(queryResults)
+        {
+            param
+                file : "queryResults.out" ;
+        }
+
+        /// Now get the most recent two versions
+        /// To do this, we make the type of value a list of rstring-int64 tuples
+        /// We don't really need numResults any more, because we can tell that no values
+        /// were returned when the list is empty.
+        stream&lt;rstring who, rstring infoType, rstring requestedDetail, list&lt;tuple&lt;rstring v, int64 ts&gt;&gt; value&gt; queryResultsWithVersions =
+            HBASEGet(queries)
+        {
+            param
+                tableName : "streamsSample_lotr" ;
+                rowAttrName : "who" ;
+                columnFamilyAttrName : "infoType" ;
+                columnQualifierAttrName : "requestedDetail" ;
+                outAttrName : "value" ;
+                maxVersions : 2 ;
+        }
+
+        () as querySinkv2 = FileSink(queryResultsWithVersions)
+        {
+            param
+                file : "queryResultsTwoVersions.out" ;
+        }
+
+        ///////////////// Get all results for a row ////////////////
+        // Generate all rows
+        stream&lt;rstring who&gt; whoStream = Beacon()
+        {
+            logic
+                state : list&lt;rstring&gt; charList = [ "Aragorn", "Arwen", "Elrond", "Eowyn", "Bilbo", "Boromir", "Frodo", "Gandalf", "Tom Bombadil" ] ;
+            param
+                iterations : size(charList) ;
+            output
+                whoStream : who = charList [ IterationCount() ] ;
+        }
+
+        // Note the results type is a map mappinf rstrings to maps
+        stream&lt;rstring who, map&lt;rstring, map&lt;rstring, rstring&gt;&gt; results&gt; allDetails = HBASEGet(whoStream)
+        {
+            param
+                tableName : "streamsSample_lotr" ;
+                rowAttrName : "who" ;
+                outAttrName : "results" ;
+        }
+
+        // Write out the results as maps
+        () as charSinkRaw = FileSink(allDetails)
+        {
+            param
+                file : "charSink.out" ;
+        }
+
+        // Unfold the maps
+        stream&lt;rstring who, rstring colF, rstring colQ, rstring value&gt; expanded = Custom(allDetails)
+        {
+            logic
+                onTuple allDetails : for(rstring infoType in allDetails.results)
+                {
+                    for(rstring qual in allDetails.results [ infoType ])
+                    {
+                        submit({ who = who, colF = infoType, colQ = qual, value = allDetails.results [ infoType ] [ qual ] }, expanded) ;
+                    }
+
+                }
+
+        }
+
+        // Write out the results with one value per line.
+        () as charSinkExpanded = FileSink(expanded)
+        {
+            param
+                file : "charSinkExpanded.out" ;
+        }
+
+        /////////////////  Using columnFamily
+
+        // This example uses the row and columnFamily only, no 
+        // columnQualifier.  The result in this case is a map.
+        stream&lt;rstring who, map&lt;rstring, rstring&gt; results&gt; locationResults = HBASEGet(whoStream)
+        {
+            param
+                tableName : "streamsSample_lotr" ;
+                staticColumnFamily : "location" ;
+                rowAttrName : "who" ;
+                outAttrName : "results" ;
+        }
+        // Write out the map
+        () as locationSink = FileSink(locationResults)
+        {
+            param
+                file : "location.out" ;
+        }
+
+}
+</pre>
+
+
+</div>
 
 <dl class="dl">
   
@@ -43,6 +215,16 @@
   <dt class="dt dlterm">Required Product Version</dt>
 
   <dd class="dd">4.0.0.0</dd>
+
+  
+  
+  <dt class="dt dlterm">Required Toolkits and Versions</dt>
+
+  <dd class="dd"><ul class="sl simple">
+    <li class="sli">com.ibm.streamsx.hbase (2.0.0)</li>
+
+  </ul>
+</dd>
 
   
   
@@ -59,6 +241,9 @@
   
   <dl class="dl">
     <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    <dt class="dt dlterm"><a class="xref" href="ix$Namespace.html">Namespaces</a></dt>
 <dd class="dd"/>
 
   </dl>

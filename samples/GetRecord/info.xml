@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2014, International Business Machines Corporation  
+     All Rights Reserved          
+                                           
+-->
+<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
+  <info:identity>
+    <info:name>GetRecord</info:name>
+    <info:description>
+The sample **GetRecord** demonstrate how to populate a tuple using **HBASEGet**.
+
+It demonstrates how HBASEGet can be used with a tuple value type to populate a streams tuple.
+
+We have two **HBASEGet**, below: 
+
+The first works fine, populating the book tuple based on what's in HBASE.  
+
+See the enriched stream, and the books.out file after running. 
+  
+In the second case, we again attempt to populate the tuple based on what's in HBASE, except that this time, the output type has the "fiction" attribute, and there is no corresponding column qualifier, so all the fiction attributes are empty.
+
+In this case, we made use of the **outputCountAttr**, so it's possible to check notice that only four attributes of the five were populated.  
+
+Also, for the case of Dracula, numResults is zero because we not able to populate title, author_fname, author_lname, year, or fiction. 
+
+    namespace com.ibm.streamsx.hbase.sample ;
+
+    use com.ibm.streamsx.hbase::HBASEGet ;
+
+ 
+    composite GetRecord
+    {
+        param
+            expression $keyList : [ "War and Peace:1869", "Jane Eyre:1847", "Twilight:2005", "Dracula:1897" ] ;
+        graph
+            stream&lt;rstring key&gt; keyStream = Beacon()
+            {
+                param
+                    iterations : size($keyList) ;
+                output
+                    keyStream : key = $keyList [ IterationCount() ] ;
+            }
+
+            stream&lt;rstring key, GetBookType value&gt; enriched = HBASEGet(keyStream)
+            {
+                param
+                    rowAttrName : "key" ;
+                    tableName : "streamsSample_books" ;
+                    staticColumnFamily : "all" ;
+                    outAttrName : "value" ;
+            }
+
+            () as BookSink = FileSink(enriched)
+            {
+                param
+                    file : "books.out" ;
+            }
+
+            stream&lt;rstring key, GetBookPlusType value, int32 numResults&gt; missingFiction = HBASEGet(keyStream)
+            {
+                param
+                    rowAttrName : "key" ;
+                    tableName : "streamsSample_books" ;
+                    staticColumnFamily : "all" ;
+                    outputCountAttr : "numResults" ;
+                    outAttrName : "value" ;
+            }
+
+            () as BookPlusSink = FileSink(missingFiction)
+            {
+                param
+                    file : "bookPlusType.out" ;
+            }
+
+    }
+
+</info:description>
+    <info:version>1.0.1</info:version>
+    <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
+  </info:identity>
+  <info:dependencies>
+    <info:toolkit>
+      <common:name>com.ibm.streamsx.hbase</common:name>
+      <common:version>2.0.0</common:version>
+    </info:toolkit>
+  </info:dependencies>
+</info:toolkitInfoModel>

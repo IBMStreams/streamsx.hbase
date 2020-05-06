@@ -29,8 +29,137 @@
 <div class="section"><h2 class="title sectiontitle splhead-1">General Information</h2>
 
 
-<p class="p">Demonstrates the use of HBASEPut for both ordinary put and checkAndPut.
+<p class="p">The sample <strong class="ph b">PutSample</strong> demonstrates three ways to put tuples into HBASE.
 </p>
+
+<p class="p">It demonstrates the use of HBASEPut for both ordinary put and checkAndPut.
+</p>
+
+<p class="p">In HBASE, the column is divided up into two parts, the <strong class="ph b">columnFamily</strong> and the <strong class="ph b">columnQualifier</strong>.  
+</p>
+
+<p class="p">All columns in a columnFamily are grouped together on disk, so that which affects the efficience of access.  
+</p>
+
+<p class="p">The table has a fixed set of column families, and you may not add a tuple to any other family.  ColumnQualifiers, on the other hand, may be added at runtime.  
+</p>
+
+<p class="p">We show three ways to put data in a HBASE table. 
+</p>
+
+<p class="p">First, we read them from a file containing the <strong class="ph b">row</strong>, <strong class="ph b">columnFamily</strong>, <strong class="ph b">columnQualifer</strong>,  and <strong class="ph b">value</strong>.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+stream &lt;rstring character, rstring colF, rstring colQ, rstring value&gt; full = FileSource()
+{
+	param
+		file : "allAttributes.csv" ;
+		format : csv ;
+}
+
+() as allSink = HBASEPut(full)
+{
+	param
+		tableName : "streamsSample_lotr" ;
+		rowAttrName : "character" ;
+		columnFamilyAttrName : "colF" ;
+		columnQualifierAttrName : "colQ" ;
+		valueAttrName : "value" ;
+}
+</pre>
+
+
+</div>
+
+<p class="p">Next, we read records from a file where the <strong class="ph b">columnFamily</strong> is the same for all rows, so the file only contains the <strong class="ph b">row</strong>, <strong class="ph b">columnQualifier</strong>, and <strong class="ph b">value</strong>.
+</p>
+
+<p class="p">Here we enter a bunch of attributes about the appearance of characters.
+</p>
+
+<p class="p">We know these are all appearance-related, so we can use a static column family.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+stream&lt;rstring character, rstring feature, rstring description&gt; description = FileSource()
+{
+	param
+		file : "appearance.csv" ;
+		format : csv ;
+}
+
+() as appearancePut = HBASEPut(description)
+{
+	param
+		tableName : "streamsSample_lotr" ;
+		rowAttrName : "character" ;
+		// Use the same column family for all tuples
+		staticColumnFamily : "appearance" ;
+		columnQualifierAttrName : "feature" ;
+		valueAttrName : "description" ;
+}
+</pre>
+
+
+</div>
+
+<p class="p">Finally, we read from a file where the columnFamily and columnQualifier are both assumed, and the file only contains a row and a value.
+</p>
+
+<p class="p">Use both a static column family and column qualifier.  
+</p>
+
+<p class="p">Here when we read the file, we know it contains just the start location for each character.  
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+stream&lt;rstring character, rstring location&gt; startLocation = FileSource()
+{
+	param
+		file : "begin_location.csv" ;
+		format : csv ;
+}
+
+() as startLocationPut = HBASEPut(startLocation)
+{
+	param
+		tableName : "streamsSample_lotr" ;
+		rowAttrName : "character" ;
+		// same column family and same column qualifier for all tuples
+		staticColumnFamily : "location" ;
+		staticColumnQualifier : "beginFellowship" ;
+		valueAttrName : "location" ;
+}
+</pre>
+
+
+</div>
+
+<p class="p">To run this example, initialize a table with name streamsSample_lotr (short for Lord of the Rings), and column families appearance and location. In hbase shell, this is 
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+  hbase(main):023:0&gt; create 'streamsSample_lotr','appearance','location'`
+</pre>
+
+
+</div>
+
+<p class="p">After running every sample, you can scan the table to check the results.
+</p>
+
+<div class="p">
+<pre class="pre codeblock">
+  hbase(main):024:0&gt; scan 'streamsSample_lotr'
+</pre>
+
+
+</div>
 
 <dl class="dl">
   
@@ -43,6 +172,16 @@
   <dt class="dt dlterm">Required Product Version</dt>
 
   <dd class="dd">4.0.0.0</dd>
+
+  
+  
+  <dt class="dt dlterm">Required Toolkits and Versions</dt>
+
+  <dd class="dd"><ul class="sl simple">
+    <li class="sli">com.ibm.streamsx.hbase (2.0.0)</li>
+
+  </ul>
+</dd>
 
   
   
@@ -59,6 +198,9 @@
   
   <dl class="dl">
     <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    <dt class="dt dlterm"><a class="xref" href="ix$Namespace.html">Namespaces</a></dt>
 <dd class="dd"/>
 
     <dt class="dt dlterm"><a class="xref" href="ix$Type.html">Types</a></dt>

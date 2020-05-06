@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2013-2014, International Business Machines Corporation  
+	 All Rights Reserved                                	                 
+-->
+<info:toolkitInfoModel xmlns:common="http://www.ibm.com/xmlns/prod/streams/spl/common" xmlns:info="http://www.ibm.com/xmlns/prod/streams/spl/toolkitInfo">
+  <info:identity>
+    <info:name>PutSample</info:name>
+    <info:description>
+The sample **PutSample** demonstrates three ways to put tuples into HBASE.
+
+
+It demonstrates the use of HBASEPut for both ordinary put and checkAndPut.
+
+In HBASE, the column is divided up into two parts, the **columnFamily**
+and the **columnQualifier**.  
+
+All columns in a columnFamily are grouped together on disk, so that which affects the efficience of access.  
+
+The table has a fixed set of column families, and you may not add a tuple to any other family.  ColumnQualifiers, on the other hand, may be added at runtime.  
+
+We show three ways to put data in a HBASE table. 
+
+First, we read them from a file containing the **row**, **columnFamily**, **columnQualifer**,  and **value**.
+
+	stream &lt;rstring character, rstring colF, rstring colQ, rstring value&gt; full = FileSource()
+	{
+		param
+			file : "allAttributes.csv" ;
+			format : csv ;
+	}
+
+	() as allSink = HBASEPut(full)
+	{
+		param
+			tableName : "streamsSample_lotr" ;
+			rowAttrName : "character" ;
+			columnFamilyAttrName : "colF" ;
+			columnQualifierAttrName : "colQ" ;
+			valueAttrName : "value" ;
+	}
+
+
+
+Next, we read records from a file where the **columnFamily** is the same for all
+rows, so the file only contains the **row**, **columnQualifier**, and **value**.
+
+Here we enter a bunch of attributes about the appearance of characters.
+
+We know these are all appearance-related, so we can use a static column family.
+
+	stream&lt;rstring character, rstring feature, rstring description&gt; description = FileSource()
+	{
+		param
+			file : "appearance.csv" ;
+			format : csv ;
+	}
+
+	() as appearancePut = HBASEPut(description)
+	{
+		param
+			tableName : "streamsSample_lotr" ;
+			rowAttrName : "character" ;
+			// Use the same column family for all tuples
+			staticColumnFamily : "appearance" ;
+			columnQualifierAttrName : "feature" ;
+			valueAttrName : "description" ;
+	}
+
+
+
+Finally, we read from a file where the columnFamily and columnQualifier
+are both assumed, and the file only contains a row and a value.
+
+Use both a static column family and column qualifier.  
+
+Here when we read the file, we know it contains just the start location for each character.  
+
+	stream&lt;rstring character, rstring location&gt; startLocation = FileSource()
+	{
+		param
+			file : "begin_location.csv" ;
+			format : csv ;
+	}
+
+	() as startLocationPut = HBASEPut(startLocation)
+	{
+		param
+			tableName : "streamsSample_lotr" ;
+			rowAttrName : "character" ;
+			// same column family and same column qualifier for all tuples
+			staticColumnFamily : "location" ;
+			staticColumnQualifier : "beginFellowship" ;
+			valueAttrName : "location" ;
+	}
+
+
+To run this example, initialize a table with name streamsSample_lotr (short for
+Lord of the Rings), and column families appearance and location.
+In hbase shell, this is 
+
+      hbase(main):023:0> create 'streamsSample_lotr','appearance','location'`
+
+After running every sample, you can scan the table to check the results.
+
+
+      hbase(main):024:0> scan 'streamsSample_lotr'
+ 
+ 
+</info:description>
+    <info:version>1.0.1</info:version>
+    <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
+  </info:identity>
+  <info:dependencies>
+    <info:toolkit>
+      <common:name>com.ibm.streamsx.hbase</common:name>
+      <common:version>2.0.0</common:version>
+    </info:toolkit>
+  </info:dependencies>
+</info:toolkitInfoModel>
