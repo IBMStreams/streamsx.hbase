@@ -66,4 +66,3 @@ We will make releases after major features have been added.  If you wish to requ
 * [IBM Streams on Github](http://ibmstreams.github.io)
 * [Introduction to Streams Quick Start Edition](http://ibmstreams.github.io/streamsx.documentation/docs/4.3/qse-intro/)
 * [Streams Getting Started Guide](http://ibmstreams.github.io/streamsx.documentation/docs/4.3/qse-getting-started/)
-* [StreamsDev](https://developer.ibm.com/streamsdev/)
