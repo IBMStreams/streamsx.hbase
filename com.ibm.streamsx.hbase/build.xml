@@ -104,6 +104,7 @@
 	<target name="maven-deps" depends="init,nomaven" if="env.M2_HOME">
 		<fail unless="pomset" message="There must be a pom.xml file in com.ibm.streamsx.hbase in order to use maven to download necessary dependencies."/> 
 		<exec executable="${maven.bin}"  failonerror="true">
+			<arg value="-B"/>
 			<arg value="dependency:copy-dependencies"/>
 			<arg value="-DoutputDirectory=${ext.downloads.dir}"/>
 	    </exec>
