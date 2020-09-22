@@ -1,8 +1,27 @@
 # Changes
 =======
+## v3.9.0:
+* [#133](https://github.com/IBMStreams/streamsx.hbase/issues/133) The Vulnerability issues for 3rd party libraries: 
+```
+jackson-mapper-asl-1.9.13.jar
+netty-all-4.1.42.Final.jar
+hadoop-common-3.1.0.jar
+guava-13.0.1.jar
+```
+have been fixed. 
+
+The maven pom.xml file has been upgraded to use hadoop clinet version 3.3 and hbase 2.3.1 libraries. 
+
 ## v3.8.5:
 * [#132](https://github.com/IBMStreams/streamsx.hbase/issues/132) The Vulnerability issue for 3rd party library commons-codec version 1.12 has been fixed. The maven pom.xml file has been upgraded to use commons-codec version 1.14 
+
 
 ## v3.8.4:
 * [#127](https://github.com/IBMStreams/streamsx.hbase/issues/127) The Vulnerability issue for 3rd party library commons-configuration2 version 2.5 has been fixed.
 The maven pom.xml file has been upgraded to use commons-configuration2 version 2.7.
+
+
+ackson-mapper-asl-1.9.13.jar
+netty-all-4.1.42.Final.jar
+hadoop-common-3.1.0.jar
+guava-13.0.1.jar
