@@ -4,7 +4,6 @@
 package com.ibm.streamsx.hbase;
 
 import org.apache.hadoop.hbase.TableNotFoundException;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 

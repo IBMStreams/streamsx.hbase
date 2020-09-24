@@ -11,7 +11,7 @@
 	<groupId>com.ibm.streamsx.hbase</groupId>
 	<artifactId>streamsx.hbase</artifactId>
 	<packaging>jar</packaging>
-	<version>3.8.5</version>
+	<version>3.9.0</version> 
 	<name>com.ibm.streamsx.hbase</name>
 	<repositories>
 		<repository>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.14</version>
+			<version>1.15</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -156,8 +156,8 @@
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>4.0.1</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -166,33 +166,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.13</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-asl</artifactId>
-			<version>1.9.13</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-
 
 		<dependency>
 			<groupId>javax</groupId>
@@ -210,7 +183,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>13.0.1</version>
+			<version>20.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -243,22 +216,13 @@
 			</exclusions>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-			<version>3.1.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+
+
 
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-annotations</artifactId>
-			<version>3.1.0</version>
+			<version>3.3.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -270,7 +234,7 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-auth</artifactId>
-			<version>3.1.0</version>
+			<version>3.3.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -278,6 +242,20 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>3.3.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
 
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
@@ -342,7 +320,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>5.0.3</version>
+			<version>6.2.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -366,7 +344,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>4.1.42.Final </version>
+			<version>4.1.52.Final </version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
