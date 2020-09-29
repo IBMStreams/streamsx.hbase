@@ -223,8 +223,12 @@ The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.ja
 
 * The Vulnerability issues for 3rd party libraries have been fixed and the pom.xml updated to use hadoop client version 3.3 JAR libraries.
 
+++ What is new in version 3.9.1
+
+* 3rd party library commons-lang3 added
+
 </info:description>
-    <info:version>3.9.0</info:version>
+    <info:version>3.9.1</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
