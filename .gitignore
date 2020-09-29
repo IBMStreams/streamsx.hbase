@@ -2,5 +2,7 @@
 spldoc
 toolkit.xml
 output
+.DS_Store
+/**/.DS_Store
 
 
