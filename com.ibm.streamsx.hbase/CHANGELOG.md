@@ -1,5 +1,9 @@
 # Changes
-=======
+=========
+
+## v3.9.1:
+* [#136](https://github.com/IBMStreams/streamsx.hbase/issues/136) 3rd party library commons-lang3 added
+
 ## v3.9.0:
 * [#133](https://github.com/IBMStreams/streamsx.hbase/issues/133) The Vulnerability issues for 3rd party libraries: 
 ```
