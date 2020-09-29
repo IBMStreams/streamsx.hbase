@@ -2,7 +2,9 @@ streamsx.hbase
 ==============
 
 This toolkit allows Streams to write tuples into HBase and to read tuples from [Apache HBase](https://hbase.apache.org/). 
-Download the latest (version 3.3.0) [release](https://github.com/IBMStreams/streamsx.hbase/releases/tag/v3.3.0) of the toolkit for Streams 4.1.0.
+
+## Changes
+[CHANGELOG.md](com.ibm.streamsx.hbase/CHANGELOG.md)
 
 ## Connecting to HBase on  IBM Cloud with Streams 
 Connecting to HBase on IBM Cloud service requires the [JDBC Toolkit](https://github.com/IBMStreams/streamsx.jdbc/wiki/How-to-connect-to-HBASE-IBM-Analytics-Engine-via-JDBC-toolkit).
