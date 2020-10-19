@@ -131,6 +131,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		long rowsScanned;
 		long outstandingRows;
 
+		@SuppressWarnings("deprecation")
 		ScanRegion(HBASEScan operator, byte[] rawStartBytes, byte[] endBytes,
 				byte[] lastRow) throws IOException {
 			operator.logger.debug(Messages.getString("HBASE_SCAN_CREATING_REGION_SCAN", rawStartBytes, endBytes, lastRow));
@@ -722,16 +723,6 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 
 	}
 
-	private String printBytes(byte[] endBytes) {
-		StringBuffer buff = new StringBuffer();
-		buff.append(".");
-		for (byte b : endBytes) {
-			buff.append(Byte.toString(b));
-			buff.append(".");
-		}
-		return buff.toString();
-	}
-
 	 
 	private void createRegionQueue() throws IOException {
 
@@ -896,6 +887,7 @@ public class HBASEScan extends HBASEOperator implements StateHandler {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void process(StreamingInput<Tuple> stream, Tuple tuple)
 			throws Exception {

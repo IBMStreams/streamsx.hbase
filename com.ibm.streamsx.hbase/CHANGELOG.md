@@ -1,6 +1,9 @@
 # Changes
 =========
 
+## v3.9.2:
+* [#139](https://github.com/IBMStreams/streamsx.hbase/issues/139) 3rd party library guava upgraded to version 24.1.1-jre
+
 ## v3.9.1:
 * [#136](https://github.com/IBMStreams/streamsx.hbase/issues/136) 3rd party library commons-lang3 added
 
