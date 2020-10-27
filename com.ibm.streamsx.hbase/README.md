@@ -36,7 +36,7 @@ The streamsx.hbase toolkit support from version 3.1.0 kerberos authentication
 Kerberos authentication is a network protocol to provide strong authentication for client/server applications.
 
 If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to enable the kerberos authentication.
-https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/
+
 https://www.cloudera.com/documentation/enterprise/5-7-x/topics/cdh_sg_hbase_authentication.html
 https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html
 
