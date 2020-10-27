@@ -129,8 +129,6 @@ The **authPrincipal** parameter specifies the Kerberos principal, which is typic
 
 If not done already, enable Kerberos authentication on your Hadoop cluster using the following links to find out "how to enable the kerberos authentication".
 
-[https://hortonworks.com/blog/ambari-kerberos-support-hbase-1/]
-
 [https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_s4_kerb_wizard.html]
 
 [https://www.ibm.com/support/knowledgecenter/en/SSPT3X_4.2.0/com.ibm.swg.im.infosphere.biginsights.admin.doc/doc/admin_iop_kerberos.html]
