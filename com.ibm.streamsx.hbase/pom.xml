@@ -11,7 +11,7 @@
 	<groupId>com.ibm.streamsx.hbase</groupId>
 	<artifactId>streamsx.hbase</artifactId>
 	<packaging>jar</packaging>
-	<version>3.9.2</version> 
+	<version>3.9.3</version> 
 	<name>com.ibm.streamsx.hbase</name>
 	<repositories>
 		<repository>
@@ -194,7 +194,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>29.0-jre</version>
+			<version>30.0-jre</version>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -202,7 +202,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>failureaccess</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>

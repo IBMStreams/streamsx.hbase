@@ -229,8 +229,12 @@ The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.ja
 
 * 3rd party library guava upgraded to version 24.1.1-jre
 
+++ What is new in version 3.9.3
+
+* 3rd party library guava upgraded to version 30.0-jre
+
 </info:description>
-    <info:version>3.9.2</info:version>
+    <info:version>3.9.3</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>
