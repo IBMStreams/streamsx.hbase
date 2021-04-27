@@ -1,6 +1,9 @@
 # Changes
 =========
 
+## latest:
+* [#145](https://github.com/IBMStreams/streamsx.hbase/issues/145) 3rd party library commons-io upgraded to version 2.7
+* 
 ## v3.9.3:
 * [#143](https://github.com/IBMStreams/streamsx.hbase/issues/143) 3rd party library guava upgraded to version 30.0-jre
 * [#140](https://github.com/IBMStreams/streamsx.hbase/issues/140) Links in documentation updated
