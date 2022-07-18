@@ -1,7 +1,13 @@
 # Changes
 =========
+# Changes
+=========
 
-## latest:
+## v3.9.4:
+* [#145](https://github.com/IBMStreams/streamsx.hbase/issues/149) 3rd party library slf4j-api upgraded to version 1.7.36
+
+
+## V3.9.3:
 * [#145](https://github.com/IBMStreams/streamsx.hbase/issues/145) 3rd party library commons-io upgraded to version 2.7
 
 ## v3.9.3:
