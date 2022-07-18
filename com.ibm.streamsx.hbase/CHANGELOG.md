@@ -1,8 +1,5 @@
 # Changes
 =========
-# Changes
-=========
-
 ## v3.9.4:
 * [#145](https://github.com/IBMStreams/streamsx.hbase/issues/149) 3rd party library slf4j-api upgraded to version 1.7.36
 
