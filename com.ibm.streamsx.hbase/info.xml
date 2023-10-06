@@ -241,10 +241,15 @@ The jar library zookeeper-3.4.13.jar has been replaced with **zookeeper-3.4.6.ja
 
 * 3rd party library slf4j-api upgraded to version 1.7.36
 	    
+++ What is new in version 3.9.6
 
+* The Vulnerability issues for 3rd party libraries have been fixed
+* hadoop libraries upgraded to version 3.3.6 
+* commons-cli upgraded to 1.5.0
+* commons-codecs upgraded to 1.16.1
 	    
 </info:description>
-    <info:version>3.9.5</info:version>
+    <info:version>3.9.6</info:version>
     <info:requiredProductVersion>4.0.0.0</info:requiredProductVersion>
   </info:identity>
   <info:dependencies/>

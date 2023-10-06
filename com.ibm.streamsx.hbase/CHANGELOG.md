@@ -1,5 +1,9 @@
 # Changes
 =========
+## v3.9.6
+* fix Vulnerabilities CVE-2022-42889,  CVE-2022-25168 and CVE-2021-33036
+  hadoop jar libraries upgraded to version 3.3.6 
+  commons.cli vesion 1.5.1 and commons-codec version 1.16.1
 
 ## v3.9.5:
 * [#145](https://github.com/IBMStreams/streamsx.hbase/issues/149) 3rd party library slf4j-api upgraded to version 1.7.36
